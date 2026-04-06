@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>競走馬保険審査報告書</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="競走馬診断書">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#254ba8">
+  <link rel="manifest" id="pwa-manifest">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --msm: #254ba8;
+      --msm-l: #2563a8;
+      --sj: #1a8040;
+      --sj-l: #16652e;
+      --text: #1a1a1a;
+      --border: #d0d0d0;
+      --bg: #f5f5f5;
+      --light-bg: #fafafa;
+      --error: #e11d48;
+      --success: #16a34a;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      padding: 0;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; background: #fff; }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, var(--msm), var(--msm-l));
+      color: #fff;
+      padding: 16px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid var(--border);
+      background: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s ease;
+      color: #666;
+    }
+
+    .tab.active {
+      color: var(--msm);
+      border-bottom-color: var(--msm);
+      background: #f9fbfd;
+    }
+
+    .tab.sj.active { color: var(--sj); border-bottom-color: var(--sj); }
+    .tab.history.active { color: #666; border-bottom-color: #666; }
+
+    /* Tab content */
+    .tab-content { display: none; padding: 20px; }
+    .tab-content.active { display: block; }
+
+    /* Form groups */
+    .fgroup {
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .flabel {
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .fgroup.row {
+      flex-direction: row;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .fgroup.row > .fgroup {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    /* Inputs */
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 13px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      font-size: 17px;
+      font-family: inherit;
+      color: var(--text);
+      background: #fff;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="date"]:focus,
+    input[type="number"]:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--msm-l);
+      box-shadow: 0 0 0 3px rgba(37, 99, 168, 0.12);
+    }
+
+    .tab.sj.active ~ .tab-content input[type="text"]:focus,
+    .tab.sj.active ~ .tab-content input[type="date"]:focus,
+    .tab.sj.active ~ .tab-content select:focus {
+      border-color: var(--sj);
+      box-shadow: 0 0 0 3px rgba(22, 101, 46, 0.12);
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 40px;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    /* Date input styling */
+    .date-input {
+      width: 100%;
+      padding: 13px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      font-size: 17px;
+      font-family: inherit;
+      color: var(--text);
+      background: #fff;
+      -webkit-appearance: none;
+    }
+
+    .date-input:focus {
+      outline: none;
+      border-color: var(--msm-l);
+      box-shadow: 0 0 0 3px rgba(37, 99, 168, 0.12);
+    }
+
+    /* Age display */
+    .age-disp {
+      background: var(--bg);
+      border-radius: 9px;
+      padding: 12px 14px;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--msm);
+      border: 1.5px solid var(--border);
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Date banner */
+    .date-banner {
+      background: linear-gradient(135deg, #1a3f6b, #2563a8);
+      color: #fff;
+      border-radius: 8px;
+      padding: 8px 14px;
+      margin-top: 6px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+    }
+
+    .date-banner.sj-banner {
+      background: linear-gradient(135deg, #16652e, #1a8040);
+    }
+
+    /* Chips */
+    .chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .chip {
+      padding: 8px 14px;
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      background: #fff;
+      color: var(--text);
+      transition: all 0.2s ease;
+    }
+
+    .chip:active {
+      border-color: var(--msm);
+      background: rgba(37, 99, 168, 0.1);
+      color: var(--msm);
+    }
+
+    .tab.sj.active ~ .tab-content .chip:active {
+      border-color: var(--sj);
+      background: rgba(22, 101, 46, 0.1);
+      color: var(--sj);
+    }
+
+    .chip.selected {
+      border-color: var(--msm);
+      background: var(--msm);
+      color: #fff;
+    }
+
+    .tab.sj.active ~ .tab-content .chip.selected {
+      border-color: var(--sj);
+      background: var(--sj);
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 14px 20px;
+      border: none;
+      border-radius: 9px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .btn-primary {
+      background: var(--msm);
+      color: #fff;
+    }
+
+    .btn-primary:active { background: #1e3b8a; }
+
+    .btn.sj { background: var(--sj); }
+    .btn.sj:active { background: #16652e; }
+
+    .btn-secondary {
+      background: var(--bg);
+      color: var(--text);
+      border: 1.5px solid var(--border);
+    }
+
+    .btn-secondary:active { background: #e8e8e8; }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .btn-group .btn { flex: 1; }
+
+    /* Section heading */
+    .section-heading {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 24px 0 16px 0;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border);
+      color: var(--text);
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: flex-end;
+    }
+
+    .modal.active { display: flex; }
+
+    .modal-content {
+      background: #fff;
+      width: 100%;
+      border-radius: 16px 16px 0 0;
+      padding: 20px;
+      max-height: 80vh;
+      overflow-y: auto;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .modal-header {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      background: #333;
+      color: #fff;
+      padding: 14px 16px;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 2000;
+      animation: slideInUp 0.3s ease;
+    }
+
+    @keyframes slideInUp {
+      from { transform: translateY(100px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--error); }
+
+    /* Print preview */
+    .print-preview {
+      background: #fff;
+      padding: 40px;
+      line-height: 1.6;
+      color: #000;
+      font-family: serif;
+    }
+
+    .print-title {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      letter-spacing: 0.05em;
+    }
+
+    .print-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    .print-intro {
+      text-align: center;
+      font-size: 14px;
+      margin-bottom: 20px;
+      line-height: 1.8;
+    }
+
+    .print-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      font-size: 13px;
+    }
+
+    .print-table td {
+      border: 1px solid #000;
+      padding: 8px;
+      text-align: left;
+    }
+
+    .print-table td.header {
+      background: #f0f0f0;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .print-section-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 16px 0 12px 0;
+      border-bottom: 2px solid #000;
+      padding-bottom: 6px;
+      letter-spacing: 0.06em;
+    }
+
+    .circled {
+      border: 1.5px solid #000;
+      border-radius: 50%;
+      padding: 0 4px;
+      font-weight: 600;
+      display: inline-block;
+      text-align: center;
+      min-width: 20px;
+      height: 20px;
+      line-height: 18px;
+    }
+
+    .strikethrough { text-decoration: line-through; }
+
+    @media print {
+      body { background: #fff; }
+      .tabs, .btn-group, .section-heading, .modal { display: none; }
+      .container { max-width: 100%; }
+      .print-preview { padding: 0; }
+    }
+
+    @media (max-width: 600px) {
+      .container { border-radius: 0; }
+      .header { font-size: 18px; padding: 12px; }
+      .fgroup.row { flex-direction: column; gap: 0; }
+      .print-preview { padding: 20px; }
+      .print-table td { font-size: 12px; padding: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">競走馬保険審査報告書作成</div>
+
+    <div class="tabs">
+      <div class="tab msm active" onclick="switchTab(0)">🔵 三井住友</div>
+      <div class="tab sj" onclick="switchTab(1)">🟢 損保ジャパン</div>
+      <div class="tab history" onclick="switchTab(2)">📁 保存済み</div>
+    </div>
+
+    <!-- MSM Tab -->
+    <div class="tab-content active" id="msm-tab">
+      <div class="section-heading">獣医師</div>
+      <div class="fgroup">
+        <div class="flabel">診断獣医師</div>
+        <div class="chips" id="msm_vet_chips"></div>
+      </div>
+      <div class="section-heading">記載日</div>
+      <div class="fgroup">
+        <div class="flabel">記載日</div>
+        <input type="date" class="date-input" id="msm_date_in" onchange="onDateChangeMSM('date'); autoSave()">
+        <div class="date-banner" id="banner_msm_date">（未選択）</div>
+      </div>
+
+      <div class="section-heading">馬の情報</div>
+      <div class="fgroup">
+        <div class="flabel">馬名</div>
+        <input type="text" id="msm_horse" placeholder="例：ダイワスカーレット" onchange="autoSave()" onblur="addHistory('msm_horse')">
+        <div class="chips" id="msm_horse_history"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">種類</div>
+        <select id="msm_type" onchange="autoSave()">
+          <option value="">選択してください</option>
+          <option value="サラブレッド">サラブレッド</option>
+          <option value="日本馬">日本馬</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">生年月日</div>
+        <input type="date" class="date-input" id="msm_birth_in" onchange="onDateChangeMSM('birth'); autoSave()">
+        <div class="date-banner" id="banner_msm_birth">（未選択）</div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">年齢（才）※生年月日から自動計算</div>
+        <div class="age-disp" id="msm_age_disp">（生年月日を選択してください）</div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">産地</div>
+        <div class="chips" style="margin-bottom:6px;">
+          <button type="button" class="chip" onclick="setOrigin('msm','新ひだか町')">新ひだか町</button>
+          <button type="button" class="chip" onclick="setOrigin('msm','新冠町')">新冠町</button>
+          <button type="button" class="chip" onclick="setOrigin('msm','日高町')">日高町</button>
+          <button type="button" class="chip" onclick="setOrigin('msm','平取町')">平取町</button>
+          <button type="button" class="chip" onclick="setOrigin('msm','浦河町')">浦河町</button>
+        </div>
+        <input type="text" id="msm_origin" placeholder="例：新ひだか町" onchange="autoSave()">
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">性別</div>
+        <div class="chips" id="msm_sex_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">毛色</div>
+        <select id="msm_color" onchange="autoSave()">
+          <option value="">選択してください</option>
+          <option value="栗毛">栗毛</option>
+          <option value="黒鹿毛">黒鹿毛</option>
+          <option value="鹿毛">鹿毛</option>
+          <option value="青毛">青毛</option>
+          <option value="白毛">白毛</option>
+          <option value="芦毛">芦毛</option>
+          <option value="小栗毛">小栗毛</option>
+          <option value="栃栗毛">栃栗毛</option>
+        </select>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">血統</div>
+        <div class="fgroup row">
+          <div class="fgroup">
+            <div class="flabel">父</div>
+            <input type="text" id="msm_sire" placeholder="父の名前" onchange="autoSave()" onblur="addHistory('msm_sire')">
+            <div class="chips" id="msm_sire_history"></div>
+          </div>
+          <div class="fgroup">
+            <div class="flabel">母</div>
+            <input type="text" id="msm_dam" placeholder="母の名前" onchange="autoSave()" onblur="addHistory('msm_dam')">
+            <div class="chips" id="msm_dam_history"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">特徴・毛並み（JAIRS標準）</div>
+        <textarea id="msm_feature" placeholder="顔部：小星　肢：白　旋毛：珠目" onchange="autoSave()"></textarea>
+        <button class="btn btn-secondary" style="margin-top: 8px;" onclick="openFeatureModal('msm')">毛並み選択器を開く</button>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">マイクロチップ番号</div>
+        <input type="text" id="msm_microchip" placeholder="例：900000000000000" onchange="autoSave()">
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">飼養場所</div>
+        <input type="text" id="msm_farm_loc" placeholder="例：〒056-0144 北海道日高郡..." onchange="autoSave()" onblur="addHistory('msm_farm_loc')">
+        <div class="chips" id="msm_farm_loc_history"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">管理人</div>
+        <input type="text" id="msm_farm_mgr" placeholder="例：佐藤　和茂" onchange="autoSave()" onblur="addHistory('msm_farm_mgr'); saveFarmPair('msm')">
+        <div class="chips" id="msm_farm_mgr_history"></div>
+      </div>
+
+      <div class="section-heading">診断情報</div>
+
+      <div class="fgroup">
+        <div class="flabel">診断場所</div>
+        <div class="chips" id="msm_diagloc_chips"></div>
+        <input type="text" id="msm_diagloc_other" placeholder="その他（場所を記入）" onchange="autoSave()" onblur="addHistory('msm_diagloc_other')">
+        <div class="chips" id="msm_diagloc_other_history"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">診断日</div>
+        <input type="date" class="date-input" id="msm_diag_in" onchange="onDateChangeMSM('diag'); autoSave()">
+        <div class="date-banner" id="banner_msm_diag">（未選択）</div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">体格</div>
+        <div class="chips" id="msm_build_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">体温</div>
+        <div class="chips" id="msm_temp_chips"></div>
+        <input type="text" id="msm_temp_detail" placeholder="異常の場合、詳細を記入" onchange="autoSave()">
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">栄養</div>
+        <div class="chips" id="msm_nutr_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">脈拍</div>
+        <div class="chips" id="msm_pulse_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">歩様</div>
+        <div class="chips" id="msm_gait_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">睾丸</div>
+        <div class="chips" id="msm_test_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">現在の健康状態</div>
+        <div class="chips" id="msm_health_chips"></div>
+        <input type="text" id="msm_health_detail" placeholder="異常の場合、詳細を記入" onchange="autoSave()">
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">病傷歴</div>
+        <div class="chips" id="msm_hist_flag_chips"></div>
+        <input type="text" id="msm_histname" placeholder="傷病名" onchange="autoSave()" onblur="addHistory('msm_histname')">
+        <div class="chips" id="msm_histname_history"></div>
+        <input type="text" id="msm_histtime" placeholder="時期" onchange="autoSave()" onblur="addHistory('msm_histtime')">
+        <div class="chips" id="msm_histtime_history"></div>
+        <input type="text" id="msm_histcure" placeholder="治癒状況" onchange="autoSave()" onblur="addHistory('msm_histcure')">
+        <div class="chips" id="msm_histcure_history"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">その他特記事項</div>
+        <textarea id="msm_note" placeholder="その他特記事項を記入" onchange="autoSave()"></textarea>
+      </div>
+
+      <div class="section-heading">請求額 / 内訳</div>
+
+      <div class="fgroup">
+        <div class="flabel">請求項目</div>
+        <div class="chips" id="msm_fee_items_chips"></div>
+      </div>
+
+
+      <div style="background:#e8f5e9;border:2px solid #16a34a;border-radius:10px;padding:12px;margin-top:16px;font-size:14px;">
+        ⚠️ 入力後は必ず <strong>「💾 保存」</strong> を押してください。その後 <strong>📁保存済みタブ</strong> から「データをファイルに保存」でバックアップしてください。
+      </div>
+      <div class="btn-group" style="margin-top:10px;">
+        <button class="btn btn-primary" style="background:#16a34a;font-size:17px;" onclick="saveRecord('msm')">💾 保存</button>
+        <button class="btn btn-secondary" onclick="newRecord('msm')">🆕 新規</button>
+        <button class="btn btn-secondary" onclick="previewPrint('msm')">📄 プレビュー</button>
+        <button class="btn btn-secondary" onclick="printForm('msm')">🖨️ 印刷</button>
+      </div>
+    </div>
+
+    <!-- SJ Tab -->
+    <div class="tab-content" id="sj-tab">
+      <div class="section-heading">獣医師</div>
+      <div class="fgroup">
+        <div class="flabel">診断獣医師</div>
+        <div class="chips" id="sj_vet_chips"></div>
+      </div>
+      <div class="section-heading">作成日</div>
+      <div class="fgroup">
+        <div class="flabel">作成日</div>
+        <input type="date" class="date-input" id="sj_date_in" onchange="onDateChangeSJ('date'); autoSave()">
+        <div class="date-banner sj-banner" id="banner_sj_date">（未選択）</div>
+      </div>
+
+      <div class="section-heading">馬の情報</div>
+      <div class="fgroup">
+        <div class="flabel">馬名</div>
+        <input type="text" id="sj_horse" placeholder="例：ダイワスカーレット" onchange="autoSave()" onblur="addHistory('sj_horse')">
+        <div class="chips" id="sj_horse_history"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">種類</div>
+        <select id="sj_type" onchange="autoSave()">
+          <option value="">選択してください</option>
+          <option value="サラブレッド">サラブレッド</option>
+          <option value="日本馬">日本馬</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">生年月日</div>
+        <input type="date" class="date-input" id="sj_birth_in" onchange="onDateChangeSJ('birth'); autoSave()">
+        <div class="date-banner sj-banner" id="banner_sj_birth">（未選択）</div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">年齢（才）※生年月日から自動計算</div>
+        <div class="age-disp" id="sj_age_disp">（生年月日を選択してください）</div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">産地</div>
+        <div class="chips" style="margin-bottom:6px;">
+          <button type="button" class="chip" onclick="setOrigin('sj','新ひだか町')">新ひだか町</button>
+          <button type="button" class="chip" onclick="setOrigin('sj','新冠町')">新冠町</button>
+          <button type="button" class="chip" onclick="setOrigin('sj','日高町')">日高町</button>
+          <button type="button" class="chip" onclick="setOrigin('sj','平取町')">平取町</button>
+          <button type="button" class="chip" onclick="setOrigin('sj','浦河町')">浦河町</button>
+        </div>
+        <input type="text" id="sj_origin" placeholder="例：新ひだか町" onchange="autoSave()">
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">性別</div>
+        <div class="chips" id="sj_sex_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">毛色</div>
+        <select id="sj_color" onchange="autoSave()">
+          <option value="">選択してください</option>
+          <option value="栗毛">栗毛</option>
+          <option value="黒鹿毛">黒鹿毛</option>
+          <option value="鹿毛">鹿毛</option>
+          <option value="青毛">青毛</option>
+          <option value="白毛">白毛</option>
+          <option value="芦毛">芦毛</option>
+          <option value="小栗毛">小栗毛</option>
+          <option value="栃栗毛">栃栗毛</option>
+        </select>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">血統</div>
+        <div class="fgroup row">
+          <div class="fgroup">
+            <div class="flabel">父</div>
+            <input type="text" id="sj_sire" placeholder="父の名前" onchange="autoSave()" onblur="addHistory('sj_sire')">
+            <div class="chips" id="sj_sire_history"></div>
+          </div>
+          <div class="fgroup">
+            <div class="flabel">母</div>
+            <input type="text" id="sj_dam" placeholder="母の名前" onchange="autoSave()" onblur="addHistory('sj_dam')">
+            <div class="chips" id="sj_dam_history"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">マイクロチップ番号</div>
+        <input type="text" id="sj_microchip" placeholder="例：900000000000000" onchange="autoSave()">
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">特徴・毛並み（JAIRS標準）</div>
+        <textarea id="sj_feature" placeholder="顔部：小星　肢：白　旋毛：珠目" onchange="autoSave()"></textarea>
+        <button class="btn btn-secondary" style="margin-top: 8px;" onclick="openFeatureModal('sj')">毛並み選択器を開く</button>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">飼養場所</div>
+        <input type="text" id="sj_farm_loc" placeholder="例：北海道日高郡..." onchange="autoSave()" onblur="addHistory('sj_farm_loc')">
+        <div class="chips" id="sj_farm_loc_history"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">管理人</div>
+        <input type="text" id="sj_farm_mgr" placeholder="例：佐藤　和茂" onchange="autoSave()" onblur="addHistory('sj_farm_mgr'); saveFarmPair('sj')">
+        <div class="chips" id="sj_farm_mgr_history"></div>
+      </div>
+
+      <div class="section-heading">診断情報</div>
+
+      <div class="fgroup">
+        <div class="flabel">体格</div>
+        <div class="chips" id="sj_build_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">栄養</div>
+        <div class="chips" id="sj_nutr_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">歩様</div>
+        <div class="chips" id="sj_gait_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">可視粘膜</div>
+        <div class="chips" id="sj_mucosa_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">触診</div>
+        <div class="chips" id="sj_palp_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">聴診</div>
+        <div class="chips" id="sj_ausc_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">診断場所</div>
+        <button type="button" class="chip" style="margin-bottom:6px;" onclick="const loc=getField('sj_farm_loc');if(loc){document.getElementById('sj_diagloc_sj').value=loc;autoSave();}">📍 飼養場所と同じ</button>
+        <input type="text" id="sj_diagloc_sj" placeholder="例：北海道日高郡新ひだか町靜内田原569" onchange="autoSave()">
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">診断日</div>
+        <input type="date" class="date-input" id="sj_diag_in" onchange="onDateChangeSJ('diag'); autoSave()">
+        <div class="date-banner sj-banner" id="banner_sj_diag">（未選択）</div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">既往歴</div>
+        <div class="chips" id="sj_hist_flag_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">病名（既往歴がある場合）</div>
+        <input type="text" id="sj_histname" placeholder="例：腱炎" onchange="autoSave()">
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">時期（既往歴がある場合）</div>
+        <input type="text" id="sj_histtime" placeholder="例：3ヶ月前" onchange="autoSave()">
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">その他特記事項</div>
+        <textarea id="sj_note" placeholder="特記事項があればご記入ください" onchange="autoSave()"></textarea>
+      </div>
+
+      <div style="background:#e8f5e9;border:2px solid #16a34a;border-radius:10px;padding:12px;margin-top:16px;font-size:14px;">
+        ⚠️ 入力後は必ず <strong>「💾 保存」</strong> を押してください。その後 <strong>📁保存済みタブ</strong> から「データをファイルに保存」でバックアップしてください。
+      </div>
+      <div class="btn-group" style="margin-top:10px;">
+        <button class="btn btn-primary" style="background:#16a34a;font-size:17px;" onclick="saveRecord('sj')">💾 保存</button>
+        <button class="btn btn-secondary" onclick="newRecord('sj')">🆕 新規</button>
+        <button class="btn btn-secondary" onclick="previewPrint('sj')">📄 プレビュー</button>
+        <button class="btn btn-secondary" onclick="printForm('sj')">🖨️ 印刷</button>
+      </div>
+    </div>
+
+    <!-- History Tab -->
+    <div class="tab-content" id="history-tab">
+      <div class="section-heading">保存済みレコード</div>
+      <div style="background:#fff8e1;border:2px solid #f59e0b;border-radius:10px;padding:14px;margin-bottom:16px;font-size:14px;line-height:1.7;">
+        <div style="font-weight:700;margin-bottom:6px;">💾 データの保存・読み込み方法</div>
+        <div>① 入力後に各タブの <strong>「💾 保存」ボタン</strong> を押す</div>
+        <div>② 下の <strong>「📥 データをファイルに保存」</strong> でJSONファイルとして保存</div>
+        <div>③ 次回は <strong>「📂 ファイルから読み込む」</strong> でデータを復元</div>
+      </div>
+      <div id="saved_records"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:16px;font-size:17px;padding:16px;" onclick="exportData()">📥 データをファイルに保存（バックアップ）</button>
+      <button class="btn btn-secondary" style="width:100%;margin-top:10px;font-size:17px;padding:16px;" onclick="document.getElementById('import-file').click()">📂 ファイルから読み込む（復元）</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+    </div>
+  </div>
+
+  <!-- Feature Modal -->
+  <div class="modal" id="feature-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        特徴・マーキング選択
+        <button class="modal-close" onclick="closeFeatureModal()">✕</button>
+      </div>
+
+      <!-- 1. 顔部 -->
+      <div class="section-heading">①　顔部の特徴</div>
+      <div class="chips" id="feature-face-chips"></div>
+
+      <!-- 2. 旋毛（位置付き） -->
+      <div class="section-heading">②　旋毛（JAIRS 18種）＋位置</div>
+      <div class="flabel" style="margin-top:4px;">旋毛の種類を選ぶ</div>
+      <div class="chips" id="feature-rosette-chips"></div>
+      <div style="background:#f8f9fa;border-radius:10px;padding:12px;margin-top:10px;">
+        <div class="flabel">左右の位置</div>
+        <div class="chips" id="rosette-lr-chips" style="margin-bottom:10px;">
+          <button type="button" class="chip" data-rosette-lr="右" onclick="selectRosetteLR(this)">右</button>
+          <button type="button" class="chip" data-rosette-lr="左" onclick="selectRosetteLR(this)">左</button>
+        </div>
+        <div class="flabel">上下の位置</div>
+        <div class="chips" id="rosette-ud-chips" style="margin-bottom:10px;">
+          <button type="button" class="chip" data-rosette-ud="上" onclick="selectRosetteUD(this)">上</button>
+          <button type="button" class="chip" data-rosette-ud="正" onclick="selectRosetteUD(this)">正</button>
+          <button type="button" class="chip" data-rosette-ud="下" onclick="selectRosetteUD(this)">下</button>
+          <button type="button" class="chip" data-rosette-ud="２" onclick="selectRosetteUD(this)">２</button>
+        </div>
+        <button type="button" class="btn btn-secondary" style="width:100%;" onclick="addRosetteEntry()">＋ この旋毛を追加</button>
+      </div>
+      <div id="rosette-entries" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;min-height:32px;"></div>
+
+      <!-- 3. 肢部 -->
+      <div class="section-heading">③　肢の特徴（白斑など）</div>
+      <div id="feature-limbs"></div>
+
+      <!-- 4. その他 -->
+      <div class="section-heading">④　その他</div>
+      <div class="chips" id="feature-other-chips"></div>
+
+      <div class="btn-group" style="margin-top:16px;">
+        <button class="btn btn-primary" onclick="saveFeatureModal()">✓ 確定して入力</button>
+        <button class="btn btn-secondary" onclick="closeFeatureModal()">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print Preview Modal (full-screen scroll) -->
+  <div id="print-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:1000;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+    <div style="background:#fff;width:100%;min-height:100%;padding:16px;">
+      <!-- sticky toolbar -->
+      <div style="position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #ddd;padding:8px 0 10px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <span style="font-size:16px;font-weight:700;">📄 印刷プレビュー</span>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="savePDF()" style="padding:8px 18px;font-size:14px;background:#16a34a;">📄 PDFで保存</button>
+          <button class="btn btn-primary" onclick="executePrint()" style="padding:8px 18px;font-size:14px;">🖨️ 印刷</button>
+          <button class="btn btn-secondary" onclick="closePrintModal()" style="padding:8px 14px;font-size:14px;">✕</button>
+        </div>
+      </div>
+      <!-- A4 preview wrapper -->
+      <div id="print-content" style="max-width:794px;margin:0 auto;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.15);padding:10mm 12mm;"></div>
+    </div>
+  </div>
+
+  <script>
+    // ============ Data Structure ============
+    let DATA = { msm_age: 0, sj_age: 0 };
+    let HISTORY = {};
+    let FARM_MASTER = {}; // { "管理人名": "住所" } の連動辞書
+    let CURRENT_TAB = 0;
+    let CURRENT_PRINT_FORM = 'msm';
+    let FEATURE_CURRENT_PREFIX = 'msm';
+    let ROSETTE_ENTRIES = [];
+
+    // ============ Feature Data ============
+    const FEATURE_FACE = ['小星', '星', '大星', '曲星', '環星', '乱星', '小流星', '流星', '大流星', '曲流星', '環流星', '乱流星', '細作', '作', '大作', '白面', '鼻梁小白', '鼻梁白', '鼻梁大白', '鼻小白', '鼻白', '鼻大白', '上唇白', '下唇白', '唇小白', '唇大白'];
+    const FEATURE_LIMB = ['小白', '半白', '白', '細長白', '長半白', '長白'];
+    const FEATURE_ROSETTE = ['珠目', '華粧', '轡搦', '吭搦', '髪中', '頸中', '波分', '双門', '浪門', '柏生', '押', '鐙端', '初地', '芝引', '芭蕉', '骨正', '後双門', '沙流上'];
+    const FEATURE_OTHER = ['無徴', '刺毛', '岩陥', '白斑', '異毛斑', '輪眼', '魚目', '創傷痕', '烙印'];
+
+    const CHIPS_DATA = {
+      vet: ['佐藤和茂', '関奏絵'],
+      sex: ['牡', '牝', '騙'],
+      diagloc: ['飼養場所と同じ', 'その他'],
+      build: ['大', '中', '小'],
+      temp: ['通常', '異常'],
+      nutr: ['上', '中', '下'],
+      pulse: ['正常', '不順'],
+      gait: ['正', 'やや正', '不正'],
+      test: ['良', 'やや良', '不良'],
+      health: ['異常なし', '異常あり'],
+      hist_flag: ['有', '無', '不明'],
+      fee_items: ['競走馬審査料（14,300円）', '妊娠鑑定料（5,000円）'],
+      mucosa: ['正', 'やや正', '不正'],
+      palp: ['良', '不良'],
+      ausc: ['正', '不正']
+    };
+
+    // ============ Date Functions ============
+    function dateToJaEra(dateStr) {
+      if (!dateStr) return null;
+      const d = new Date(dateStr + 'T12:00:00');
+      const y = d.getFullYear(), m = d.getMonth() + 1, day = d.getDate();
+      let era, eraYear;
+      if (y > 2019 || (y === 2019 && m >= 5)) {
+        era = '令和'; eraYear = y - 2018;
+      } else if (y > 1989 || (y === 1989 && m >= 1 && day >= 8)) {
+        era = '平成'; eraYear = y - 1988;
+      } else {
+        era = '昭和'; eraYear = y - 1925;
+      }
+      return { era, year: eraYear, month: m, day, full: `${era}${eraYear}年 ${m}月 ${day}日` };
+    }
+
+    function updateBanner(inputId, bannerId) {
+      const v = document.getElementById(inputId)?.value;
+      const b = document.getElementById(bannerId);
+      if (!b) return;
+      if (!v) { b.textContent = '（未選択）'; return; }
+      const ja = dateToJaEra(v);
+      b.textContent = ja ? ja.full : v;
+    }
+
+    function onDateChangeMSM(key) {
+      updateBanner('msm_' + key + '_in', 'banner_msm_' + key);
+      if (key === 'birth' || key === 'diag') calcAgeFromInputs('msm');
+    }
+
+    function onDateChangeSJ(key) {
+      updateBanner('sj_' + key + '_in', 'banner_sj_' + key);
+      if (key === 'birth' || key === 'diag') calcAgeFromInputs('sj');
+    }
+
+    function calcAgeFromInputs(prefix) {
+      const birthV = document.getElementById(prefix + '_birth_in')?.value;
+      const diagV = document.getElementById(prefix + '_diag_in')?.value;
+      const el = document.getElementById(prefix + '_age_disp');
+      if (!el) return;
+      if (!birthV) { el.textContent = '（生年月日を選択）'; return; }
+      const b = new Date(birthV + 'T12:00:00');
+      const d = diagV ? new Date(diagV + 'T12:00:00') : new Date();
+      let age = d.getFullYear() - b.getFullYear();
+      const mDiff = d.getMonth() - b.getMonth();
+      if (mDiff < 0 || (mDiff === 0 && d.getDate() < b.getDate())) age--;
+      if (age < 0) age = 0;
+      el.textContent = age === 0 ? '当歳' : age + ' 才';
+      DATA[prefix + '_age'] = age;
+    }
+
+    // ============ Chip Functions ============
+    function renderChips(containerId, chipsList, prefix, key, onchange) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      container.innerHTML = '';
+      chipsList.forEach(chip => {
+        const btn = document.createElement('button');
+        btn.className = 'chip';
+        btn.textContent = chip;
+        btn.type = 'button';
+        btn.onclick = (e) => { e.preventDefault(); btn.classList.toggle('selected'); if (onchange) onchange(); };
+        container.appendChild(btn);
+      });
+    }
+
+    function getChip(prefix, key) {
+      const chips = document.querySelectorAll(`#${prefix}_${key}_chips .chip.selected`);
+      return Array.from(chips).map(c => c.textContent).join('・');
+    }
+
+    function getMultiChips(id) {
+      const chipsParent = document.getElementById(id + '_chips');
+      if (!chipsParent) return [];
+      const chips = chipsParent.querySelectorAll('.chip.selected');
+      return Array.from(chips).map(c => c.textContent);
+    }
+
+    function setChip(prefix, key, values) {
+      if (!values) return;
+      const chipArray = Array.isArray(values) ? values : [values];
+      const container = document.getElementById(prefix + '_' + key + '_chips');
+      if (!container) return;
+      container.querySelectorAll('.chip').forEach(c => {
+        if (chipArray.includes(c.textContent)) c.classList.add('selected');
+      });
+    }
+
+    function getField(id) { return document.getElementById(id)?.value || ''; }
+    function setField(id, value) { const el = document.getElementById(id); if (el) el.value = (value == null ? '' : value); }
+    function selVal(id) { return document.getElementById(id)?.value || ''; }
+
+    // ============ History Functions ============
+    function addHistory(fieldId) {
+      const val = getField(fieldId);
+      if (!val) return;
+      if (!HISTORY[fieldId]) HISTORY[fieldId] = {};
+      HISTORY[fieldId][val] = (HISTORY[fieldId][val] || 0) + 1;
+      renderHistoryChips(fieldId);
+      saveHistory();
+    }
+
+    function renderHistoryChips(fieldId) {
+      const container = document.getElementById(fieldId + '_history');
+      if (!container) return;
+      container.innerHTML = '';
+      const hist = HISTORY[fieldId];
+      if (!hist) return;
+      const isFarmMgr = fieldId === 'msm_farm_mgr' || fieldId === 'sj_farm_mgr';
+      Object.entries(hist).sort((a, b) => b[1] - a[1]).slice(0, 5).forEach(([val]) => {
+        const chip = document.createElement('button');
+        chip.className = 'chip';
+        chip.type = 'button';
+        // 管理人チップ：連動住所があれば「管理人名 / 住所（短縮）」を表示
+        if (isFarmMgr && FARM_MASTER[val]) {
+          const locShort = FARM_MASTER[val].length > 12 ? FARM_MASTER[val].slice(0, 12) + '…' : FARM_MASTER[val];
+          chip.textContent = val + '　' + locShort;
+        } else {
+          chip.textContent = val;
+        }
+        chip.onclick = (e) => {
+          e.preventDefault();
+          document.getElementById(fieldId).value = val;
+          // farm_mgr チップは対応する farm_loc も自動入力
+          if (isFarmMgr) {
+            const prefix = fieldId.split('_')[0];
+            const savedLoc = FARM_MASTER[val];
+            if (savedLoc) {
+              document.getElementById(prefix + '_farm_loc').value = savedLoc;
+              renderHistoryChips(prefix + '_farm_loc');
+            }
+          }
+          autoSave();
+        };
+        container.appendChild(chip);
+      });
+    }
+
+    function loadAllHistory() {
+      const h = localStorage.getItem('history');
+      if (h) {
+        try {
+          HISTORY = JSON.parse(h);
+          Object.keys(HISTORY).forEach(fieldId => renderHistoryChips(fieldId));
+        } catch (e) {}
+      }
+    }
+
+    function saveHistory() { localStorage.setItem('history', JSON.stringify(HISTORY)); }
+
+    function setOrigin(prefix, val) {
+      document.getElementById(prefix + '_origin').value = val;
+      autoSave();
+    }
+
+    function saveFarmPair(prefix) {
+      const mgr = getField(prefix + '_farm_mgr');
+      const loc = getField(prefix + '_farm_loc');
+      if (mgr && loc) {
+        FARM_MASTER[mgr] = loc;
+        localStorage.setItem('farm_master', JSON.stringify(FARM_MASTER));
+        // 管理人の履歴チップを再描画（住所付きで表示するため）
+        renderHistoryChips(prefix + '_farm_mgr');
+      }
+    }
+
+    function loadFarmMaster() {
+      const fm = localStorage.getItem('farm_master');
+      if (fm) { try { FARM_MASTER = JSON.parse(fm); } catch(e) {} }
+    }
+
+    // ============ Auto-save Functions ============
+    function collectMSM() {
+      const dateJa = dateToJaEra(document.getElementById('msm_date_in')?.value || '');
+      const birthJa = dateToJaEra(document.getElementById('msm_birth_in')?.value || '');
+      const diagJa = dateToJaEra(document.getElementById('msm_diag_in')?.value || '');
+      const fee1Ja = dateToJaEra(document.getElementById('msm_fee1_in')?.value || '');
+      const fee2Ja = dateToJaEra(document.getElementById('msm_fee2_in')?.value || '');
+      return {
+        dateIn: document.getElementById('msm_date_in')?.value || '',
+        birthIn: document.getElementById('msm_birth_in')?.value || '',
+        diagIn: document.getElementById('msm_diag_in')?.value || '',
+        fee1In: document.getElementById('msm_fee1_in')?.value || '',
+        fee2In: document.getElementById('msm_fee2_in')?.value || '',
+        dateJa, birthJa, diagJa, fee1Ja, fee2Ja,
+        age: document.getElementById('msm_age_disp')?.textContent || '',
+        horse: getField('msm_horse'), type: getField('msm_type'), sex: getChip('msm', 'sex'),
+        origin: getField('msm_origin'), color: selVal('msm_color'), sire: getField('msm_sire'),
+        dam: getField('msm_dam'), feature: getField('msm_feature'), microchip: getField('msm_microchip'), farm_loc: getField('msm_farm_loc'),
+        farm_mgr: getField('msm_farm_mgr'), diagloc: getChip('msm', 'diagloc'),
+        diagloc_other: getField('msm_diagloc_other'), build: getChip('msm', 'build'),
+        temp: getChip('msm', 'temp'), temp_detail: getField('msm_temp_detail'),
+        nutr: getChip('msm', 'nutr'), pulse: getChip('msm', 'pulse'), gait: getChip('msm', 'gait'),
+        test: getChip('msm', 'test'), health: getChip('msm', 'health'),
+        health_detail: getField('msm_health_detail'), hist_flag: getChip('msm', 'hist_flag'),
+        histname: getField('msm_histname'), histtime: getField('msm_histtime'),
+        histcure: getField('msm_histcure'), note: getField('msm_note'),
+        fee_items: getMultiChips('msm_fee_items'), vet: getChip('msm', 'vet'), form: 'msm', saved_at: new Date().toISOString()
+      };
+    }
+
+    function collectSJ() {
+      const dateJa = dateToJaEra(document.getElementById('sj_date_in')?.value || '');
+      const birthJa = dateToJaEra(document.getElementById('sj_birth_in')?.value || '');
+      const diagJa = dateToJaEra(document.getElementById('sj_diag_in')?.value || '');
+      return {
+        dateIn: document.getElementById('sj_date_in')?.value || '',
+        birthIn: document.getElementById('sj_birth_in')?.value || '',
+        diagIn: document.getElementById('sj_diag_in')?.value || '',
+        dateJa, birthJa, diagJa,
+        age: document.getElementById('sj_age_disp')?.textContent || '',
+        horse: getField('sj_horse'), type: getField('sj_type'), sex: getChip('sj', 'sex'),
+        origin: getField('sj_origin'), color: selVal('sj_color'), sire: getField('sj_sire'),
+        dam: getField('sj_dam'), feature: getField('sj_feature'), farm_loc: getField('sj_farm_loc'),
+        farm_mgr: getField('sj_farm_mgr'),
+        build: getChip('sj', 'build'), nutr: getChip('sj', 'nutr'), gait: getChip('sj', 'gait'),
+        mucosa: getChip('sj', 'mucosa'), palp: getChip('sj', 'palp'), ausc: getChip('sj', 'ausc'),
+        hist_flag: getChip('sj', 'hist_flag'), histname: getField('sj_histname'), histtime: getField('sj_histtime'),
+        note: getField('sj_note'), diagloc_sj: getField('sj_diagloc_sj'), microchip: getField('sj_microchip'),
+        vet: getChip('sj', 'vet'), form: 'sj', saved_at: new Date().toISOString()
+      };
+    }
+
+    function autoSave() {
+      const msm = collectMSM();
+      const sj = collectSJ();
+      localStorage.setItem('draft_msm', JSON.stringify(msm));
+      localStorage.setItem('draft_sj', JSON.stringify(sj));
+      saveHistory();
+      showToast('保存しました', 'success');
+    }
+
+    function loadMSM(d) {
+      if (d.dateIn) { document.getElementById('msm_date_in').value = d.dateIn; updateBanner('msm_date_in', 'banner_msm_date'); }
+      if (d.birthIn) { document.getElementById('msm_birth_in').value = d.birthIn; updateBanner('msm_birth_in', 'banner_msm_birth'); }
+      if (d.diagIn) { document.getElementById('msm_diag_in').value = d.diagIn; updateBanner('msm_diag_in', 'banner_msm_diag'); }
+      if (d.fee1In) { document.getElementById('msm_fee1_in').value = d.fee1In; updateBanner('msm_fee1_in', 'banner_msm_fee1'); }
+      if (d.fee2In) { document.getElementById('msm_fee2_in').value = d.fee2In; updateBanner('msm_fee2_in', 'banner_msm_fee2'); }
+      setField('msm_horse', d.horse); setField('msm_type', d.type); setField('msm_origin', d.origin);
+      setField('msm_sire', d.sire); setField('msm_dam', d.dam); setField('msm_color', d.color);
+      setField('msm_feature', d.feature); setField('msm_microchip', d.microchip); setField('msm_farm_loc', d.farm_loc); setField('msm_farm_mgr', d.farm_mgr);
+      setField('msm_diagloc_other', d.diagloc_other); setField('msm_temp_detail', d.temp_detail);
+      setField('msm_health_detail', d.health_detail); setField('msm_histname', d.histname);
+      setField('msm_histtime', d.histtime); setField('msm_histcure', d.histcure); setField('msm_note', d.note);
+      setChip('msm', 'vet', d.vet); setChip('msm', 'sex', d.sex); setChip('msm', 'diagloc', d.diagloc); setChip('msm', 'build', d.build);
+      setChip('msm', 'temp', d.temp); setChip('msm', 'nutr', d.nutr); setChip('msm', 'pulse', d.pulse);
+      setChip('msm', 'gait', d.gait); setChip('msm', 'test', d.test); setChip('msm', 'health', d.health);
+      setChip('msm', 'hist_flag', d.hist_flag);
+      if (d.fee_items) {
+        const container = document.getElementById('msm_fee_items_chips');
+        if (container) container.querySelectorAll('.chip').forEach(c => { if (d.fee_items.includes(c.textContent)) c.classList.add('selected'); });
+      }
+      calcAgeFromInputs('msm');
+    }
+
+    function loadSJ(d) {
+      if (d.dateIn) { document.getElementById('sj_date_in').value = d.dateIn; updateBanner('sj_date_in', 'banner_sj_date'); }
+      if (d.birthIn) { document.getElementById('sj_birth_in').value = d.birthIn; updateBanner('sj_birth_in', 'banner_sj_birth'); }
+      if (d.diagIn) { document.getElementById('sj_diag_in').value = d.diagIn; updateBanner('sj_diag_in', 'banner_sj_diag'); }
+      setField('sj_horse', d.horse); setField('sj_type', d.type); setField('sj_origin', d.origin);
+      setField('sj_sire', d.sire); setField('sj_dam', d.dam); setField('sj_color', d.color);
+      setField('sj_feature', d.feature); setField('sj_farm_loc', d.farm_loc); setField('sj_farm_mgr', d.farm_mgr);
+      setField('sj_microchip', d.microchip); setField('sj_diagloc_sj', d.diagloc_sj);
+      setField('sj_histname', d.histname); setField('sj_histtime', d.histtime); setField('sj_note', d.note);
+      setChip('sj', 'vet', d.vet); setChip('sj', 'sex', d.sex); setChip('sj', 'build', d.build); setChip('sj', 'nutr', d.nutr);
+      setChip('sj', 'gait', d.gait); setChip('sj', 'mucosa', d.mucosa); setChip('sj', 'palp', d.palp);
+      setChip('sj', 'ausc', d.ausc); setChip('sj', 'hist_flag', d.hist_flag);
+      calcAgeFromInputs('sj');
+    }
+
+    // ============ Tab Functions ============
+    function switchTab(idx) {
+      CURRENT_TAB = idx;
+      const tabs = document.querySelectorAll('.tab');
+      const contents = document.querySelectorAll('.tab-content');
+      tabs.forEach((t, i) => t.classList.toggle('active', i === idx));
+      contents.forEach((c, i) => c.classList.toggle('active', i === idx));
+      if (idx === 2) renderSavedRecords();
+    }
+
+    // ============ Feature Modal ============
+    function openFeatureModal(prefix) {
+      FEATURE_CURRENT_PREFIX = prefix;
+      ROSETTE_ENTRIES = [];
+      // Render face chips (multi-select)
+      renderChips('feature-face-chips', FEATURE_FACE, 'f', 'face');
+      // Render rosette type chips (single-select for "type picker")
+      const rContainer = document.getElementById('feature-rosette-chips');
+      rContainer.innerHTML = '';
+      FEATURE_ROSETTE.forEach(name => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'chip';
+        btn.textContent = name;
+        btn.onclick = () => {
+          rContainer.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+          btn.classList.add('selected');
+        };
+        rContainer.appendChild(btn);
+      });
+      // Render other chips (multi-select)
+      renderChips('feature-other-chips', FEATURE_OTHER, 'f', 'other');
+      // Render limb chips (radio per limb)
+      const limbsContainer = document.getElementById('feature-limbs');
+      limbsContainer.innerHTML = '';
+      ['左前肢', '右前肢', '左後肢', '右後肢'].forEach((limb, idx) => {
+        const LIMB_KEYS = ['左前', '右前', '左後', '右後'];
+        const div = document.createElement('div');
+        div.className = 'fgroup';
+        div.style.marginBottom = '10px';
+        const label = document.createElement('div');
+        label.className = 'flabel';
+        label.textContent = limb;
+        div.appendChild(label);
+        const chipsDiv = document.createElement('div');
+        chipsDiv.className = 'chips';
+        chipsDiv.dataset.limb = LIMB_KEYS[idx];
+        // Add "なし" option
+        const noneBtn = document.createElement('button');
+        noneBtn.className = 'chip selected';
+        noneBtn.type = 'button';
+        noneBtn.textContent = 'なし';
+        noneBtn.onclick = () => { chipsDiv.querySelectorAll('.chip').forEach(c => c.classList.remove('selected')); noneBtn.classList.add('selected'); };
+        chipsDiv.appendChild(noneBtn);
+        FEATURE_LIMB.forEach(chip => {
+          const btn = document.createElement('button');
+          btn.className = 'chip';
+          btn.type = 'button';
+          btn.textContent = chip;
+          btn.onclick = () => { chipsDiv.querySelectorAll('.chip').forEach(c => c.classList.remove('selected')); btn.classList.add('selected'); };
+          chipsDiv.appendChild(btn);
+        });
+        div.appendChild(chipsDiv);
+        limbsContainer.appendChild(div);
+      });
+      // Clear position selections
+      document.querySelectorAll('#rosette-lr-chips .chip, #rosette-ud-chips .chip').forEach(c => c.classList.remove('selected'));
+      renderRosetteEntries();
+      document.getElementById('feature-modal').classList.add('active');
+    }
+
+    function selectRosetteLR(btn) {
+      document.querySelectorAll('#rosette-lr-chips .chip').forEach(c => c.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+
+    function selectRosetteUD(btn) {
+      document.querySelectorAll('#rosette-ud-chips .chip').forEach(c => c.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+
+    function addRosetteEntry() {
+      const typeChip = document.querySelector('#feature-rosette-chips .chip.selected');
+      if (!typeChip) { alert('旋毛の種類を選んでください'); return; }
+      const type = typeChip.textContent;
+      const lrChip = document.querySelector('#rosette-lr-chips .chip.selected');
+      const udChip = document.querySelector('#rosette-ud-chips .chip.selected');
+      const lr = lrChip ? lrChip.dataset.rosetteLr : '';
+      const ud = udChip ? udChip.dataset.rosetteUd : '';
+      ROSETTE_ENTRIES.push(lr + type + ud);
+      renderRosetteEntries();
+      // Clear type selection
+      document.querySelectorAll('#feature-rosette-chips .chip').forEach(c => c.classList.remove('selected'));
+      document.querySelectorAll('#rosette-lr-chips .chip, #rosette-ud-chips .chip').forEach(c => c.classList.remove('selected'));
+    }
+
+    function removeRosetteEntry(idx) {
+      ROSETTE_ENTRIES.splice(idx, 1);
+      renderRosetteEntries();
+    }
+
+    function renderRosetteEntries() {
+      const container = document.getElementById('rosette-entries');
+      if (!container) return;
+      container.innerHTML = '';
+      if (ROSETTE_ENTRIES.length === 0) {
+        container.innerHTML = '<span style="color:#999;font-size:13px;">（まだ追加されていません）</span>';
+        return;
+      }
+      ROSETTE_ENTRIES.forEach((entry, idx) => {
+        const tag = document.createElement('div');
+        tag.style.cssText = 'display:inline-flex;align-items:center;background:#e8f4fd;border:1.5px solid #3b82f6;border-radius:20px;padding:5px 12px;font-size:14px;font-weight:600;';
+        tag.innerHTML = `<span>${entry}</span><button type="button" onclick="removeRosetteEntry(${idx})" style="margin-left:8px;background:none;border:none;cursor:pointer;font-size:16px;color:#888;padding:0;">✕</button>`;
+        container.appendChild(tag);
+      });
+    }
+
+    function closeFeatureModal() { document.getElementById('feature-modal').classList.remove('active'); }
+
+    function combineLimbFeatures(limbSelected) {
+      // 肢の出力順：左前→右前→左後→右後
+      const LEG_ORDER = { '左前': 0, '右前': 1, '左後': 2, '右後': 3 };
+      // 長い特徴名を先にマッチさせる（'白'より'長白'を優先）
+      const sortedFeatures = [...FEATURE_LIMB].sort((a, b) => b.length - a.length);
+      const parsed = limbSelected.map(item => {
+        for (const f of sortedFeatures) {
+          if (item.endsWith(f)) {
+            const prefix = item.slice(0, item.length - f.length); // 例:'右前'
+            return { side: prefix[0] || '', pos: prefix[1] || '', feature: f, original: item, legKey: prefix };
+          }
+        }
+        return { side: '', pos: '', feature: item, original: item, legKey: '' };
+      });
+      // 左前→右前→左後→右後 順にソート
+      parsed.sort((a, b) => (LEG_ORDER[a.legKey] ?? 99) - (LEG_ORDER[b.legKey] ?? 99));
+      // 特徴ごとにグループ化（ソート済み順序を維持）
+      const byFeature = {};
+      parsed.forEach(p => {
+        if (!byFeature[p.feature]) byFeature[p.feature] = [];
+        byFeature[p.feature].push(p);
+      });
+      // 各特徴の初出順で出力（左前→右前→左後→右後 順が反映される）
+      const done = new Set();
+      const result = [];
+      for (const p of parsed) {
+        if (done.has(p.feature)) continue;
+        done.add(p.feature);
+        const legs = byFeature[p.feature];
+        const n = legs.length;
+        if (n === 1) {
+          result.push(p.original); // 1本はそのまま（位置付き）
+        } else if (n === 4) {
+          result.push('四' + p.feature); // 4本は位置不要
+        } else if (n === 2) {
+          const [a, b] = legs;
+          if (a.side === b.side && a.side) {
+            // 同側（例：右前＋右後 → 右二白）
+            result.push(a.side + '二' + p.feature);
+          } else if (a.pos === b.pos && a.pos) {
+            // 同位置（例：右前＋左前 → 前二白）
+            result.push(a.pos + '二' + p.feature);
+          } else {
+            // 対角（例：右前＋左後 → 右前左後二白）
+            result.push(a.legKey + b.legKey + '二' + p.feature);
+          }
+        } else if (n === 3) {
+          // 2本ある側は側名のみ、1本の側は側名＋位置
+          // 例：左前＋右前＋右後 → 左前右三白
+          const leftLegs = legs.filter(l => l.side === '左');
+          const rightLegs = legs.filter(l => l.side === '右');
+          const leftPrefix = leftLegs.length === 2 ? '左' : (leftLegs.length === 1 ? '左' + leftLegs[0].pos : '');
+          const rightPrefix = rightLegs.length === 2 ? '右' : (rightLegs.length === 1 ? '右' + rightLegs[0].pos : '');
+          result.push(leftPrefix + rightPrefix + '三' + p.feature);
+        }
+      }
+      return result;
+    }
+
+    function saveFeatureModal() {
+      // 顔部
+      const faceSelected = Array.from(document.querySelectorAll('#feature-face-chips .chip.selected')).map(c => c.textContent);
+      // 肢部（なし以外のみ）
+      const limbsContainer = document.getElementById('feature-limbs');
+      const limbRaw = Array.from(limbsContainer.querySelectorAll('.chips')).map(chipsDiv => {
+        const sel = chipsDiv.querySelector('.chip.selected');
+        if (!sel || sel.textContent === 'なし') return '';
+        return (chipsDiv.dataset.limb || '') + sel.textContent;
+      }).filter(v => v);
+      // 省略表現に変換
+      const limbSelected = combineLimbFeatures(limbRaw);
+      // その他
+      const otherSelected = Array.from(document.querySelectorAll('#feature-other-chips .chip.selected')).map(c => c.textContent);
+      // 順序: 顔部 → 旋毛（位置付き） → 肢部 → その他
+      let parts = [];
+      faceSelected.forEach(f => parts.push(f));
+      ROSETTE_ENTRIES.forEach(r => parts.push(r));
+      limbSelected.forEach(l => parts.push(l));
+      otherSelected.forEach(o => parts.push(o));
+      const result = parts.join('　');
+      document.getElementById(FEATURE_CURRENT_PREFIX + '_feature').value = result;
+      autoSave();
+      closeFeatureModal();
+    }
+
+    // ============ Print Functions ============
+    function previewPrint(prefix) {
+      CURRENT_PRINT_FORM = prefix;
+      const data = prefix === 'msm' ? collectMSM() : collectSJ();
+      let html = prefix === 'msm' ? generateMSMPrintHTML(data) : generateSJPrintHTML(data);
+      document.getElementById('print-content').innerHTML = html;
+      const m = document.getElementById('print-modal');
+      m.style.display = 'block';
+      m.scrollTop = 0;
+    }
+
+    function circleOpts(opts, selected) {
+      return opts.map(o => {
+        if (o === selected) {
+          return `<span style="display:inline-block;border:1.5px solid #000;border-radius:50%;padding:0 4px;min-width:1.4em;text-align:center;line-height:1.5;">${o}</span>`;
+        }
+        return o;
+      }).join('　');
+    }
+
+    function generateMSMPrintHTML_OLD_UNUSED(data) { return ''; }
+    const VET_INFO = {
+      '佐藤和茂': { display: '佐藤　和茂', fullname: '北洋ホースクリニック　佐藤　和茂', kana: 'ホクヨウホースクリニック　サトウカズシゲ' },
+      '関奏絵':   { display: '関　奏絵',   fullname: '北洋ホースクリニック　関　奏絵',   kana: 'ホクヨウホースクリニック　セキカナエ' }
+    };
+    function getVetInfo(vet) { return VET_INFO[vet] || VET_INFO['佐藤和茂']; }
+
+    function generateMSMPrintHTML(data) {
+      const dateStr = data.dateJa ? data.dateJa.full : '　　年　月　日';
+      const bEra = data.birthJa ? data.birthJa.era : '';
+      const bYMD = data.birthJa ? data.birthJa.year+'年　'+data.birthJa.month+'月　'+data.birthJa.day+'日生' : '　　年　　月　　日生';
+      const ageVal = DATA.msm_age;
+      const ageDisp = ageVal === 0 ? '当歳' : (ageVal != null && ageVal !== '' ? ageVal+'才' : '');
+      const birthStr = circleOpts(['平成','令和'],bEra)+'　'+bYMD+(data.birthJa?'　'+ageDisp:'');
+      const diagDateStr = data.diagJa ? data.diagJa.full : '　　年　月　日';
+      const fee1DateStr = data.fee1Ja ? data.fee1Ja.full : '　年　月　日';
+      const fee2DateStr = data.fee2Ja ? data.fee2Ja.full : '　年　月　日';
+      let totalFee = 0;
+      if (data.fee_items && data.fee_items.includes('競走馬審査料（14,300円）')) totalFee += 14300;
+      if (data.fee_items && data.fee_items.includes('妊娠鑑定料（5,000円）')) totalFee += 5000;
+      const totalStr = totalFee > 0 ? totalFee.toLocaleString()+'円' : '　　　　　　円';
+      const taxStr = totalFee > 0 ? Math.round(totalFee*10/110).toLocaleString() : '　　　　　　';
+      const c1sel = data.diagloc === '飼養場所と同じ';
+      const c2sel = data.diagloc === 'その他';
+      function mkCirc(n, selected) {
+        return selected
+          ? '<span style="display:inline-block;border:1.5px solid #000;border-radius:50%;padding:0 2px;min-width:1.3em;text-align:center;line-height:1.5;">'+n+'</span>'
+          : n;
+      }
+      const c1html = mkCirc('1', c1sel)+'．飼養場所と同じ';
+      const c2html = mkCirc('2', c2sel)+'．その他（'+(c2sel?(data.diagloc_other||''):'　　　　　　　　　　　　')+'）';
+      const h1sel = (data.health||'').indexOf('異常なし') >= 0;
+      const h2sel = (data.health||'').indexOf('異常あり') >= 0;
+      const h1html = mkCirc('1', h1sel)+'．異常なし';
+      const h2html = mkCirc('2', h2sel)+'．異常あり（'+(h2sel?(data.health_detail||''):'　　　　　　　　　　　　　　　　　　　　　　　　　')+'）';
+      const histH1 = mkCirc('有', data.hist_flag==='有')+'　→　有の場合';
+      const histH2 = mkCirc('無', data.hist_flag==='無');
+      const histH3 = mkCirc('不明', data.hist_flag==='不明');
+      const histName = '・傷病名（'+(data.histname||'　　　　　　　　　　　　　　　　　　　　　　　　　')+'）';
+      const histTime = '・時期（'+(data.histtime||'　　　　　　　　　　　　　　　　　　　　　　　　　　　')+'）';
+      const histCure = '・治療状況（'+(data.histcure||'　　　　　　　　　　　　　　　　　　　　　　　　　')+'）';
+      const fee1circ = (data.fee_items&&data.fee_items.includes('競走馬審査料（14,300円）'))
+        ? '<span style="display:inline-block;border:1.5px solid #000;border-radius:50%;width:1.4em;height:1.4em;text-align:center;line-height:1.4em;">○</span>' : '';
+      const fee2circ = (data.fee_items&&data.fee_items.includes('妊娠鑑定料（5,000円）'))
+        ? '<span style="display:inline-block;border:1.5px solid #000;border-radius:50%;width:1.4em;height:1.4em;text-align:center;line-height:1.4em;">○</span>' : '';
+      const S  = 'border:1px solid #000;padding:3px 4px;vertical-align:middle;font-size:8.5pt;';
+      const SH = 'border:1px solid #000;padding:3px 4px;vertical-align:middle;font-size:8.5pt;font-weight:bold;text-align:center;';
+      return '<div style="font-family:\'MS Mincho\',\'游明朝\',\'ヒラギノ明朝 ProN\',serif;font-size:8.5pt;color:#000;line-height:1.3;">'
+        // ━━ タイトル ━━
+        +'<div style="text-align:center;font-size:13pt;font-weight:bold;letter-spacing:3px;margin-bottom:3px;">競走馬保険審査報告書兼審査料請求書</div>'
+        // ━━ ヘッダー行1: 宛先 ━━
+        +'<div style="font-size:8.5pt;margin-bottom:2px;">三井住友海上火災保険株式会社　御中</div>'
+        // ━━ ヘッダー行2: 説明文（左）＋ 記載日（右） ━━
+        +'<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2px;font-size:8.5pt;">'
+        +'<div style="margin-left:1em;">下記のとおり審査の結果を報告し、併せて所定の審査料を請求します。</div>'
+        +'<div style="white-space:nowrap;">記載日　'+dateStr+'</div>'
+        +'</div>'
+        // ━━ TABLE A: 獣医師情報 ━━
+        +'<table style="border-collapse:collapse;width:100%;margin-bottom:3px;">'
+        +'<colgroup><col style="width:7%"><col style="width:24%"><col style="width:69%"></colgroup>'
+        +'<tr><td rowspan="3" style="'+SH+'width:7%;line-height:2.2;letter-spacing:0;">獣<br>医<br>師</td>'
+        +'<td style="'+SH+'font-size:7.5pt;">適格請求書発行事業者登録番号</td>'
+        +'<td style="'+S+'">T7810413446294</td></tr>'
+        +'<tr><td style="'+SH+'">住　所</td>'
+        +'<td style="'+S+'">〒056-0144　北海道日高郡新ひだか町静内田原569</td></tr>'
+        +'<tr><td style="'+SH+'">氏　名</td>'
+        +'<td style="'+S+'font-size:10pt;"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="letter-spacing:2px;">'+getVetInfo(data.vet).fullname+'</span><span style="font-size:12pt;">㊞</span></div></td></tr>'
+        +'</table>'
+        // ━━ <審査結果> ━━
+        +'<div style="font-size:8.5pt;font-weight:bold;margin:2px 0 1px;">＜審査結果＞</div>'
+        // ━━ TABLE B: 審査結果（6列: 10%/30%/8%/14%/8%/30%） ━━
+        +'<table style="border-collapse:collapse;width:100%;margin-bottom:3px;">'
+        +'<colgroup><col style="width:10%"><col style="width:30%"><col style="width:8%"><col style="width:14%"><col style="width:8%"><col style="width:30%"></colgroup>'
+        // 馬名 + 種類
+        +'<tr><td style="'+SH+'">馬　名</td>'
+        +'<td colspan="3" style="'+S+'font-size:11pt;font-weight:bold;letter-spacing:2px;">'+(data.horse||'')+'</td>'
+        +'<td style="'+SH+'">種　類</td>'
+        +'<td style="'+S+'">'+(data.type||'')+'</td></tr>'
+        // 生年月日 + 産地 + 性別
+        +'<tr><td style="'+SH+'">生年月日</td>'
+        +'<td style="'+S+'font-size:8pt;">'+birthStr+'</td>'
+        +'<td style="'+SH+'">産　地</td>'
+        +'<td style="'+S+'">'+(data.origin||'')+'</td>'
+        +'<td style="'+SH+'">性　別</td>'
+        +'<td style="'+S+'">'+circleOpts(['牡','牝','騙'],data.sex)+'</td></tr>'
+        // 血統（父・母） + 毛色
+        +'<tr><td style="'+SH+'">血　統</td>'
+        +'<td style="'+S+'">父　'+(data.sire||'')+'</td>'
+        +'<td colspan="2" style="'+S+'">母　'+(data.dam||'')+'</td>'
+        +'<td style="'+SH+'">毛　色</td>'
+        +'<td style="'+S+'">'+(data.color||'')+'</td></tr>'
+        // 特徴・マイクロチップ
+        +'<tr><td rowspan="2" style="'+SH+'vertical-align:middle;">特　徴</td>'
+        +'<td colspan="5" style="'+S+'font-size:8pt;padding-left:6px;">マイクロチップ番号：'+(data.microchip||'')+'</td></tr>'
+        +'<tr><td colspan="5" style="'+S+'vertical-align:top;min-height:24px;">'+(data.feature||'').replace(/\n/g,'<br>')+'</td></tr>'
+        // 飼養場所
+        +'<tr><td style="'+SH+'">飼養場所</td>'
+        +'<td colspan="5" style="'+S+'">'+(data.farm_loc||'')+'</td></tr>'
+        // 管理人
+        +'<tr><td style="'+SH+'">管　理人</td>'
+        +'<td colspan="5" style="'+S+'">'+(data.farm_mgr||'')+'</td></tr>'
+        // 診断場所（rowspan=2）+ 診断日（colspan=2, rowspan=2）
+        +'<tr><td rowspan="2" style="'+SH+'vertical-align:middle;">診断場所</td>'
+        +'<td colspan="2" style="'+S+'">'+c1html+'</td>'
+        +'<td style="'+SH+'">診断日</td>'
+        +'<td colspan="2" rowspan="2" style="'+S+'vertical-align:middle;text-align:center;">'+diagDateStr+'</td></tr>'
+        +'<tr><td colspan="2" style="'+S+'">'+c2html+'</td></tr>'
+        // 診断項目（写真通り：ラベル列|オプション列|縦線|ラベル列|オプション列 のネストテーブル）
+        +'<tr><td rowspan="3" style="'+SH+'vertical-align:middle;">診断項目</td>'
+        +'<td colspan="5" style="border:1px solid #000;padding:0;">'
+        +'<table style="border-collapse:collapse;width:100%;font-size:8.5pt;line-height:1.3;">'
+        +'<tr>'
+        +'<td style="border:none;border-right:1px solid #000;padding:3px 5px;font-weight:bold;text-align:center;width:13%;">体格</td>'
+        +'<td style="border:none;border-right:1px solid #000;padding:3px 5px;text-align:center;width:32%;">'+circleOpts(['大','中','小'],data.build)+'</td>'
+        +'<td style="border:none;border-right:1px solid #000;padding:3px 5px;font-weight:bold;text-align:center;width:13%;">体温</td>'
+        +'<td style="border:none;padding:3px 5px;text-align:center;">'+circleOpts(['通常','異常'],data.temp)+'（'+(data.temp_detail||'　　　　　　　')+'）</td>'
+        +'</tr></table>'
+        +'</td></tr>'
+        +'<tr><td colspan="5" style="border:1px solid #000;padding:0;">'
+        +'<table style="border-collapse:collapse;width:100%;font-size:8.5pt;line-height:1.3;">'
+        +'<tr>'
+        +'<td style="border:none;border-right:1px solid #000;padding:3px 5px;font-weight:bold;text-align:center;width:13%;">栄養</td>'
+        +'<td style="border:none;border-right:1px solid #000;padding:3px 5px;text-align:center;width:32%;">'+circleOpts(['上','中','下'],data.nutr)+'</td>'
+        +'<td style="border:none;border-right:1px solid #000;padding:3px 5px;font-weight:bold;text-align:center;width:13%;">脈拍</td>'
+        +'<td style="border:none;padding:3px 5px;text-align:center;">'+circleOpts(['正常','不順'],data.pulse)+'</td>'
+        +'</tr></table>'
+        +'</td></tr>'
+        +'<tr><td colspan="5" style="border:1px solid #000;padding:0;">'
+        +'<table style="border-collapse:collapse;width:100%;font-size:8.5pt;line-height:1.3;">'
+        +'<tr>'
+        +'<td style="border:none;border-right:1px solid #000;padding:3px 5px;font-weight:bold;text-align:center;width:13%;">歩様</td>'
+        +'<td style="border:none;border-right:1px solid #000;padding:3px 5px;text-align:center;width:32%;">'+circleOpts(['正','やや正','不正'],data.gait)+'</td>'
+        +'<td style="border:none;border-right:1px solid #000;padding:3px 5px;font-weight:bold;text-align:center;width:13%;">睾丸</td>'
+        +'<td style="border:none;padding:3px 5px;text-align:center;">'+circleOpts(['良','やや良','不良'],data.test)+'</td>'
+        +'</tr></table>'
+        +'</td></tr>'
+        // 現在の健康状態（1セルに統合 → 内部境界線なし）
+        +'<tr><td style="'+SH+'vertical-align:middle;font-size:7.5pt;">現在の<br>健康状態</td>'
+        +'<td colspan="5" style="'+S+'line-height:1.6;">'+h1html+'<br>'+h2html+'</td></tr>'
+        // 病傷歴（右側2列を各1セルに統合 → 内部水平線なし）
+        +'<tr><td rowspan="3" style="'+SH+'vertical-align:middle;">病傷歴</td>'
+        +'<td colspan="2" rowspan="3" style="'+S+'vertical-align:top;line-height:1.7;border-right:none;">'+histH1+'<br>'+histH2+'<br>'+histH3+'</td>'
+        +'<td colspan="3" rowspan="3" style="'+S+'vertical-align:top;line-height:1.7;border-left:none;">'+histName+'<br>'+histTime+'<br>'+histCure+'</td></tr>'
+        +'<tr></tr>'
+        +'<tr></tr>'
+        // その他特記事項
+        +'<tr><td style="'+SH+'font-size:7.5pt;">その他<br>特記事項</td>'
+        +'<td colspan="5" style="'+S+'min-height:22px;vertical-align:top;">'+(data.note||'').replace(/\n/g,'<br>')+'</td></tr>'
+        +'</table>'
+        // ━━ <請求額／内訳> ━━
+        +'<div style="font-size:8.5pt;font-weight:bold;margin:2px 0 1px;">＜請求額／内訳＞</div>'
+        +'<table style="border-collapse:collapse;width:100%;margin-bottom:3px;">'
+        +'<colgroup><col style="width:7%"><col style="width:20%"><col style="width:30%"><col style="width:17%"><col style="width:15%"><col style="width:11%"></colgroup>'
+        +'<tr><td style="'+SH+'font-size:7.5pt;">該当に<br>○印</td>'
+        +'<td style="'+SH+'">取引年月日</td>'
+        +'<td style="'+SH+'">取引内容</td>'
+        +'<td style="'+SH+'">請求額（税込）</td>'
+        +'<td style="'+SH+'">消費税額</td>'
+        +'<td style="'+SH+'">消費税率</td></tr>'
+        +'<tr><td style="'+S+'text-align:center;">'+fee1circ+'</td>'
+        +'<td style="'+S+'text-align:center;">'+fee1DateStr+'</td>'
+        +'<td style="'+S+'text-align:center;">競走馬審査料</td>'
+        +'<td style="'+S+'text-align:right;">14,300円</td>'
+        +'<td style="'+S+'text-align:right;">1,300円</td>'
+        +'<td style="'+S+'text-align:center;">10%</td></tr>'
+        +'<tr><td style="'+S+'text-align:center;">'+fee2circ+'</td>'
+        +'<td style="'+S+'text-align:center;">'+fee2DateStr+'</td>'
+        +'<td style="'+S+'text-align:center;">妊娠鑑定料</td>'
+        +'<td style="'+S+'text-align:right;">5,000円</td>'
+        +'<td style="'+S+'text-align:right;">455円</td>'
+        +'<td style="'+S+'text-align:center;">10%</td></tr>'
+        +'<tr><td colspan="2" style="'+SH+'">合計請求額（税込）</td>'
+        +'<td colspan="4" style="'+S+'text-align:right;">'+totalStr+'（消費税額　'+taxStr+'円）</td></tr>'
+        +'</table>'
+        // ━━ <審査料振込先> ━━
+        +'<div style="font-size:8.5pt;font-weight:bold;margin:2px 0 1px;">＜審査料振込先＞</div>'
+        +'<table style="border-collapse:collapse;width:100%;">'
+        +'<colgroup><col style="width:10%"><col style="width:43%"><col style="width:12%"><col style="width:22%"><col style="width:13%"></colgroup>'
+        // 口座名義人 Row1: フリガナ + 口座番号
+        +'<tr><td rowspan="2" style="'+SH+'vertical-align:middle;font-size:7.5pt;">口座<br>名義人</td>'
+        +'<td style="'+S+'font-size:7.5pt;">フリガナ　'+getVetInfo(data.vet).kana+'</td>'
+        +'<td style="'+SH+'">口座番号</td>'
+        +'<td colspan="2" style="'+S+'font-weight:bold;letter-spacing:4px;text-align:center;">3　1　7　1　4　3　0</td></tr>'
+        // 口座名義人 Row2: 名前 + 口座種別
+        +'<tr><td style="'+S+'font-size:9.5pt;white-space:nowrap;">'+getVetInfo(data.vet).fullname+'</td>'
+        +'<td colspan="2" style="'+S+'font-size:7.5pt;"><span style="display:inline-block;border:1.5px solid #000;border-radius:50%;padding:0 3px;line-height:1.6;">1</span>．普通預金（総合口座）　2．当座預金</td></tr>'
+        // 金融機関名 Row3: フリガナ + 銀行種別(rowspan=2) + 支店フリガナ + 本支店(rowspan=2)
+        +'<tr><td rowspan="2" style="'+SH+'vertical-align:middle;font-size:7.5pt;">金融<br>機関名</td>'
+        +'<td style="'+S+'font-size:7.5pt;">フリガナ　ホクヨウ</td>'
+        +'<td rowspan="2" style="'+S+'font-size:7.5pt;text-align:center;vertical-align:middle;line-height:1.9;"><span style="display:inline-block;border:1.5px solid #000;border-radius:50%;padding:0 2px;min-width:1.3em;text-align:center;line-height:1.5;">銀行</span>・農協<br>信用金庫・漁協<br>信用組合・労金</td>'
+        +'<td style="'+S+'font-size:7.5pt;">フリガナ　シズナイ</td>'
+        +'<td rowspan="2" style="'+S+'font-size:7.5pt;text-align:center;vertical-align:middle;line-height:2.5;">本店<br><span style="display:inline-block;border:1.5px solid #000;border-radius:50%;padding:0 2px;min-width:1.3em;text-align:center;line-height:1.5;">支店</span><br>出張所</td></tr>'
+        // 金融機関名 Row4: 機関名 + 支店名（中央揃え）
+        +'<tr><td style="'+S+'font-size:10pt;letter-spacing:2px;text-align:center;">北　洋</td>'
+        +'<td style="'+S+'font-size:10pt;letter-spacing:2px;text-align:center;">静　内</td></tr>'
+        +'</table></div>';
+    }
+
+    function generateSJPrintHTML(data) {
+      const dJa = data.dateJa || {};
+      const bJa = data.birthJa || {};
+      const diagJa = data.diagJa || {};
+      const yr = dJa.year||'　　'; const mo = dJa.month||'　'; const dy = dJa.day||'　　';
+      const bEra = bJa.era||'';
+      const ageVal = DATA.sj_age;
+      const ageDisp = ageVal===0 ? '当歳' : (ageVal!=null ? ageVal+'才' : '　才');
+      const sjBirth = (bJa.year&&bJa.month&&bJa.day)
+        ? circleOpts(['昭和','平成','令和'],bEra)+'　'+bJa.year+'年　'+bJa.month+'月　'+bJa.day+'日生　明　'+ageDisp
+        : '　　年　　月　　日生　明　　才';
+      const diagDateStr = (diagJa.year&&diagJa.month&&diagJa.day)
+        ? '令和'+diagJa.year+'年　'+diagJa.month+'月　'+diagJa.day+'日'
+        : '　　年　　月　　日';
+      const microLine = 'マイクロチップ番号：'+(data.microchip||'');
+      const featDisp = (data.feature||'').replace(/\n/g,'<br>');
+      const diaglocSJ = data.diagloc_sj || (data.diagloc==='飼養場所と同じ' ? data.farm_loc : (data.diagloc_other||''));
+      const S = 'border:1px solid #000;padding:3px 5px;vertical-align:middle;';
+      const SH = S+'font-weight:bold;text-align:center;';
+      return '<div style="font-family:\'MS Mincho\',\'游明朝\',serif;font-size:9pt;color:#000;line-height:1.3;width:100%;box-sizing:border-box;">'
+        +'<div style="text-align:right;font-size:8pt;margin-bottom:2px;">損害保険ジャパン（株）提出用</div>'
+        +'<div style="display:flex;justify-content:center;align-items:center;margin-bottom:8px;width:100%;">'
+        +'<div style="font-size:15pt;font-weight:bold;text-decoration:underline;letter-spacing:8px;">競　走　馬　保　険　診　断　書</div></div>'
+        +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;width:100%;">'
+        +'<div><div style="font-size:11pt;font-weight:bold;margin-bottom:4px;">損害保険ジャパン株式会社　　御中</div>'
+        +'<div style="font-size:9.5pt;margin-left:20px;">令和'+yr+'年　'+mo+'月　'+dy+'日　作成</div></div>'
+        +'<table style="border-collapse:collapse;font-size:8.5pt;width:auto;">'
+        +'<tr><td rowspan="3" style="border-width:0;padding:2px 6px;font-weight:bold;text-align:center;vertical-align:middle;white-space:nowrap;">獣医師</td>'
+        +'<td style="border-width:0;padding:2px 5px;font-weight:bold;text-align:left;width:3.5em;">住所</td>'
+        +'<td style="border-width:0;padding:2px 5px;font-size:8pt;white-space:nowrap;">北海道日高郡新ひだか町靜内田原569</td></tr>'
+        +'<tr><td colspan="2" style="border-width:0;padding:2px 5px;white-space:nowrap;"><span style="font-weight:bold;">ＴＥＬ</span>　0146-46-2357</td></tr>'
+        +'<tr><td style="border-width:0;border-bottom-width:1.5px;border-bottom-style:solid;border-bottom-color:#000;padding:2px 5px;font-weight:bold;text-align:left;">氏名</td>'
+        +'<td style="border-width:0;border-bottom-width:1.5px;border-bottom-style:solid;border-bottom-color:#000;padding:2px 5px;"><div style="display:flex;justify-content:space-between;align-items:center;"><span>'+getVetInfo(data.vet).fullname+'</span><span style="font-size:11pt;">㊞</span></div></td></tr>'
+        +'</table></div>'
+        +'<div style="text-align:center;font-size:8pt;margin-bottom:4px;letter-spacing:1px;">下　記　の　と　お　り　診　断　の　結　果　を　報　告　い　た　し　ま　す　。</div>'
+        +'<div style="display:flex;gap:6px;align-items:stretch;width:100%;">'
+        +'<div style="flex:50;min-width:0;display:flex;flex-direction:column;">'
+        +'<table style="border-collapse:collapse;width:100%;font-size:9pt;flex:1;">'
+        +'<tr><td style="'+SH+'width:20%;">馬　名</td>'
+        +'<td colspan="5" style="'+S+'font-size:10.5pt;font-weight:bold;text-align:center;">'+(data.horse||'')+'</td></tr>'
+        +'<tr><td style="'+SH+'">飼養管理場所</td>'
+        +'<td colspan="5" style="'+S+'text-align:center;white-space:nowrap;overflow:hidden;">'+(data.farm_loc||'')+'</td></tr>'
+        +'<tr><td style="'+SH+'">飼養管理人</td>'
+        +'<td colspan="5" style="'+S+'text-align:center;">'+(data.farm_mgr||'')+'</td></tr>'
+        +'<tr>'
+        +'<td style="'+SH+'">種　類</td><td style="'+S+'text-align:center;white-space:nowrap;font-size:8pt;">'+(data.type||'')+'</td>'
+        +'<td style="'+SH+'">産地</td><td style="'+S+'text-align:center;white-space:nowrap;font-size:8pt;">'+(data.origin||'')+'</td>'
+        +'<td style="'+SH+'">毛色</td><td style="'+S+'text-align:center;white-space:nowrap;font-size:8pt;">'+(data.color||'')+'</td>'
+        +'</tr>'
+        +'<tr><td style="'+SH+'">性　別</td>'
+        +'<td colspan="5" style="'+S+'text-align:center;">'+circleOpts(['牡','牝','せん'],data.sex)+'</td></tr>'
+        +'<tr><td style="'+SH+'font-size:7.5pt;">生年月日・年令<br>（和暦）</td>'
+        +'<td colspan="5" style="'+S+'font-size:8.5pt;">'+sjBirth+'</td></tr>'
+        +'<tr><td rowspan="2" style="'+SH+'font-size:7.5pt;vertical-align:middle;">特　　徴<br><span style="font-size:6.5pt;">マイクロチップ<br>No.</span></td>'
+        +'<td colspan="5" style="'+S+'text-align:left;padding-left:8px;">'+microLine+'</td></tr>'
+        +'<tr><td colspan="5" style="'+S+'min-height:22px;vertical-align:top;">'+featDisp+'</td></tr>'
+        +'<tr><td rowspan="2" style="'+SH+'vertical-align:middle;">血　統</td>'
+        +'<td style="'+SH+'width:5%;">父</td><td style="'+S+'width:14%;font-size:8pt;text-align:left;padding-left:4px;">サラ　種</td>'
+        +'<td colspan="3" style="'+S+'">'+(data.sire||'')+'</td></tr>'
+        +'<tr><td style="'+SH+'width:5%;">母</td><td style="'+S+'width:14%;font-size:8pt;text-align:left;padding-left:4px;">サラ　種</td>'
+        +'<td colspan="3" style="'+S+'">'+(data.dam||'')+'</td></tr>'
+        +'<tr><td style="'+SH+'">診断場所</td>'
+        +'<td colspan="5" style="'+S+'text-align:center;">'+diaglocSJ+'</td></tr>'
+        +'<tr><td style="'+SH+'">診断月日</td>'
+        +'<td colspan="5" style="'+S+'text-align:center;">'+diagDateStr+'</td></tr>'
+        +'</table></div>'
+        +'<div style="flex:50;min-width:0;display:flex;flex-direction:column;">'
+        +'<table style="border-collapse:collapse;width:100%;font-size:8.5pt;flex:1;height:100%;">'
+        +'<tr><td colspan="3" style="'+SH+'font-size:7.5pt;white-space:nowrap;overflow:visible;">健康診断欄　（該当項目に○をつけると共に必要事項をご記入ください。）</td></tr>'
+        +'<tr><td rowspan="4" style="'+SH+'vertical-align:middle;width:1.8em;line-height:2.2;letter-spacing:0;">望<br>診</td>'
+        +'<td style="'+SH+'width:28%;">体　格</td><td style="'+S+'text-align:center;">'+circleOpts(['大','中','小'],data.build)+'</td></tr>'
+        +'<tr><td style="'+SH+'">栄　養</td><td style="'+S+'text-align:center;">'+circleOpts(['上','中','下'],data.nutr)+'</td></tr>'
+        +'<tr><td style="'+SH+'">歩　様</td><td style="'+S+'text-align:center;">'+circleOpts(['正','やや正','不正'],data.gait)+'</td></tr>'
+        +'<tr><td style="'+SH+'">可視粘膜</td><td style="'+S+'text-align:center;">'+circleOpts(['正','やや正','不正'],data.mucosa)+'</td></tr>'
+        +'<tr><td style="'+S+'border:1px solid #000;"></td>'
+        +'<td style="'+SH+'">触　診</td><td style="'+S+'text-align:center;">'+circleOpts(['良','不良'],data.palp)+'</td></tr>'
+        +'<tr><td style="'+S+'border:1px solid #000;"></td>'
+        +'<td style="'+SH+'">聴　診</td><td style="'+S+'text-align:center;">'+circleOpts(['正','不正'],data.ausc)+'</td></tr>'
+        +'<tr><td rowspan="7" style="'+SH+'vertical-align:middle;line-height:1.9;letter-spacing:0;">そ<br>の<br>他</td>'
+        +'<td colspan="2" style="border:1px solid #000;border-bottom:none;padding:3px 5px;vertical-align:middle;">1. 既往歴（'+circleOpts(['有','無','不明'],data.hist_flag)+'）</td></tr>'
+        +'<tr><td colspan="2" style="border:1px solid #000;border-top:none;border-bottom:none;padding:3px 5px;vertical-align:middle;min-height:18px;">　　病名　'+(data.histname||'')+'</td></tr>'
+        +'<tr><td colspan="2" style="border:1px solid #000;border-top:none;border-bottom:none;padding:3px 5px;vertical-align:middle;min-height:18px;"></td></tr>'
+        +'<tr><td colspan="2" style="border:1px solid #000;border-top:none;border-bottom:none;padding:3px 5px;vertical-align:middle;min-height:18px;">　　時期　'+(data.histtime||'')+'</td></tr>'
+        +'<tr><td colspan="2" style="border:1px solid #000;border-top:none;border-bottom:none;padding:3px 5px;vertical-align:middle;min-height:18px;"></td></tr>'
+        +'<tr><td colspan="2" style="border:1px solid #000;border-top:none;border-bottom:none;padding:3px 5px;vertical-align:middle;font-weight:bold;">2. その他特記事項</td></tr>'
+        +'<tr><td colspan="2" style="border:1px solid #000;border-top:none;padding:3px 5px;vertical-align:top;min-height:50px;">'+(data.note||'').replace(/\n/g,'<br>')+'</td></tr>'
+        +'</table></div></div>'
+        +'<div style="margin-top:10px;">'
+        +'<table style="border-collapse:collapse;width:55%;font-size:9pt;">'
+        +'<tr><td rowspan="2" style="'+SH+'vertical-align:middle;width:15%;">会社記入欄</td>'
+        +'<td style="'+SH+'width:20%;">獣医師コード</td>'
+        +'<td style="'+S+'width:20%;min-height:20px;"></td>'
+        +'<td style="'+SH+'width:20%;">獣医師コード名</td>'
+        +'<td style="'+S+'width:25%;min-height:20px;"></td></tr>'
+        +'<tr><td style="'+SH+'">診断料</td>'
+        +'<td style="'+S+'min-height:20px;"></td>'
+        +'<td style="'+SH+'">獣医氏名</td>'
+        +'<td style="'+S+'min-height:20px;"></td></tr>'
+        +'</table></div></div>';
+    }
+
+    function closePrintModal() {
+      const m = document.getElementById('print-modal');
+      m.style.display = 'none';
+    }
+
+    function savePDF() {
+      const content = document.getElementById('print-content').innerHTML;
+      const data = CURRENT_PRINT_FORM === 'msm' ? collectMSM() : collectSJ();
+      const horse = data.horse || '診断書';
+      const now = new Date();
+      const ym = now.getFullYear() + '年' + (now.getMonth()+1) + '月';
+      const company = CURRENT_PRINT_FORM === 'msm' ? '三井住友' : '損保ジャパン';
+      const fname = ym + '_' + horse + '_' + company;
+      const commonCSS = '*{box-sizing:border-box;margin:0;padding:0;}table{border-collapse:collapse;width:100%;}table[style*="width:auto"]{width:auto !important;}td,th{border:1px solid #000;padding:3px 4px;vertical-align:middle;}td[style*="border:none"]{border:none !important;}span{display:inline;}span[style*="border-radius"]{display:inline-block !important;}td>div{margin:0 auto;}div[style*="writing-mode"]{-webkit-writing-mode:vertical-rl;writing-mode:vertical-rl;-webkit-text-orientation:upright;text-orientation:upright;display:flex !important;align-items:center;justify-content:center;}';
+      // 損保ジャパン・三井住友ともA4縦1枚に統一
+      const css = '@page{size:A4 portrait;margin:7mm 8mm;}'
+        + 'html,body{height:auto;overflow:visible;}'
+        + 'body{font-family:"MS Mincho","游明朝","ヒラギノ明朝 ProN","Hiragino Mincho ProN",serif;'
+        + 'font-size:8pt;color:#000;line-height:1.25;'
+        + '-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
+        + commonCSS
+        + '@media print{body{margin:0;padding:0;}*{page-break-inside:avoid;}table,tr,td{page-break-inside:avoid;}}';
+      const win = window.open('', '_blank');
+      if (!win) { alert('ポップアップがブロックされています。許可してから再試行してください。'); return; }
+      win.document.write(
+        '<!DOCTYPE html><html lang="ja"><head>'
+        + '<meta charset="UTF-8">'
+        + '<meta name="viewport" content="width=794,initial-scale=1">'
+        + '<title>' + fname + '</title>'
+        + '<style>' + css + '</style>'
+        + '</head><body>' + content + '</body></html>'
+      );
+      win.document.close();
+      setTimeout(function(){
+        win.focus();
+        win.document.title = fname;
+        win.print();
+      }, 800);
+    }
+
+    function executePrint() {
+      const content = document.getElementById('print-content').innerHTML;
+      const win = window.open('', '_blank');
+      if (!win) { alert('ポップアップがブロックされています。許可してから再試行してください。'); return; }
+      const isLandscape = CURRENT_PRINT_FORM === 'sj';
+      const commonCSS = ''
+        + '*{box-sizing:border-box;margin:0;padding:0;}'
+        + 'table{border-collapse:collapse;width:100%;}'
+        + 'table[style*="width:auto"]{width:auto !important;}'
+        + 'td,th{border:1px solid #000;padding:3px 4px;vertical-align:middle;}'
+        + 'td[style*="border:none"]{border:none !important;}'
+        + 'td[style*="border-right"]:not([style*="border:none"]){border-top:none !important;border-bottom:none !important;border-left:none !important;}'
+        + 'span{display:inline;}'
+        + 'span[style*="border-radius"]{display:inline-block !important;}'
+        + 'td>div{margin:0 auto;}'
+        + 'div[style*="writing-mode"]{-webkit-writing-mode:vertical-rl;writing-mode:vertical-rl;-webkit-text-orientation:upright;text-orientation:upright;display:flex !important;align-items:center;justify-content:center;}';
+      let css;
+      let vpWidth = '794';
+      // 損保ジャパン・三井住友ともA4縦1枚に統一
+      css = ''
+        + '@page{size:A4 portrait;margin:7mm 8mm;}'
+        + 'html,body{height:auto;overflow:visible;}'
+        + 'body{'
+        +   'font-family:"MS Mincho","游明朝","ヒラギノ明朝 ProN","Hiragino Mincho ProN",serif;'
+        +   'font-size:8pt;color:#000;line-height:1.25;'
+        +   '-webkit-print-color-adjust:exact;print-color-adjust:exact;'
+        + '}'
+        + commonCSS
+        + '@media print{'
+        +   'body{margin:0;padding:0;}'
+        +   '*{page-break-inside:avoid;}'
+        +   'table,tr,td{page-break-inside:avoid;}'
+        + '}';
+      win.document.write(
+        '<!DOCTYPE html><html lang="ja"><head>'
+        + '<meta charset="UTF-8">'
+        + '<meta name="viewport" content="width='+vpWidth+',initial-scale=1">'
+        + '<title>印刷</title>'
+        + '<style>' + css + '</style>'
+        + '</head><body>' + content + '</body></html>'
+      );
+      win.document.close();
+      setTimeout(function(){ win.focus(); win.print(); }, 600);
+    }
+
+    function printForm(prefix) {
+      previewPrint(prefix);
+      setTimeout(() => {
+        executePrint();
+        setTimeout(() => autoDownloadJSON(), 800);
+      }, 500);
+    }
+
+    // ============ Saved Records ============
+    function saveRecord(prefix) {
+      const data = prefix === 'msm' ? collectMSM() : collectSJ();
+      const saved = localStorage.getItem('saved_records');
+      const records = saved ? JSON.parse(saved) : [];
+      records.unshift(data);
+      localStorage.setItem('saved_records', JSON.stringify(records));
+      // 保存と同時にJSONファイルを自動ダウンロード
+      autoDownloadJSON();
+      showToast('💾 ' + (data.horse || '診断書') + ' を保存しました（JSONファイルも保存されました）', 'success');
+    }
+
+    function autoDownloadJSON() {
+      const exportObj = {
+        draft_msm: localStorage.getItem('draft_msm'),
+        draft_sj: localStorage.getItem('draft_sj'),
+        saved_records: localStorage.getItem('saved_records'),
+        history: localStorage.getItem('history')
+      };
+      const now = new Date();
+      const ym = now.getFullYear() + '年' + (now.getMonth()+1) + '月';
+      const fname = '競走馬診断書データ_' + ym + '.json';
+      const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = fname; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function newRecord(prefix) {
+      if (!confirm('現在の入力内容をクリアして新規診断書を作成しますか？')) return;
+      // チップ選択を全解除
+      document.querySelectorAll('#' + prefix + '-tab .chip').forEach(c => c.classList.remove('selected'));
+      if (prefix === 'msm') {
+        ['msm_date_in','msm_birth_in','msm_diag_in','msm_fee1_in','msm_fee2_in'].forEach(id => {
+          const el = document.getElementById(id); if (el) el.value = '';
+        });
+        ['banner_msm_date','banner_msm_birth','banner_msm_diag','banner_msm_fee1','banner_msm_fee2'].forEach(id => {
+          const el = document.getElementById(id); if (el) el.textContent = '（未選択）';
+        });
+        loadMSM({});
+      } else {
+        ['sj_date_in','sj_birth_in','sj_diag_in'].forEach(id => {
+          const el = document.getElementById(id); if (el) el.value = '';
+        });
+        ['banner_sj_date','banner_sj_birth','banner_sj_diag'].forEach(id => {
+          const el = document.getElementById(id); if (el) el.textContent = '（未選択）';
+        });
+        loadSJ({});
+      }
+      DATA[prefix + '_age'] = 0;
+      const ageEl = document.getElementById(prefix + '_age_disp');
+      if (ageEl) ageEl.textContent = '';
+      showToast('新規診断書を作成しました', 'info');
+    }
+
+    function deleteRecord(idx) {
+      if (!confirm('このレコードを削除しますか？')) return;
+      const saved = localStorage.getItem('saved_records');
+      if (!saved) return;
+      const records = JSON.parse(saved);
+      records.splice(idx, 1);
+      localStorage.setItem('saved_records', JSON.stringify(records));
+      renderSavedRecords();
+    }
+
+    function renderSavedRecords() {
+      const container = document.getElementById('saved_records');
+      container.innerHTML = '';
+      const saved = localStorage.getItem('saved_records');
+      const records = saved ? JSON.parse(saved) : [];
+      if (!records.length) { container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">保存済みレコードはありません</p>'; return; }
+      try {
+        records.forEach((record, idx) => {
+          const div = document.createElement('div');
+          div.style.cssText = 'border: 1px solid var(--border); border-radius: 9px; padding: 16px; margin-bottom: 12px; cursor: pointer; position: relative;';
+          const badge = record.form === 'msm' ? '🔵 三井住友' : '🟢 損保ジャパン';
+          div.innerHTML = `
+            <div style="font-weight:700;margin-bottom:5px;padding-right:56px;">${record.horse || '（未指定）'}</div>
+            <div style="font-size:13px;color:#666;">${badge} ／ ${new Date(record.saved_at).toLocaleString('ja-JP')}</div>
+            <button onclick="event.stopPropagation();deleteRecord(${idx})" style="position:absolute;top:12px;right:12px;background:none;border:1px solid #ddd;border-radius:6px;padding:3px 10px;color:#aaa;font-size:12px;cursor:pointer;">削除</button>
+          `;
+          div.onclick = () => {
+            if (record.form === 'msm') { switchTab(0); loadMSM(record); } else { switchTab(1); loadSJ(record); }
+          };
+          container.appendChild(div);
+        });
+      } catch (e) {}
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.draft_msm) localStorage.setItem('draft_msm', data.draft_msm);
+          if (data.draft_sj) localStorage.setItem('draft_sj', data.draft_sj);
+          if (data.saved_records) localStorage.setItem('saved_records', data.saved_records);
+          if (data.history) localStorage.setItem('history', data.history);
+          showToast('✅ データを読み込みました。画面を更新します...', 'success');
+          setTimeout(() => location.reload(), 1500);
+        } catch(err) {
+          showToast('❌ 読み込みに失敗しました。正しいJSONファイルを選択してください', 'error');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function exportData() {
+      const data = {
+        draft_msm: localStorage.getItem('draft_msm'),
+        draft_sj: localStorage.getItem('draft_sj'),
+        saved_records: localStorage.getItem('saved_records'),
+        history: localStorage.getItem('history')
+      };
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'racehorse_data_' + new Date().getTime() + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function showToast(msg, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = 'toast ' + type;
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // ============ PWA Setup ============
+    (function() {
+      const manifest = {
+        name: "競走馬保険審査報告書",
+        short_name: "競走馬診断書",
+        description: "競走馬保険審査報告書作成アプリ",
+        start_url: location.href,
+        display: "standalone",
+        background_color: "#f5f5f5",
+        theme_color: "#254ba8",
+        orientation: "portrait",
+        icons: [{ src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%23254ba8'/%3E%3Ctext x='50%25' y='55%25' font-size='110' text-anchor='middle' dominant-baseline='middle'%3E🐴%3C/text%3E%3C/svg%3E", sizes: "192x192", type: "image/svg+xml" }]
+      };
+      const blob = new Blob([JSON.stringify(manifest)], {type: "application/manifest+json"});
+      document.getElementById("pwa-manifest").setAttribute("href", URL.createObjectURL(blob));
+    })();
+
+    // ============ Init ============
+    window.addEventListener('load', () => {
+      loadAllHistory();
+      loadFarmMaster();
+      const today = new Date().toISOString().split('T')[0];
+      ['msm_date_in', 'msm_diag_in', 'msm_fee1_in', 'sj_date_in', 'sj_diag_in'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && !el.value) el.value = today;
+      });
+      updateBanner('msm_date_in', 'banner_msm_date');
+      updateBanner('msm_diag_in', 'banner_msm_diag');
+      updateBanner('msm_fee1_in', 'banner_msm_fee1');
+      updateBanner('sj_date_in', 'banner_sj_date');
+      updateBanner('sj_diag_in', 'banner_sj_diag');
+      setField('msm_type', 'サラブレッド');
+      setField('sj_type', 'サラブレッド');
+      Object.keys(CHIPS_DATA).forEach(key => {
+        ['msm', 'sj'].forEach(prefix => {
+          const containerId = prefix + '_' + key + '_chips';
+          if (document.getElementById(containerId)) renderChips(containerId, CHIPS_DATA[key], prefix, key, autoSave);
+        });
+      });
+      try {
+        const dm = localStorage.getItem('draft_msm');
+        if (dm) loadMSM(JSON.parse(dm));
+        const ds = localStorage.getItem('draft_sj');
+        if (ds) loadSJ(JSON.parse(ds));
+      } catch (e) {}
+      calcAgeFromInputs('msm');
+      calcAgeFromInputs('sj');
+    });
+  </script>
+</body>
+</html>
