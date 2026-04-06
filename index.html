@@ -492,7 +492,13 @@
       <div class="section-heading">馬の情報</div>
       <div class="fgroup">
         <div class="flabel">馬名</div>
-        <input type="text" id="msm_horse" placeholder="例：ダイワスカーレット" onchange="autoSave()" onblur="addHistory('msm_horse')">
+        <div class="chips" style="margin-bottom:6px;">
+          <button type="button" class="chip" onclick="appendHorseYear('msm','2026')">2026</button>
+          <button type="button" class="chip" onclick="appendHorseYear('msm','2025')">2025</button>
+          <button type="button" class="chip" onclick="appendHorseYear('msm','2027')">2027</button>
+          <button type="button" class="chip" onclick="appendHorseYear('msm','2024')">2024</button>
+        </div>
+        <input type="text" id="msm_horse" placeholder="例：ダイワスカーレット2026" oninput="onHorseInput('msm')" onchange="autoSave()" onblur="addHistory('msm_horse')">
         <div class="chips" id="msm_horse_history"></div>
       </div>
 
@@ -692,7 +698,13 @@
       <div class="section-heading">馬の情報</div>
       <div class="fgroup">
         <div class="flabel">馬名</div>
-        <input type="text" id="sj_horse" placeholder="例：ダイワスカーレット" onchange="autoSave()" onblur="addHistory('sj_horse')">
+        <div class="chips" style="margin-bottom:6px;">
+          <button type="button" class="chip" onclick="appendHorseYear('sj','2026')">2026</button>
+          <button type="button" class="chip" onclick="appendHorseYear('sj','2025')">2025</button>
+          <button type="button" class="chip" onclick="appendHorseYear('sj','2027')">2027</button>
+          <button type="button" class="chip" onclick="appendHorseYear('sj','2024')">2024</button>
+        </div>
+        <input type="text" id="sj_horse" placeholder="例：ダイワスカーレット2026" oninput="onHorseInput('sj')" onchange="autoSave()" onblur="addHistory('sj_horse')">
         <div class="chips" id="sj_horse_history"></div>
       </div>
 
@@ -1034,12 +1046,25 @@
       const container = document.getElementById(containerId);
       if (!container) return;
       container.innerHTML = '';
+      // 単一選択のみ（複数選択不可）
+      const singleSelectKeys = ['sex','build','temp','nutr','pulse','gait','test','health','hist_flag','mucosa','palp','ausc','diagloc','vet'];
+      const isSingle = singleSelectKeys.some(k => containerId.includes('_' + k + '_'));
       chipsList.forEach(chip => {
         const btn = document.createElement('button');
         btn.className = 'chip';
         btn.textContent = chip;
         btn.type = 'button';
-        btn.onclick = (e) => { e.preventDefault(); btn.classList.toggle('selected'); if (onchange) onchange(); };
+        btn.onclick = (e) => {
+          e.preventDefault();
+          if (isSingle) {
+            // 単一選択：他を全解除してから自分を選択
+            container.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+            btn.classList.add('selected');
+          } else {
+            btn.classList.toggle('selected');
+          }
+          if (onchange) onchange();
+        };
         container.appendChild(btn);
       });
     }
@@ -1127,6 +1152,30 @@
     }
 
     function saveHistory() { localStorage.setItem('history', JSON.stringify(HISTORY)); }
+
+    // ============ 馬名・母馬自動入力 ============
+    function appendHorseYear(prefix, year) {
+      const el = document.getElementById(prefix + '_horse');
+      if (!el) return;
+      // 既存の年号（4桁数字）を除去してから末尾に追加
+      let name = el.value.replace(/\d{4}$/, '').trim();
+      el.value = name + year;
+      onHorseInput(prefix);
+      autoSave();
+    }
+
+    function onHorseInput(prefix) {
+      const horseEl = document.getElementById(prefix + '_horse');
+      const damEl = document.getElementById(prefix + '_dam');
+      if (!horseEl || !damEl) return;
+      const horseName = horseEl.value;
+      // 末尾の年号（4桁数字）を除いた名前を母馬に自動入力
+      const damName = horseName.replace(/\d{4}$/, '').trim();
+      if (damName) {
+        damEl.value = damName;
+      }
+      autoSave();
+    }
 
     function setOrigin(prefix, val) {
       document.getElementById(prefix + '_origin').value = val;
@@ -1785,20 +1834,18 @@
       const company = CURRENT_PRINT_FORM === 'msm' ? '三井住友' : '損保ジャパン';
       const fname = ym + '_' + horse + '_' + company;
       const commonCSS = '*{box-sizing:border-box;margin:0;padding:0;}table{border-collapse:collapse;width:100%;}table[style*="width:auto"]{width:auto !important;}td,th{border:1px solid #000;padding:3px 4px;vertical-align:middle;}td[style*="border:none"]{border:none !important;}span{display:inline;}span[style*="border-radius"]{display:inline-block !important;}td>div{margin:0 auto;}div[style*="writing-mode"]{-webkit-writing-mode:vertical-rl;writing-mode:vertical-rl;-webkit-text-orientation:upright;text-orientation:upright;display:flex !important;align-items:center;justify-content:center;}';
-      // 損保ジャパン・三井住友ともA4縦1枚に統一
-      const css = '@page{size:A4 portrait;margin:7mm 8mm;}'
-        + 'html,body{height:auto;overflow:visible;}'
-        + 'body{font-family:"MS Mincho","游明朝","ヒラギノ明朝 ProN","Hiragino Mincho ProN",serif;'
-        + 'font-size:8pt;color:#000;line-height:1.25;'
-        + '-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
-        + commonCSS
-        + '@media print{body{margin:0;padding:0;}*{page-break-inside:avoid;}table,tr,td{page-break-inside:avoid;}}';
+      // 三井住友=縦、損保ジャパン=横
+      const isLandscapePDF = CURRENT_PRINT_FORM === 'sj';
+      const vpWidthPDF = isLandscapePDF ? '1122' : '794';
+      const css = isLandscapePDF
+        ? '@page{size:A4 landscape;margin:8mm 10mm;}html,body{height:auto;overflow:visible;}body{font-family:"MS Mincho","游明朝","ヒラギノ明朝 ProN","Hiragino Mincho ProN",serif;font-size:8.5pt;color:#000;line-height:1.3;-webkit-print-color-adjust:exact;print-color-adjust:exact;}' + commonCSS + '@media print{*{page-break-inside:avoid;}table,tr,td{page-break-inside:avoid;}}'
+        : '@page{size:A4 portrait;margin:8mm 10mm;}html,body{height:auto;overflow:visible;}body{font-family:"MS Mincho","游明朝","ヒラギノ明朝 ProN","Hiragino Mincho ProN",serif;font-size:8.5pt;color:#000;line-height:1.3;-webkit-print-color-adjust:exact;print-color-adjust:exact;}' + commonCSS + '@media print{body{margin:0;padding:0;}*{page-break-inside:avoid;}table,tr,td{page-break-inside:avoid;}}';
       const win = window.open('', '_blank');
       if (!win) { alert('ポップアップがブロックされています。許可してから再試行してください。'); return; }
       win.document.write(
         '<!DOCTYPE html><html lang="ja"><head>'
         + '<meta charset="UTF-8">'
-        + '<meta name="viewport" content="width=794,initial-scale=1">'
+        + '<meta name="viewport" content="width='+vpWidthPDF+',initial-scale=1">'
         + '<title>' + fname + '</title>'
         + '<style>' + css + '</style>'
         + '</head><body>' + content + '</body></html>'
@@ -1828,22 +1875,41 @@
         + 'td>div{margin:0 auto;}'
         + 'div[style*="writing-mode"]{-webkit-writing-mode:vertical-rl;writing-mode:vertical-rl;-webkit-text-orientation:upright;text-orientation:upright;display:flex !important;align-items:center;justify-content:center;}';
       let css;
-      let vpWidth = '794';
-      // 損保ジャパン・三井住友ともA4縦1枚に統一
-      css = ''
-        + '@page{size:A4 portrait;margin:7mm 8mm;}'
-        + 'html,body{height:auto;overflow:visible;}'
-        + 'body{'
-        +   'font-family:"MS Mincho","游明朝","ヒラギノ明朝 ProN","Hiragino Mincho ProN",serif;'
-        +   'font-size:8pt;color:#000;line-height:1.25;'
-        +   '-webkit-print-color-adjust:exact;print-color-adjust:exact;'
-        + '}'
-        + commonCSS
-        + '@media print{'
-        +   'body{margin:0;padding:0;}'
-        +   '*{page-break-inside:avoid;}'
-        +   'table,tr,td{page-break-inside:avoid;}'
-        + '}';
+      let vpWidth;
+      if (isLandscape) {
+        // 損保ジャパン：A4横印刷
+        vpWidth = '1122';
+        css = ''
+          + '@page{size:A4 landscape;margin:8mm 10mm;}'
+          + 'html,body{height:auto;overflow:visible;}'
+          + 'body{'
+          +   'font-family:"MS Mincho","游明朝","ヒラギノ明朝 ProN","Hiragino Mincho ProN",serif;'
+          +   'font-size:8.5pt;color:#000;line-height:1.3;'
+          +   '-webkit-print-color-adjust:exact;print-color-adjust:exact;'
+          + '}'
+          + commonCSS
+          + '@media print{'
+          +   '*{page-break-inside:avoid;}'
+          +   'table,tr,td{page-break-inside:avoid;}'
+          + '}';
+      } else {
+        // 三井住友：A4縦印刷
+        vpWidth = '794';
+        css = ''
+          + '@page{size:A4 portrait;margin:8mm 10mm;}'
+          + 'html,body{height:auto;overflow:visible;}'
+          + 'body{'
+          +   'font-family:"MS Mincho","游明朝","ヒラギノ明朝 ProN","Hiragino Mincho ProN",serif;'
+          +   'font-size:8.5pt;color:#000;line-height:1.3;'
+          +   '-webkit-print-color-adjust:exact;print-color-adjust:exact;'
+          + '}'
+          + commonCSS
+          + '@media print{'
+          +   'body{margin:0;padding:0;}'
+          +   '*{page-break-inside:avoid;}'
+          +   'table,tr,td{page-break-inside:avoid;}'
+          + '}';
+      }
       win.document.write(
         '<!DOCTYPE html><html lang="ja"><head>'
         + '<meta charset="UTF-8">'
@@ -1867,11 +1933,31 @@
     // ============ Saved Records ============
     function saveRecord(prefix) {
       const data = prefix === 'msm' ? collectMSM() : collectSJ();
+      // 未選択チェック
+      const missing = [];
+      if (!data.horse) missing.push('馬名');
+      if (!data.sex) missing.push('性別');
+      if (prefix === 'msm') {
+        if (!data.build) missing.push('体格');
+        if (!data.temp) missing.push('体温');
+        if (!data.nutr) missing.push('栄養');
+        if (!data.gait) missing.push('歩様');
+        if (!data.health) missing.push('健康状態');
+      } else {
+        if (!data.build) missing.push('体格');
+        if (!data.nutr) missing.push('栄養');
+        if (!data.gait) missing.push('歩様');
+        if (!data.mucosa) missing.push('可視粘膜');
+        if (!data.palp) missing.push('触診');
+        if (!data.ausc) missing.push('聴診');
+      }
+      if (missing.length > 0) {
+        if (!confirm('以下の項目が未選択です。\n\n・' + missing.join('\n・') + '\n\nこのまま保存しますか？')) return;
+      }
       const saved = localStorage.getItem('saved_records');
       const records = saved ? JSON.parse(saved) : [];
       records.unshift(data);
       localStorage.setItem('saved_records', JSON.stringify(records));
-      // 保存と同時にJSONファイルを自動ダウンロード
       autoDownloadJSON();
       showToast('💾 ' + (data.horse || '診断書') + ' を保存しました（JSONファイルも保存されました）', 'success');
     }
@@ -2047,7 +2133,32 @@
       } catch (e) {}
       calcAgeFromInputs('msm');
       calcAgeFromInputs('sj');
+      // 自動復元バナー表示
+      showRestoreBanner();
     });
+
+    function showRestoreBanner() {
+      const saved = localStorage.getItem('saved_records');
+      const records = saved ? JSON.parse(saved) : [];
+      if (records.length === 0) {
+        // LocalStorageにデータなし → JSONファイルから復元を促す
+        const banner = document.createElement('div');
+        banner.id = 'restore-banner';
+        banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#1a3f6b;color:#fff;padding:14px 16px;z-index:3000;display:flex;align-items:center;justify-content:space-between;gap:10px;';
+        banner.innerHTML = `
+          <div style="font-size:14px;font-weight:600;">📂 前回のデータを復元しますか？</div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="document.getElementById('restore-file-input').click()" style="background:#fff;color:#1a3f6b;border:none;border-radius:8px;padding:8px 14px;font-size:14px;font-weight:700;cursor:pointer;">📂 JSONから復元</button>
+            <button onclick="document.getElementById('restore-banner').remove()" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer;">✕</button>
+          </div>
+          <input type="file" id="restore-file-input" accept=".json" style="display:none" onchange="importData(event);document.getElementById('restore-banner').remove();">
+        `;
+        document.body.appendChild(banner);
+      } else {
+        // LocalStorageにデータあり → 自動復元済みのトースト表示
+        showToast('✅ 前回のデータを自動復元しました（' + records.length + '件）', 'success');
+      }
+    }
   </script>
 </body>
 </html>
