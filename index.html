@@ -1826,36 +1826,59 @@
     }
 
     function savePDF() {
-      const content = document.getElementById('print-content').innerHTML;
       const data = CURRENT_PRINT_FORM === 'msm' ? collectMSM() : collectSJ();
       const horse = data.horse || '診断書';
       const now = new Date();
       const ym = now.getFullYear() + '年' + (now.getMonth()+1) + '月';
       const company = CURRENT_PRINT_FORM === 'msm' ? '三井住友' : '損保ジャパン';
-      const fname = ym + '_' + horse + '_' + company;
-      const commonCSS = '*{box-sizing:border-box;margin:0;padding:0;}table{border-collapse:collapse;width:100%;}table[style*="width:auto"]{width:auto !important;}td,th{border:1px solid #000;padding:3px 4px;vertical-align:middle;}td[style*="border:none"]{border:none !important;}span{display:inline;}span[style*="border-radius"]{display:inline-block !important;}td>div{margin:0 auto;}div[style*="writing-mode"]{-webkit-writing-mode:vertical-rl;writing-mode:vertical-rl;-webkit-text-orientation:upright;text-orientation:upright;display:flex !important;align-items:center;justify-content:center;}';
-      // 三井住友=縦、損保ジャパン=横
-      const isLandscapePDF = CURRENT_PRINT_FORM === 'sj';
-      const vpWidthPDF = isLandscapePDF ? '1122' : '794';
-      const css = isLandscapePDF
-        ? '@page{size:A4 landscape;margin:8mm 10mm;}html,body{height:auto;overflow:visible;}body{font-family:"MS Mincho","游明朝","ヒラギノ明朝 ProN","Hiragino Mincho ProN",serif;font-size:8.5pt;color:#000;line-height:1.3;-webkit-print-color-adjust:exact;print-color-adjust:exact;}' + commonCSS + '@media print{*{page-break-inside:avoid;}table,tr,td{page-break-inside:avoid;}}'
-        : '@page{size:A4 portrait;margin:8mm 10mm;}html,body{height:auto;overflow:visible;}body{font-family:"MS Mincho","游明朝","ヒラギノ明朝 ProN","Hiragino Mincho ProN",serif;font-size:8.5pt;color:#000;line-height:1.3;-webkit-print-color-adjust:exact;print-color-adjust:exact;}' + commonCSS + '@media print{body{margin:0;padding:0;}*{page-break-inside:avoid;}table,tr,td{page-break-inside:avoid;}}';
-      const win = window.open('', '_blank');
-      if (!win) { alert('ポップアップがブロックされています。許可してから再試行してください。'); return; }
-      win.document.write(
-        '<!DOCTYPE html><html lang="ja"><head>'
-        + '<meta charset="UTF-8">'
-        + '<meta name="viewport" content="width='+vpWidthPDF+',initial-scale=1">'
-        + '<title>' + fname + '</title>'
-        + '<style>' + css + '</style>'
-        + '</head><body>' + content + '</body></html>'
-      );
-      win.document.close();
-      setTimeout(function(){
-        win.focus();
-        win.document.title = fname;
-        win.print();
-      }, 800);
+      const fname = ym + '_' + horse + '_' + company + '.pdf';
+      const isLandscape = CURRENT_PRINT_FORM === 'sj';
+
+      showToast('📄 PDF生成中...少々お待ちください', 'info');
+
+      // html2canvas + jsPDFで自動ダウンロード
+      const printDiv = document.getElementById('print-content');
+      if (!printDiv || !printDiv.innerHTML.trim()) {
+        alert('先に「プレビュー」ボタンを押してから「PDFで保存」を押してください。');
+        return;
+      }
+
+      // jsPDF・html2canvasをCDNから動的ロード
+      function loadScript(src, cb) {
+        if (document.querySelector('script[src="'+src+'"]')) { cb(); return; }
+        const s = document.createElement('script');
+        s.src = src; s.onload = cb; document.head.appendChild(s);
+      }
+
+      loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', function() {
+        loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', function() {
+          const { jsPDF } = window.jspdf;
+          const orientation = isLandscape ? 'landscape' : 'portrait';
+          const pdf = new jsPDF({ orientation, unit: 'mm', format: 'a4' });
+          const pageW = isLandscape ? 297 : 210;
+          const pageH = isLandscape ? 210 : 297;
+
+          html2canvas(printDiv, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            width: printDiv.scrollWidth,
+            height: printDiv.scrollHeight
+          }).then(function(canvas) {
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            const margin = 8;
+            const imgW = pageW - margin * 2;
+            const imgH = (canvas.height * imgW) / canvas.width;
+            const finalH = Math.min(imgH, pageH - margin * 2);
+            pdf.addImage(imgData, 'JPEG', margin, margin, imgW, finalH);
+            pdf.save(fname);
+            showToast('✅ ' + fname + ' をダウンロードフォルダに保存しました', 'success');
+          }).catch(function(err) {
+            console.error(err);
+            showToast('❌ PDF生成に失敗しました。印刷ボタンをお使いください。', 'error');
+          });
+        });
+      });
     }
 
     function executePrint() {
