@@ -80,21 +80,21 @@
     .tab.history.active { color: #666; border-bottom-color: #666; }
 
     /* Tab content */
-    .tab-content { display: none; padding: 20px; }
+    .tab-content { display: none; padding: 8px 12px; }
     .tab-content.active { display: block; }
 
     /* Form groups */
     .fgroup {
-      margin-bottom: 16px;
+      margin-bottom: 8px;
       display: flex;
       flex-direction: column;
     }
 
     .flabel {
       font-weight: 600;
-      font-size: 15px;
-      margin-bottom: 8px;
-      color: var(--text);
+      font-size: 12px;
+      margin-bottom: 3px;
+      color: #666;
     }
 
     .fgroup.row {
@@ -115,10 +115,10 @@
     textarea,
     select {
       width: 100%;
-      padding: 13px 12px;
+      padding: 6px 9px;
       border: 1.5px solid var(--border);
-      border-radius: 9px;
-      font-size: 17px;
+      border-radius: 5px;
+      font-size: 14px;
       font-family: inherit;
       color: var(--text);
       background: #fff;
@@ -151,7 +151,7 @@
     }
 
     textarea {
-      min-height: 100px;
+      min-height: 70px;
       resize: vertical;
       font-family: inherit;
     }
@@ -159,10 +159,10 @@
     /* Date input styling */
     .date-input {
       width: 100%;
-      padding: 13px 12px;
+      padding: 6px 9px;
       border: 1.5px solid var(--border);
-      border-radius: 9px;
-      font-size: 17px;
+      border-radius: 5px;
+      font-size: 14px;
       font-family: inherit;
       color: var(--text);
       background: #fff;
@@ -178,13 +178,13 @@
     /* Age display */
     .age-disp {
       background: var(--bg);
-      border-radius: 9px;
-      padding: 12px 14px;
-      font-size: 17px;
+      border-radius: 7px;
+      padding: 5px 8px;
+      font-size: 14px;
       font-weight: 700;
       color: var(--msm);
       border: 1.5px solid var(--border);
-      min-height: 48px;
+      min-height: 26px;
       display: flex;
       align-items: center;
     }
@@ -193,13 +193,13 @@
     .date-banner {
       background: linear-gradient(135deg, #1a3f6b, #2563a8);
       color: #fff;
-      border-radius: 8px;
-      padding: 8px 14px;
-      margin-top: 6px;
-      font-size: 18px;
+      border-radius: 7px;
+      padding: 3px 10px;
+      margin-top: 3px;
+      font-size: 12px;
       font-weight: 700;
-      letter-spacing: 0.06em;
-      min-height: 38px;
+      letter-spacing: 0.04em;
+      min-height: 22px;
       display: flex;
       align-items: center;
     }
@@ -211,21 +211,22 @@
     /* Chips */
     .chips {
       display: flex;
-      gap: 8px;
+      gap: 4px;
       flex-wrap: wrap;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
 
     .chip {
-      padding: 8px 14px;
-      border: 2px solid var(--border);
-      border-radius: 20px;
+      padding: 3px 9px;
+      border: 1.5px solid var(--border);
+      border-radius: 4px;
       cursor: pointer;
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 12px;
+      font-weight: 500;
       background: #fff;
-      color: var(--text);
-      transition: all 0.2s ease;
+      color: #444;
+      transition: all 0.15s ease;
+      line-height: 1.4;
     }
 
     .chip:active {
@@ -244,6 +245,7 @@
       border-color: var(--msm);
       background: var(--msm);
       color: #fff;
+      font-weight: 700;
     }
 
     .tab.sj.active ~ .tab-content .chip.selected {
@@ -291,12 +293,16 @@
 
     /* Section heading */
     .section-heading {
-      font-size: 18px;
+      font-size: 11px;
       font-weight: 700;
-      margin: 24px 0 16px 0;
-      padding-bottom: 8px;
-      border-bottom: 2px solid var(--border);
-      color: var(--text);
+      margin: 10px 0 6px 0;
+      padding: 2px 6px;
+      background: var(--bg);
+      border-left: 3px solid var(--msm);
+      color: #555;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-radius: 0 3px 3px 0;
     }
 
     /* Modal */
@@ -451,7 +457,7 @@
 
     @media print {
       body { background: #fff; }
-      .tabs, .btn-group, .section-heading, .modal { display: none; }
+      .tabs, .btn-group, .section-heading, .modal, #action-toolbar { display: none; }
       .container { max-width: 100%; }
       .print-preview { padding: 0; }
     }
@@ -475,7 +481,13 @@
       <div class="tab history" onclick="switchTab(2)">📁 保存済み</div>
     </div>
 
-    <!-- MSM Tab -->
+    <!-- 固定ボタンツールバー -->
+    <div id="action-toolbar" style="position:sticky;top:48px;z-index:99;background:#fff;border-bottom:2px solid var(--border);padding:8px 12px;display:flex;gap:8px;">
+      <button id="toolbar-save" class="btn btn-primary" style="flex:1;background:#16a34a;font-size:15px;padding:10px 6px;" onclick="saveFromToolbar()">💾 保存</button>
+      <button id="toolbar-new" class="btn btn-secondary" style="flex:1;font-size:15px;padding:10px 6px;" onclick="newFromToolbar()">🆕 新規</button>
+      <button id="toolbar-preview" class="btn btn-secondary" style="flex:1;font-size:15px;padding:10px 6px;" onclick="previewFromToolbar()">📄 PDF保存</button>
+      <button id="toolbar-print" class="btn btn-secondary" style="flex:1;font-size:15px;padding:10px 6px;" onclick="printFromToolbar()">🖨️ 印刷</button>
+    </div>
     <div class="tab-content active" id="msm-tab">
       <div class="section-heading">獣医師</div>
       <div class="fgroup">
@@ -502,25 +514,46 @@
         <div class="chips" id="msm_horse_history"></div>
       </div>
 
-      <div class="fgroup">
-        <div class="flabel">種類</div>
-        <select id="msm_type" onchange="autoSave()">
-          <option value="">選択してください</option>
-          <option value="サラブレッド">サラブレッド</option>
-          <option value="日本馬">日本馬</option>
-          <option value="その他">その他</option>
-        </select>
+      <div class="fgroup row">
+        <div class="fgroup">
+          <div class="flabel">種類</div>
+          <select id="msm_type" onchange="autoSave()">
+            <option value="">選択</option>
+            <option value="サラブレッド">サラブレッド</option>
+            <option value="日本馬">日本馬</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+        <div class="fgroup">
+          <div class="flabel">性別</div>
+          <div class="chips" id="msm_sex_chips"></div>
+        </div>
+        <div class="fgroup">
+          <div class="flabel">毛色</div>
+          <select id="msm_color" onchange="autoSave()">
+            <option value="">選択</option>
+            <option value="栗毛">栗毛</option>
+            <option value="黒鹿毛">黒鹿毛</option>
+            <option value="鹿毛">鹿毛</option>
+            <option value="青毛">青毛</option>
+            <option value="白毛">白毛</option>
+            <option value="芦毛">芦毛</option>
+            <option value="小栗毛">小栗毛</option>
+            <option value="栃栗毛">栃栗毛</option>
+          </select>
+        </div>
       </div>
 
-      <div class="fgroup">
-        <div class="flabel">生年月日</div>
-        <input type="date" class="date-input" id="msm_birth_in" onchange="onDateChangeMSM('birth'); autoSave()">
-        <div class="date-banner" id="banner_msm_birth">（未選択）</div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">年齢（才）※生年月日から自動計算</div>
-        <div class="age-disp" id="msm_age_disp">（生年月日を選択してください）</div>
+      <div class="fgroup row">
+        <div class="fgroup" style="flex:2;">
+          <div class="flabel">生年月日</div>
+          <input type="date" class="date-input" id="msm_birth_in" onchange="onDateChangeMSM('birth'); autoSave()" min="2020-01-01" max="2027-12-31">
+          <div class="date-banner" id="banner_msm_birth">（未選択）</div>
+        </div>
+        <div class="fgroup" style="flex:1;">
+          <div class="flabel">年齢（才）</div>
+          <div class="age-disp" id="msm_age_disp">－</div>
+        </div>
       </div>
 
       <div class="fgroup">
@@ -536,31 +569,11 @@
       </div>
 
       <div class="fgroup">
-        <div class="flabel">性別</div>
-        <div class="chips" id="msm_sex_chips"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">毛色</div>
-        <select id="msm_color" onchange="autoSave()">
-          <option value="">選択してください</option>
-          <option value="栗毛">栗毛</option>
-          <option value="黒鹿毛">黒鹿毛</option>
-          <option value="鹿毛">鹿毛</option>
-          <option value="青毛">青毛</option>
-          <option value="白毛">白毛</option>
-          <option value="芦毛">芦毛</option>
-          <option value="小栗毛">小栗毛</option>
-          <option value="栃栗毛">栃栗毛</option>
-        </select>
-      </div>
-
-      <div class="fgroup">
         <div class="flabel">血統</div>
         <div class="fgroup row">
           <div class="fgroup">
-            <div class="flabel">父</div>
-            <input type="text" id="msm_sire" placeholder="父の名前" onchange="autoSave()" onblur="addHistory('msm_sire')">
+            <div class="flabel">父 <button type="button" onclick="openSireModal('msm')" style="font-size:10px;padding:1px 6px;border:1px solid var(--border);border-radius:4px;background:#f5f5f5;cursor:pointer;margin-left:4px;">📋 登録リスト</button></div>
+            <input type="text" id="msm_sire" placeholder="父の名前" onchange="autoSave()" onblur="saveSireToList(getField('msm_sire'));addHistory('msm_sire')">
             <div class="chips" id="msm_sire_history"></div>
           </div>
           <div class="fgroup">
@@ -609,41 +622,39 @@
         <div class="date-banner" id="banner_msm_diag">（未選択）</div>
       </div>
 
-      <div class="fgroup">
-        <div class="flabel">体格</div>
-        <div class="chips" id="msm_build_chips"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px;">
+        <div class="fgroup" style="margin-bottom:0;">
+          <div class="flabel">体格</div>
+          <div class="chips" id="msm_build_chips"></div>
+        </div>
+        <div class="fgroup" style="margin-bottom:0;">
+          <div class="flabel">体温</div>
+          <div class="chips" id="msm_temp_chips"></div>
+        </div>
+        <div class="fgroup" style="margin-bottom:0;">
+          <div class="flabel">栄養</div>
+          <div class="chips" id="msm_nutr_chips"></div>
+        </div>
+        <div class="fgroup" style="margin-bottom:0;">
+          <div class="flabel">脈拍</div>
+          <div class="chips" id="msm_pulse_chips"></div>
+        </div>
+        <div class="fgroup" style="margin-bottom:0;">
+          <div class="flabel">歩様</div>
+          <div class="chips" id="msm_gait_chips"></div>
+        </div>
+        <div class="fgroup" style="margin-bottom:0;">
+          <div class="flabel">睾丸</div>
+          <div class="chips" id="msm_test_chips"></div>
+        </div>
       </div>
-
       <div class="fgroup">
-        <div class="flabel">体温</div>
-        <div class="chips" id="msm_temp_chips"></div>
-        <input type="text" id="msm_temp_detail" placeholder="異常の場合、詳細を記入" onchange="autoSave()">
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">栄養</div>
-        <div class="chips" id="msm_nutr_chips"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">脈拍</div>
-        <div class="chips" id="msm_pulse_chips"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">歩様</div>
-        <div class="chips" id="msm_gait_chips"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">睾丸</div>
-        <div class="chips" id="msm_test_chips"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">現在の健康状態</div>
+        <div class="flabel">健康状態</div>
         <div class="chips" id="msm_health_chips"></div>
         <input type="text" id="msm_health_detail" placeholder="異常の場合、詳細を記入" onchange="autoSave()">
+      </div>
+      <div class="fgroup" style="display:none;">
+        <input type="text" id="msm_temp_detail" placeholder="" onchange="autoSave()">
       </div>
 
       <div class="fgroup">
@@ -670,15 +681,6 @@
       </div>
 
 
-      <div style="background:#e8f5e9;border:2px solid #16a34a;border-radius:10px;padding:12px;margin-top:16px;font-size:14px;">
-        ⚠️ 入力後は必ず <strong>「💾 保存」</strong> を押してください。その後 <strong>📁保存済みタブ</strong> から「データをファイルに保存」でバックアップしてください。
-      </div>
-      <div class="btn-group" style="margin-top:10px;">
-        <button class="btn btn-primary" style="background:#16a34a;font-size:17px;" onclick="saveRecord('msm')">💾 保存</button>
-        <button class="btn btn-secondary" onclick="newRecord('msm')">🆕 新規</button>
-        <button class="btn btn-secondary" onclick="previewPrint('msm')">📄 プレビュー</button>
-        <button class="btn btn-secondary" onclick="printForm('msm')">🖨️ 印刷</button>
-      </div>
     </div>
 
     <!-- SJ Tab -->
@@ -708,25 +710,46 @@
         <div class="chips" id="sj_horse_history"></div>
       </div>
 
-      <div class="fgroup">
-        <div class="flabel">種類</div>
-        <select id="sj_type" onchange="autoSave()">
-          <option value="">選択してください</option>
-          <option value="サラブレッド">サラブレッド</option>
-          <option value="日本馬">日本馬</option>
-          <option value="その他">その他</option>
-        </select>
+      <div class="fgroup row">
+        <div class="fgroup">
+          <div class="flabel">種類</div>
+          <select id="sj_type" onchange="autoSave()">
+            <option value="">選択</option>
+            <option value="サラブレッド">サラブレッド</option>
+            <option value="日本馬">日本馬</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+        <div class="fgroup">
+          <div class="flabel">性別</div>
+          <div class="chips" id="sj_sex_chips"></div>
+        </div>
+        <div class="fgroup">
+          <div class="flabel">毛色</div>
+          <select id="sj_color" onchange="autoSave()">
+            <option value="">選択</option>
+            <option value="栗毛">栗毛</option>
+            <option value="黒鹿毛">黒鹿毛</option>
+            <option value="鹿毛">鹿毛</option>
+            <option value="青毛">青毛</option>
+            <option value="白毛">白毛</option>
+            <option value="芦毛">芦毛</option>
+            <option value="小栗毛">小栗毛</option>
+            <option value="栃栗毛">栃栗毛</option>
+          </select>
+        </div>
       </div>
 
-      <div class="fgroup">
-        <div class="flabel">生年月日</div>
-        <input type="date" class="date-input" id="sj_birth_in" onchange="onDateChangeSJ('birth'); autoSave()">
-        <div class="date-banner sj-banner" id="banner_sj_birth">（未選択）</div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">年齢（才）※生年月日から自動計算</div>
-        <div class="age-disp" id="sj_age_disp">（生年月日を選択してください）</div>
+      <div class="fgroup row">
+        <div class="fgroup" style="flex:2;">
+          <div class="flabel">生年月日</div>
+          <input type="date" class="date-input" id="sj_birth_in" onchange="onDateChangeSJ('birth'); autoSave()" min="2020-01-01" max="2027-12-31">
+          <div class="date-banner sj-banner" id="banner_sj_birth">（未選択）</div>
+        </div>
+        <div class="fgroup" style="flex:1;">
+          <div class="flabel">年齢（才）</div>
+          <div class="age-disp" id="sj_age_disp">－</div>
+        </div>
       </div>
 
       <div class="fgroup">
@@ -742,31 +765,11 @@
       </div>
 
       <div class="fgroup">
-        <div class="flabel">性別</div>
-        <div class="chips" id="sj_sex_chips"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">毛色</div>
-        <select id="sj_color" onchange="autoSave()">
-          <option value="">選択してください</option>
-          <option value="栗毛">栗毛</option>
-          <option value="黒鹿毛">黒鹿毛</option>
-          <option value="鹿毛">鹿毛</option>
-          <option value="青毛">青毛</option>
-          <option value="白毛">白毛</option>
-          <option value="芦毛">芦毛</option>
-          <option value="小栗毛">小栗毛</option>
-          <option value="栃栗毛">栃栗毛</option>
-        </select>
-      </div>
-
-      <div class="fgroup">
         <div class="flabel">血統</div>
         <div class="fgroup row">
           <div class="fgroup">
-            <div class="flabel">父</div>
-            <input type="text" id="sj_sire" placeholder="父の名前" onchange="autoSave()" onblur="addHistory('sj_sire')">
+            <div class="flabel">父 <button type="button" onclick="openSireModal('sj')" style="font-size:10px;padding:1px 6px;border:1px solid var(--border);border-radius:4px;background:#f5f5f5;cursor:pointer;margin-left:4px;">📋 登録リスト</button></div>
+            <input type="text" id="sj_sire" placeholder="父の名前" onchange="autoSave()" onblur="saveSireToList(getField('sj_sire'));addHistory('sj_sire')">
             <div class="chips" id="sj_sire_history"></div>
           </div>
           <div class="fgroup">
@@ -802,34 +805,31 @@
 
       <div class="section-heading">診断情報</div>
 
-      <div class="fgroup">
-        <div class="flabel">体格</div>
-        <div class="chips" id="sj_build_chips"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">栄養</div>
-        <div class="chips" id="sj_nutr_chips"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">歩様</div>
-        <div class="chips" id="sj_gait_chips"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">可視粘膜</div>
-        <div class="chips" id="sj_mucosa_chips"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">触診</div>
-        <div class="chips" id="sj_palp_chips"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">聴診</div>
-        <div class="chips" id="sj_ausc_chips"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px;">
+        <div class="fgroup" style="margin-bottom:0;">
+          <div class="flabel">体格</div>
+          <div class="chips" id="sj_build_chips"></div>
+        </div>
+        <div class="fgroup" style="margin-bottom:0;">
+          <div class="flabel">栄養</div>
+          <div class="chips" id="sj_nutr_chips"></div>
+        </div>
+        <div class="fgroup" style="margin-bottom:0;">
+          <div class="flabel">歩様</div>
+          <div class="chips" id="sj_gait_chips"></div>
+        </div>
+        <div class="fgroup" style="margin-bottom:0;">
+          <div class="flabel">可視粘膜</div>
+          <div class="chips" id="sj_mucosa_chips"></div>
+        </div>
+        <div class="fgroup" style="margin-bottom:0;">
+          <div class="flabel">触診</div>
+          <div class="chips" id="sj_palp_chips"></div>
+        </div>
+        <div class="fgroup" style="margin-bottom:0;">
+          <div class="flabel">聴診</div>
+          <div class="chips" id="sj_ausc_chips"></div>
+        </div>
       </div>
 
       <div class="fgroup">
@@ -864,15 +864,6 @@
         <textarea id="sj_note" placeholder="特記事項があればご記入ください" onchange="autoSave()"></textarea>
       </div>
 
-      <div style="background:#e8f5e9;border:2px solid #16a34a;border-radius:10px;padding:12px;margin-top:16px;font-size:14px;">
-        ⚠️ 入力後は必ず <strong>「💾 保存」</strong> を押してください。その後 <strong>📁保存済みタブ</strong> から「データをファイルに保存」でバックアップしてください。
-      </div>
-      <div class="btn-group" style="margin-top:10px;">
-        <button class="btn btn-primary" style="background:#16a34a;font-size:17px;" onclick="saveRecord('sj')">💾 保存</button>
-        <button class="btn btn-secondary" onclick="newRecord('sj')">🆕 新規</button>
-        <button class="btn btn-secondary" onclick="previewPrint('sj')">📄 プレビュー</button>
-        <button class="btn btn-secondary" onclick="printForm('sj')">🖨️ 印刷</button>
-      </div>
     </div>
 
     <!-- History Tab -->
@@ -893,6 +884,21 @@
 
   <!-- Feature Modal -->
   <div class="modal" id="feature-modal">
+
+  <!-- Sire Modal -->
+  <div id="sire-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:2000;overflow-y:auto;">
+    <div style="background:#fff;width:100%;max-width:500px;margin:40px auto;border-radius:12px;padding:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-size:16px;font-weight:700;">📋 父の登録リスト</div>
+        <button onclick="closeSireModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#666;">✕</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <input type="text" id="sire-modal-input" placeholder="父の名前を入力" onkeydown="if(event.key==='Enter')addSireFromModal()" style="flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;">
+        <button onclick="addSireFromModal()" style="background:var(--msm);color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:14px;font-weight:700;cursor:pointer;">追加</button>
+      </div>
+      <div id="sire-modal-list" style="max-height:300px;overflow-y:auto;"></div>
+    </div>
+  </div>
     <div class="modal-content">
       <div class="modal-header">
         特徴・マーキング選択
@@ -1161,6 +1167,17 @@
       let name = el.value.replace(/\d{4}$/, '').trim();
       el.value = name + year;
       onHorseInput(prefix);
+
+      // 生年月日を選択年号の1月1日に自動設定
+      const birthEl = document.getElementById(prefix + '_birth_in');
+      if (birthEl) {
+        birthEl.value = year + '-01-01';
+        // min/maxをその年に絞り込む
+        birthEl.min = year + '-01-01';
+        birthEl.max = year + '-12-31';
+        if (prefix === 'msm') onDateChangeMSM('birth');
+        else onDateChangeSJ('birth');
+      }
       autoSave();
     }
 
@@ -1298,6 +1315,159 @@
     }
 
     // ============ Tab Functions ============
+    // ============ 父登録リスト ============
+    let SIRE_CURRENT_PREFIX = 'msm';
+
+    function getSireList() {
+      try { return JSON.parse(localStorage.getItem('sire_list') || '[]'); } catch(e) { return []; }
+    }
+
+    function saveSireList(list) {
+      localStorage.setItem('sire_list', JSON.stringify(list));
+    }
+
+    function saveSireToList(name) {
+      if (!name || !name.trim()) return;
+      const list = getSireList();
+      const n = name.trim();
+      if (!list.includes(n)) {
+        list.unshift(n);
+        saveSireList(list);
+        // 履歴チップも更新
+        ['msm', 'sj'].forEach(p => renderSireChips(p));
+      }
+    }
+
+    function renderSireChips(prefix) {
+      const list = getSireList();
+      const container = document.getElementById(prefix + '_sire_history');
+      if (!container) return;
+      container.innerHTML = '';
+      list.slice(0, 8).forEach(name => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'chip';
+        btn.textContent = name;
+        btn.onclick = () => {
+          document.getElementById(prefix + '_sire').value = name;
+          autoSave();
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function openSireModal(prefix) {
+      SIRE_CURRENT_PREFIX = prefix;
+      document.getElementById('sire-modal').style.display = 'block';
+      renderSireModalList();
+      document.getElementById('sire-modal-input').focus();
+    }
+
+    function closeSireModal() {
+      document.getElementById('sire-modal').style.display = 'none';
+    }
+
+    function addSireFromModal() {
+      const input = document.getElementById('sire-modal-input');
+      const name = input.value.trim();
+      if (!name) return;
+      saveSireToList(name);
+      input.value = '';
+      renderSireModalList();
+      // 現在のタブの父フィールドに入力
+      document.getElementById(SIRE_CURRENT_PREFIX + '_sire').value = name;
+      autoSave();
+    }
+
+    function renderSireModalList() {
+      const list = getSireList();
+      const container = document.getElementById('sire-modal-list');
+      if (!list.length) {
+        container.innerHTML = '<div style="color:#999;text-align:center;padding:20px;font-size:14px;">登録された父はありません</div>';
+        return;
+      }
+      container.innerHTML = '';
+      list.forEach((name, idx) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-bottom:1px solid #f0f0f0;';
+        row.innerHTML = `
+          <button type="button" onclick="selectSireFromModal('${name.replace(/'/g, "\\'")}')" style="flex:1;text-align:left;background:none;border:none;font-size:14px;cursor:pointer;color:var(--text);padding:0;">${name}</button>
+          <button type="button" onclick="deleteSireFromModal(${idx})" style="background:none;border:1px solid #ddd;border-radius:4px;padding:2px 8px;font-size:12px;color:#aaa;cursor:pointer;">削除</button>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function selectSireFromModal(name) {
+      document.getElementById(SIRE_CURRENT_PREFIX + '_sire').value = name;
+      autoSave();
+      closeSireModal();
+    }
+
+    function deleteSireFromModal(idx) {
+      const list = getSireList();
+      list.splice(idx, 1);
+      saveSireList(list);
+      renderSireModalList();
+      ['msm', 'sj'].forEach(p => renderSireChips(p));
+    }
+
+    // ============ Toolbar Functions ============
+    function getCurrentPrefix() {
+      const tabs = document.querySelectorAll('.tab');
+      for (let i = 0; i < tabs.length; i++) {
+        if (tabs[i].classList.contains('active')) {
+          if (i === 0) return 'msm';
+          if (i === 1) return 'sj';
+          return null;
+        }
+      }
+      return 'msm';
+    }
+
+    function saveFromToolbar() {
+      const prefix = getCurrentPrefix();
+      if (!prefix) { showToast('保存済みタブでは保存できません', 'error'); return; }
+      saveRecord(prefix);
+    }
+
+    function newFromToolbar() {
+      const prefix = getCurrentPrefix();
+      if (!prefix) { showToast('保存済みタブでは新規作成できません', 'error'); return; }
+      newRecord(prefix);
+    }
+
+    function previewFromToolbar() {
+      const prefix = getCurrentPrefix();
+      if (!prefix) { showToast('三井住友か損保ジャパンタブを選択してください', 'error'); return; }
+      previewPrint(prefix);
+      setTimeout(() => savePDF(), 300);
+    }
+
+    function printFromToolbar() {
+      const prefix = getCurrentPrefix();
+      if (!prefix) { showToast('三井住友か損保ジャパンタブを選択してください', 'error'); return; }
+      printForm(prefix);
+    }
+
+    function updateToolbar(tabIndex) {
+      const toolbar = document.getElementById('action-toolbar');
+      if (!toolbar) return;
+      if (tabIndex === 2) {
+        // 保存済みタブではボタンを非表示
+        toolbar.style.display = 'none';
+      } else {
+        toolbar.style.display = 'flex';
+        // タブ色に合わせてボタン色を変更
+        const saveBtn = document.getElementById('toolbar-save');
+        if (tabIndex === 1) {
+          saveBtn.style.background = 'var(--sj)';
+        } else {
+          saveBtn.style.background = '#16a34a';
+        }
+      }
+    }
+
     function switchTab(idx) {
       CURRENT_TAB = idx;
       const tabs = document.querySelectorAll('.tab');
@@ -1305,6 +1475,7 @@
       tabs.forEach((t, i) => t.classList.toggle('active', i === idx));
       contents.forEach((c, i) => c.classList.toggle('active', i === idx));
       if (idx === 2) renderSavedRecords();
+      updateToolbar(idx);
     }
 
     // ============ Feature Modal ============
@@ -2156,6 +2327,8 @@
       } catch (e) {}
       calcAgeFromInputs('msm');
       calcAgeFromInputs('sj');
+      // 父登録リストのチップを描画
+      ['msm', 'sj'].forEach(p => renderSireChips(p));
       // 自動復元バナー表示
       showRestoreBanner();
     });
