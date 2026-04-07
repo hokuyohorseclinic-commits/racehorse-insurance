@@ -1,0 +1,2635 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="レポジトリー検査">
+<title>レポジトリー検査 診断書システム｜北洋ホースクリニック</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=IM+Fell+English:ital@1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1a1a2e;--ink-light:#4a4a6a;--paper:#faf9f6;--paper-warm:#f5f0e8;
+  --accent:#2c5f8a;--accent-light:#e8f0f7;--accent-mid:#4a7fa8;
+  --gold:#b8860b;--gold-light:#fef9ec;--red:#8b2020;--green:#1a5c3a;--green-light:#e8f4ed;
+  --border:#d0ccc0;--border-light:#e8e4dc;
+  --shadow:0 2px 12px rgba(26,26,46,.08);--shadow-lg:0 8px 32px rgba(26,26,46,.14);
+  --radius:6px;--font-serif:'Noto Serif JP',serif;--font-sans:'Noto Sans JP',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-sans);background:#e8e4dc;color:var(--ink);min-height:100vh;}
+
+/* ===== HEADER ===== */
+.app-header{background:var(--ink);color:white;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.3);}
+.header-inner{max-width:1280px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.header-brand{display:flex;align-items:center;gap:12px;}
+.header-logo{width:36px;height:36px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.header-title{font-family:var(--font-serif);font-size:14px;font-weight:600;letter-spacing:.03em;line-height:1.3;}
+.header-subtitle{font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.08em;}
+.header-tabs{display:flex;gap:3px;flex-wrap:wrap;}
+.htab{padding:6px 14px;border-radius:var(--radius);cursor:pointer;font-size:12px;color:rgba(255,255,255,.6);transition:all .2s;border:1px solid transparent;white-space:nowrap;}
+.htab:hover{color:white;background:rgba(255,255,255,.08);}
+.htab.active{color:white;background:var(--accent);border-color:var(--accent-mid);}
+.autosave-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;display:inline-block;margin-right:4px;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+/* ===== BODY ===== */
+.app-body{max-width:1280px;margin:0 auto;padding:20px 16px;}
+.panel{display:none;}.panel.active{display:block;}
+
+/* ===== CARDS ===== */
+.card{background:var(--paper);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px;}
+.card-hd{background:var(--accent);color:white;padding:10px 18px;font-size:13px;font-weight:500;letter-spacing:.04em;display:flex;align-items:center;gap:8px;}
+.card-bd{padding:18px;}
+
+/* ===== GRID ===== */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+
+/* ===== FIELD ===== */
+.field{display:flex;flex-direction:column;gap:4px;}
+.field label{font-size:10px;color:var(--ink-light);font-weight:600;letter-spacing:.06em;text-transform:uppercase;}
+.field input,.field select,.field textarea{
+  font-family:var(--font-sans);font-size:13px;padding:8px 11px;
+  border:1.5px solid var(--border);border-radius:var(--radius);
+  background:white;color:var(--ink);transition:border-color .2s;width:100%;
+}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light);}
+.field textarea{resize:vertical;min-height:68px;line-height:1.65;}
+
+/* ===== EXAM ACCORDION ===== */
+.acc{border:1.5px solid var(--border-light);border-radius:var(--radius);overflow:hidden;margin-bottom:10px;}
+.acc-hd{background:var(--paper-warm);padding:10px 16px;font-size:13px;font-weight:600;color:var(--accent);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+.acc-hd:hover{background:var(--accent-light);}
+.acc-bd{padding:16px;background:white;}
+.acc-bd.closed{display:none;}
+
+/* ===== AI INPUT ===== */
+.ai-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;}
+.ai-kw{flex:1;}
+.ai-kw input{font-family:var(--font-sans);font-size:13px;padding:8px 11px;border:1.5px solid var(--border);border-radius:var(--radius);background:white;width:100%;transition:border-color .2s;}
+.ai-kw input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light);}
+.btn-ai{padding:8px 14px;background:var(--accent);color:white;border:none;border-radius:var(--radius);font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px;transition:all .2s;flex-shrink:0;}
+.btn-ai:hover{background:var(--accent-mid);}
+.btn-ai:disabled{opacity:.6;cursor:not-allowed;}
+.ai-out-wrap{position:relative;}
+.ai-out-wrap textarea{font-family:var(--font-sans);font-size:13px;padding:9px 11px;border:1.5px solid var(--border);border-radius:var(--radius);background:white;width:100%;resize:vertical;min-height:72px;line-height:1.7;transition:border-color .2s;}
+.ai-out-wrap textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light);}
+.ai-badge{position:absolute;top:-8px;right:10px;background:var(--gold);color:white;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;letter-spacing:.04em;}
+
+/* ===== CHIPS ===== */
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+.chip{padding:3px 9px;background:var(--accent-light);color:var(--accent);border-radius:20px;font-size:11px;cursor:pointer;border:1px solid rgba(44,95,138,.2);transition:all .15s;user-select:none;}
+.chip:hover,.chip.on{background:var(--accent);color:white;}
+.chip.g{background:var(--green-light);color:var(--green);border-color:rgba(26,92,58,.2);}
+.chip.g:hover,.chip.g.on{background:var(--green);color:white;}
+
+/* ===== RATING ===== */
+.rating-row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.rbtn{padding:5px 13px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:2px solid transparent;transition:all .15s;letter-spacing:.03em;}
+.rbtn.n{background:var(--green-light);color:var(--green);border-color:var(--green);}
+.rbtn.m{background:#fef3e2;color:#92520a;border-color:#c87d2a;}
+.rbtn.s{background:#fde8e8;color:var(--red);border-color:var(--red);}
+.rbtn.n.on{background:var(--green);color:white;}
+.rbtn.m.on{background:#c87d2a;color:white;}
+.rbtn.s.on{background:var(--red);color:white;}
+
+/* ===== XRAY BUILDER ===== */
+.xb-step{margin-bottom:14px;}
+.xb-step-label{font-size:10px;font-weight:700;color:var(--ink-light);letter-spacing:.07em;text-transform:uppercase;margin-bottom:7px;}
+.xb-toggle-group{display:flex;gap:0;border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.xb-toggle-group.wrap{flex-wrap:wrap;border-radius:var(--radius);}
+.xbt{flex:1;padding:9px 8px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;background:white;color:var(--ink-light);border:none;border-right:1px solid var(--border);transition:all .18s;white-space:nowrap;line-height:1.3;}
+.xbt:last-child{border-right:none;}
+.xbt:hover{background:var(--accent-light);color:var(--accent);}
+.xbt.on{background:var(--accent);color:white;}
+.xbt.on.lf{background:#2c5f8a;}
+.xbt.on.rf{background:#7a3030;}
+.xbt.on.lh{background:#1a5c3a;}
+.xbt.on.rh{background:#7a5a10;}
+.xbt.multi{flex:none;min-width:80px;padding:8px 12px;}
+/* joint chips */
+.joint-chip-row{display:flex;flex-wrap:wrap;gap:6px;}
+.jchip{padding:7px 14px;border-radius:var(--radius);cursor:pointer;font-size:12px;font-weight:600;background:white;color:var(--ink);border:2px solid var(--border);transition:all .15s;user-select:none;}
+.jchip:hover{border-color:var(--accent);background:var(--accent-light);color:var(--accent);}
+.jchip.on{background:var(--accent);border-color:var(--accent);color:white;}
+/* finding type chips */
+.fchip{padding:6px 13px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;background:white;border:2px solid var(--border);transition:all .15s;user-select:none;}
+.fchip:hover{border-color:#b8860b;background:#fef9ec;}
+.fchip.on{background:#b8860b;border-color:#b8860b;color:white;}
+/* location chips */
+.lchip{padding:5px 11px;border-radius:20px;cursor:pointer;font-size:11px;background:white;border:1.5px solid var(--border);transition:all .15s;user-select:none;}
+.lchip:hover{border-color:var(--accent);background:var(--accent-light);}
+.lchip.on{background:var(--accent-light);border-color:var(--accent);color:var(--accent);font-weight:600;}
+/* finding card list */
+.xray-findings-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.xfcard{background:var(--paper-warm);border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 14px;display:flex;align-items:center;gap:10px;}
+.xfcard-tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;}
+.xfcard-tag.LF{background:#ddeeff;color:#1a4a7a;}
+.xfcard-tag.RF{background:#ffe0e0;color:#7a2020;}
+.xfcard-tag.LH{background:#e0f4ea;color:#1a5c3a;}
+.xfcard-tag.RH{background:#fff4d0;color:#7a5a10;}
+.xfcard-body{flex:1;font-size:13px;font-weight:600;color:var(--ink);}
+.xfcard-sub{font-size:11px;color:var(--ink-light);margin-top:2px;}
+.xfcard-del{background:none;border:none;cursor:pointer;font-size:16px;color:var(--ink-light);line-height:1;padding:2px 4px;border-radius:4px;}
+.xfcard-del:hover{background:#fde8e8;color:var(--red);}
+/* builder panel */
+.xb-panel{background:var(--accent-light);border:1.5px solid rgba(44,95,138,.25);border-radius:var(--radius);padding:14px;margin-bottom:12px;}
+.xb-panel-title{font-size:11px;font-weight:700;color:var(--accent);margin-bottom:12px;letter-spacing:.04em;}
+.xb-add-btn{padding:8px 18px;background:var(--accent);color:white;border:none;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;}
+.xb-add-btn:hover{background:var(--accent-mid);}
+.xb-add-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ===== SCOPE UI ===== */
+.scope-grade{display:flex;gap:0;border:2px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:14px;}
+.grade-btn{flex:1;padding:10px 6px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;background:white;color:var(--ink-light);border:none;border-right:1px solid var(--border);transition:all .2s;line-height:1.3;}
+.grade-btn:last-child{border-right:none;}
+.grade-btn:hover{background:var(--accent-light);}
+.grade-btn.on.g1{background:#e8f4ed;color:var(--green);}
+.grade-btn.on.g2{background:#fff8e1;color:#7b5800;}
+.grade-btn.on.g3{background:#fff3e0;color:#bf5000;}
+.grade-btn.on.g4{background:#fde8e8;color:var(--red);}
+.grade-required{font-size:10px;color:var(--red);font-weight:700;margin-left:4px;}
+.scope-checks{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
+.sc-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1.5px solid var(--border-light);border-radius:4px;cursor:pointer;transition:all .15s;background:white;}
+.sc-item:hover{border-color:var(--accent);background:var(--accent-light);}
+.sc-item.on{border-color:var(--accent);background:var(--accent-light);}
+.sc-item input[type=checkbox]{width:14px;height:14px;accent-color:var(--accent);flex-shrink:0;cursor:pointer;}
+.sc-item label{font-size:12px;cursor:pointer;color:var(--ink);}
+.scope-note{margin-top:10px;}
+
+/* ===== ACTION BAR ===== */
+.action-bar{background:var(--paper);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+.action-left{display:flex;gap:8px;flex-wrap:wrap;}
+.btn{padding:9px 18px;border-radius:var(--radius);font-family:var(--font-sans);font-size:12px;font-weight:500;cursor:pointer;border:none;transition:all .2s;display:flex;align-items:center;gap:5px;}
+.btn-primary{background:var(--accent);color:white;}
+.btn-primary:hover{background:var(--accent-mid);box-shadow:0 4px 10px rgba(44,95,138,.3);}
+.btn-secondary{background:var(--paper-warm);color:var(--ink);border:1.5px solid var(--border);}
+.btn-secondary:hover{background:var(--border-light);}
+.btn-success{background:var(--green);color:white;}
+.btn-success:hover{background:#22724a;}
+.btn-danger{background:var(--red);color:white;}
+.btn-danger:hover{background:#a33;}
+.btn-ghost{background:transparent;color:var(--ink-light);border:1.5px solid var(--border);}
+.btn-ghost:hover{background:var(--paper-warm);}
+
+/* ===== SAVED LIST TAB ===== */
+.saved-toolbar{background:var(--paper);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.filter-row select,.filter-row input{font-family:var(--font-sans);font-size:12px;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);background:white;}
+.filter-row select:focus,.filter-row input:focus{outline:none;border-color:var(--accent);}
+
+.saved-table-wrap{background:white;border-radius:var(--radius);box-shadow:var(--shadow-lg);overflow-x:auto;}
+.saved-table{width:100%;border-collapse:collapse;font-size:12px;}
+.saved-table th{background:var(--ink);color:white;padding:9px 10px;text-align:left;font-size:11px;letter-spacing:.05em;white-space:nowrap;}
+.saved-table th:first-child{width:36px;text-align:center;}
+.saved-table td{padding:9px 10px;border-bottom:1px solid var(--border-light);vertical-align:middle;}
+.saved-table tr:hover td{background:var(--accent-light);}
+.saved-table tr.sel td{background:#e8f4ed;}
+.saved-table .hname{font-family:var(--font-serif);font-weight:700;font-size:13px;}
+.saved-table .rating-cell .rbadge{display:inline-block;padding:2px 9px;border-radius:12px;font-size:10px;font-weight:700;}
+.rbadge.n{background:var(--green-light);color:var(--green);}
+.rbadge.m{background:#fef3e2;color:#92520a;}
+.rbadge.s{background:#fde8e8;color:var(--red);}
+.row-actions{display:flex;gap:4px;}
+.row-btn{padding:4px 10px;font-size:11px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:white;font-family:var(--font-sans);transition:all .15s;}
+.row-btn:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent);}
+.row-btn.del:hover{background:#fde8e8;border-color:var(--red);color:var(--red);}
+
+.bulk-bar{background:var(--accent);color:white;border-radius:var(--radius);padding:10px 18px;display:flex;align-items:center;gap:12px;margin-bottom:10px;font-size:13px;}
+.bulk-bar.hidden{display:none;}
+
+/* ===== PREVIEW LAYOUT ===== */
+.preview-layout{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start;}
+@media(max-width:900px){.preview-layout{grid-template-columns:1fr;}}
+
+/* ===== DOCUMENT ===== */
+.doc-wrap{background:white;border-radius:var(--radius);box-shadow:var(--shadow-lg);overflow:hidden;}
+.doc-paper{padding:36px 44px;font-family:var(--font-serif);min-height:860px;position:relative;}
+.doc-hd{text-align:center;padding-bottom:18px;margin-bottom:16px;border-bottom:3px double var(--ink);position:relative;}
+.doc-clinic{font-size:9px;color:var(--ink-light);letter-spacing:.12em;font-family:var(--font-sans);font-weight:500;margin-bottom:6px;}
+.doc-title{font-size:21px;font-weight:700;letter-spacing:.08em;}
+.doc-title-en{font-size:11px;color:var(--ink-light);font-style:italic;margin-top:3px;font-family:'IM Fell English',serif;}
+.doc-seal-area{position:absolute;right:0;top:50%;transform:translateY(-50%);}
+.doc-seal{width:54px;height:54px;border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--accent);font-family:var(--font-sans);font-weight:700;text-align:center;line-height:1.3;}
+.doc-meta{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12px;font-family:var(--font-sans);}
+.doc-meta td{padding:5px 9px;border:1px solid var(--border);vertical-align:top;}
+.doc-meta .lbl{background:var(--paper-warm);color:var(--ink-light);font-size:10px;font-weight:600;letter-spacing:.04em;white-space:nowrap;width:78px;}
+.doc-meta .val{font-weight:500;}.doc-meta .val.hn{font-family:var(--font-serif);font-size:15px;font-weight:700;}
+.doc-sec{margin-bottom:13px;}
+.doc-sec-title{font-size:11px;font-weight:700;letter-spacing:.07em;color:white;background:var(--ink);padding:4px 10px;display:flex;align-items:center;gap:6px;}
+.doc-sec-title .num{background:var(--accent);width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;}
+.doc-sec-body{border:1px solid var(--border);border-top:none;padding:10px 12px;font-size:12px;font-family:var(--font-sans);line-height:1.8;white-space:pre-wrap;min-height:48px;}
+.drating{display:inline-block;padding:2px 9px;border-radius:12px;font-size:10px;font-weight:700;margin-top:5px;}
+.drating.n{background:var(--green-light);color:var(--green);border:1px solid var(--green);}
+.drating.m{background:#fef3e2;color:#92520a;border:1px solid #c87d2a;}
+.drating.s{background:#fde8e8;color:var(--red);border:1px solid var(--red);}
+.doc-sig{margin-top:24px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:28px;font-size:11px;font-family:var(--font-sans);}
+.sig-item{text-align:right;}
+.sig-lbl{font-size:9px;color:var(--ink-light);letter-spacing:.06em;margin-bottom:3px;}
+.sig-val{font-size:13px;font-family:var(--font-serif);font-weight:600;}
+.sig-line{width:160px;border-bottom:1.5px solid var(--ink);margin-top:26px;}
+
+/* ===== SIDEBAR ===== */
+.sb-card{background:var(--paper);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px;}
+.sb-hd{background:var(--paper-warm);padding:9px 14px;font-size:11px;font-weight:700;color:var(--ink-light);letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--border-light);}
+.sb-bd{padding:12px 14px;}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--ink);color:white;padding:11px 18px;border-radius:var(--radius);font-size:13px;opacity:0;transform:translateY(10px);transition:all .3s;z-index:9999;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.ok{background:var(--green);}
+
+/* ===== SPINNER ===== */
+.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:sp .7s linear infinite;display:inline-block;}
+@keyframes sp{to{transform:rotate(360deg);}}
+
+/* ===== PRINT ===== */
+@media print{
+  body{background:white!important;}
+  .app-header,.action-bar,.sb-panel,.saved-toolbar,.bulk-bar,
+  .panel:not(.active),.no-print{display:none!important;}
+  .app-body{padding:0!important;max-width:none!important;}
+  .doc-paper{padding:18mm 15mm!important;}
+  .doc-wrap{box-shadow:none!important;}
+  .preview-layout{grid-template-columns:1fr!important;}
+  #sum-print-header{display:block!important;}
+  .saved-table-wrap{box-shadow:none!important;}
+  .saved-table{font-size:10px!important;}
+  .saved-table th{font-size:9px!important;padding:5px 6px!important;}
+  .saved-table td{padding:6px!important;}
+  @page{margin:0;size:A4 portrait;}
+}
+
+/* ===== MOBILE ===== */
+.mtabs{display:none;background:var(--ink);padding:0 8px 8px;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.mtab{padding:9px 16px;border-radius:var(--radius);cursor:pointer;font-size:13px;color:rgba(255,255,255,.6);white-space:nowrap;border:1px solid transparent;min-height:44px;display:flex;align-items:center;}
+.mtab.active{color:white;background:var(--accent);}
+
+/* ===== 768px以下（iPad縦・大画面スマホ） ===== */
+@media(max-width:768px){
+  .mtabs{display:flex;}
+  .header-tabs{display:none;}
+  .g3,.g4,.g5{grid-template-columns:1fr 1fr;}
+  .g2{grid-template-columns:1fr;}
+  .xray-matrix{grid-template-columns:1fr;}
+  .scope-checks{grid-template-columns:1fr;}
+  .app-body{padding:12px 10px;}
+  /* カードの余白縮小 */
+  .card-bd{padding:14px 12px;}
+  .acc-bd{padding:12px;}
+  /* フォーム入力を大きく */
+  .field input,.field select,.field textarea{font-size:16px;padding:11px 12px;}
+  /* ボタンを大きく */
+  .btn{padding:12px 18px;font-size:14px;min-height:44px;}
+  .btn-ai{padding:11px 14px;font-size:13px;min-height:44px;}
+  .rbtn{padding:10px 16px;font-size:13px;min-height:44px;}
+  /* チップを大きく */
+  .chip{padding:8px 14px;font-size:13px;min-height:40px;display:inline-flex;align-items:center;}
+  .jchip{padding:12px 16px;font-size:13px;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .fchip{padding:10px 14px;font-size:13px;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .lchip{padding:9px 14px;font-size:12px;min-height:40px;display:inline-flex;align-items:center;}
+  /* 関節チップをグリッドに */
+  .joint-chip-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  /* 病変種類チップをグリッドに */
+  #xb-finding{display:grid!important;grid-template-columns:1fr 1fr;gap:8px;}
+  /* グレードボタン */
+  .grade-btn{padding:12px 6px;font-size:12px;min-height:56px;}
+  /* 評価ボタン行 */
+  .rating-row{gap:6px;flex-wrap:wrap;}
+  /* 対処方針チェック */
+  .action-checks{grid-template-columns:1fr;}
+  .ac-item{padding:11px 12px;min-height:44px;}
+  /* 市場評価 */
+  .mgbtn{padding:11px 6px;font-size:11px;min-height:52px;}
+  /* アクションバー */
+  .action-bar{padding:12px;}
+  .action-left{gap:8px;}
+  /* スコープチェック */
+  .sc-item{min-height:44px;padding:10px;}
+  /* 鎮静剤 */
+  #sedation-detail .field input,
+  #sedation-detail .field select{font-size:16px;}
+  /* タブレット縦向き用グリッド調整 */
+  .xb-toggle-group .xbt{padding:11px 6px;min-height:48px;}
+}
+
+/* ===== 480px以下（iPhone標準サイズ） ===== */
+@media(max-width:480px){
+  .g3,.g4,.g5{grid-template-columns:1fr;}
+  .g2{grid-template-columns:1fr;}
+  .app-body{padding:8px 8px;}
+  .card-bd{padding:12px 10px;}
+  /* グレードボタンを縦2×2に */
+  .scope-grade{display:grid;grid-template-columns:1fr 1fr;flex-wrap:wrap;}
+  .grade-btn{padding:10px 4px;font-size:11px;min-height:52px;border-right:none;border-bottom:1px solid var(--border);}
+  .grade-btn:nth-child(odd){border-right:1px solid var(--border);}
+  /* 評価ボタンを縦積みに */
+  .rating-row{flex-direction:column;align-items:flex-start;}
+  .rbtn{width:100%;text-align:center;justify-content:center;}
+  /* アクションバー縦積み */
+  .action-bar{flex-direction:column;align-items:stretch;}
+  .action-left{flex-direction:column;}
+  .action-left .btn{width:100%;justify-content:center;}
+  /* ヘッダーブランド縮小 */
+  .header-title{font-size:12px;}
+  .header-subtitle{display:none;}
+  /* 保存一覧テーブルを横スクロールに */
+  .saved-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  /* AI入力行 */
+  .ai-row{flex-direction:column;}
+  .ai-kw{width:100%;}
+  .btn-ai{width:100%;justify-content:center;}
+  /* xbビルダー左右前後ボタン */
+  .xb-toggle-group .xbt{min-height:48px;font-size:13px;}
+  /* 所見追加ボタン */
+  .xb-add-btn{width:100%;justify-content:center;padding:14px;}
+  /* 市場評価グリッド */
+  .market-grade-row{flex-direction:column;}
+  .mgbtn{border-right:none;border-bottom:1px solid var(--border);}
+  .mgbtn:last-child{border-bottom:none;}
+  /* 保存ボタン強調 */
+  .btn-primary{font-size:15px;padding:14px 20px;}
+}
+
+/* ===== タッチデバイス最適化 ===== */
+.is-touch .htab,.is-touch .chip,.is-touch .jchip,.is-touch .fchip,
+.is-touch .lchip,.is-touch .rbtn,.is-touch .btn,.is-touch .grade-btn,
+.is-touch .mgbtn,.is-touch .xbt{
+  -webkit-tap-highlight-color: transparent;
+  cursor:default;
+}
+.is-touch .acc-hd{min-height:48px;}
+/* スクロール改善 */
+.app-body{-webkit-overflow-scrolling:touch;}
+.saved-table-wrap{-webkit-overflow-scrolling:touch;}
+
+.divider{height:1px;background:var(--border-light);margin:12px 0;}
+.empty-st{text-align:center;padding:40px 20px;color:var(--ink-light);}
+.empty-st .icon{font-size:36px;margin-bottom:10px;opacity:.4;}
+.empty-st p{font-size:13px;}
+.count-badge{display:inline-flex;align-items:center;justify-content:center;background:var(--accent);color:white;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:9px;padding:0 5px;margin-left:5px;}
+
+/* ===== 対処方針パネル ===== */
+.action-panel{background:#fff8f0;border:1.5px solid rgba(139,32,32,.25);border-radius:var(--radius);padding:14px 16px;margin-top:10px;}
+.action-panel-title{font-size:11px;font-weight:700;color:var(--red);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.action-checks{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;}
+.ac-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1.5px solid rgba(139,32,32,.18);border-radius:4px;cursor:pointer;transition:all .15s;background:white;}
+.ac-item:hover{border-color:var(--red);background:#fde8e8;}
+.ac-item.on{border-color:var(--red);background:#fde8e8;}
+.ac-item input[type=checkbox]{width:14px;height:14px;accent-color:var(--red);flex-shrink:0;cursor:pointer;}
+.ac-item label{font-size:12px;cursor:pointer;color:var(--ink);font-weight:500;}
+
+/* ===== 総合評価3段階 ===== */
+.market-eval-wrap{background:var(--accent-light);border:1.5px solid rgba(44,95,138,.25);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;}
+.market-eval-title{font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.06em;margin-bottom:12px;}
+.market-eval-section{margin-bottom:12px;}
+.market-eval-section-label{font-size:11px;font-weight:700;color:var(--ink);margin-bottom:6px;}
+.market-grade-row{display:flex;gap:0;border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:6px;}
+.mgbtn{flex:1;padding:8px 6px;text-align:center;cursor:pointer;font-size:11px;font-weight:600;background:white;color:var(--ink-light);border:none;border-right:1px solid var(--border);transition:all .18s;line-height:1.4;}
+.mgbtn:last-child{border-right:none;}
+.mgbtn:hover{background:var(--accent-light);}
+.mgbtn.on.g-pos{background:#1a5c3a;color:white;}
+.mgbtn.on.g-neu{background:#7a5a10;color:white;}
+.mgbtn.on.g-neg{background:var(--red);color:white;}
+.market-comment{font-family:var(--font-sans);font-size:12px;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);width:100%;resize:none;line-height:1.6;min-height:52px;}
+.market-comment:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light);}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <div class="header-logo">🐎</div>
+      <div>
+        <div class="header-title">レポジトリー検査 診断書作成システム</div>
+        <div class="header-subtitle"><span class="autosave-dot"></span>北洋ホースクリニック — <span id="sync-status-label">ローカル保存中</span></div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <!-- Drive同期ステータス -->
+      <div id="drive-status-wrap" style="display:flex;align-items:center;gap:8px;">
+        <div id="drive-status-bar" style="display:none;align-items:center;gap:6px;background:rgba(255,255,255,.1);padding:5px 12px;border-radius:20px;font-size:11px;color:white;">
+          <span id="drive-user-icon" style="font-size:14px;">👤</span>
+          <span id="drive-user-name">未ログイン</span>
+          <button onclick="driveSignOut()" style="background:rgba(255,255,255,.2);border:none;color:white;padding:2px 8px;border-radius:10px;font-size:10px;cursor:pointer;margin-left:4px;">ログアウト</button>
+        </div>
+        <button id="btn-drive-login" onclick="driveSignIn()" style="background:#4285f4;color:white;border:none;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Googleでログイン
+        </button>
+        <button id="btn-drive-sync" onclick="driveSyncNow()" style="display:none;background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);padding:7px 12px;border-radius:6px;font-size:12px;cursor:pointer;white-space:nowrap;">
+          🔄 今すぐ同期
+        </button>
+      </div>
+      <div class="header-tabs">
+        <div class="htab active" onclick="switchTab('input')">✏️ 入力・作成</div>
+        <div class="htab" onclick="switchTab('saved')">📁 保存一覧 <span class="count-badge" id="hdr-count">0</span></div>
+        <div class="htab" onclick="switchTab('preview')">📄 プレビュー</div>
+        <div class="htab" onclick="switchTab('summary')">📋 まとめ一覧</div>
+      </div>
+    </div>
+  </div>
+  <div class="mtabs">
+    <div class="mtab active" onclick="switchTab('input')">✏️ 入力</div>
+    <div class="mtab" onclick="switchTab('saved')">📁 一覧</div>
+    <div class="mtab" onclick="switchTab('preview')">📄 印刷</div>
+    <div class="mtab" onclick="switchTab('summary')">📋 まとめ</div>
+  </div>
+</header>
+
+<div class="app-body">
+
+<!-- ======================================================
+     TAB: 入力
+====================================================== -->
+<div class="panel active" id="panel-input">
+
+  <!-- セール情報 -->
+  <div class="card">
+    <div class="card-hd">🏇 セール情報</div>
+    <div class="card-bd">
+      <div class="g5">
+        <div class="field">
+          <label>セール名</label>
+          <select id="f-sale" oninput="autoSave()">
+            <option value="">選択</option>
+            <option>セレクトセール</option>
+            <option>セレクションセール</option>
+            <option>トレーニングセール</option>
+            <option>サマーセール</option>
+            <option>セプテンバーセール</option>
+            <option>オータムセール</option>
+            <option>その他</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>セリ番号</label>
+          <input type="text" id="f-num" placeholder="例：123" oninput="autoSave()">
+        </div>
+        <div class="field">
+          <label>撮影場所</label>
+          <input type="text" id="f-location" placeholder="例：A厩舎前" oninput="autoSave()">
+        </div>
+        <div class="field">
+          <label>検査日</label>
+          <input type="date" id="f-date" oninput="autoSave()">
+        </div>
+        <div class="field">
+          <label>担当獣医師</label>
+          <select id="f-vet" onchange="autoSave()">
+            <option value="佐藤 和茂">佐藤 和茂</option>
+            <option value="関 奏絵">関 奏絵</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 馬の情報 -->
+  <div class="card">
+    <div class="card-hd">🐴 馬の基本情報</div>
+    <div class="card-bd">
+      <div class="g3" style="margin-bottom:12px;">
+        <div class="field" style="grid-column:span 1;">
+          <label>馬名</label>
+          <input type="text" id="f-name" placeholder="馬名を入力" oninput="autoSave()" style="font-size:15px;font-weight:600;">
+        </div>
+        <div class="field">
+          <label>性別</label>
+          <select id="f-sex" oninput="autoSave()">
+            <option value="">-</option><option>牡</option><option>牝</option><option>騸</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>毛色</label>
+          <select id="f-color" oninput="autoSave()">
+            <option value="">-</option>
+            <option>鹿毛</option><option>栗毛</option><option>黒鹿毛</option>
+            <option>青鹿毛</option><option>芦毛</option><option>白毛</option>
+            <option>青毛</option><option>佐目毛</option>
+          </select>
+        </div>
+      </div>
+      <div class="g3">
+        <div class="field"><label>生年月日</label><input type="date" id="f-dob" oninput="autoSave()"></div>
+        <div class="field"><label>父馬</label><input type="text" id="f-sire" placeholder="父馬名" oninput="autoSave()"></div>
+        <div class="field"><label>所有者</label><input type="text" id="f-breeder" placeholder="所有者名" oninput="autoSave()"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 検査所見 -->
+  <div class="card">
+    <div class="card-hd">🔍 検査所見入力</div>
+    <div class="card-bd">
+
+      <!-- ① 身体検査 -->
+      <div class="acc">
+        <div class="acc-hd" onclick="toggleAcc('phy')">
+          <span>① 身体検査所見</span><span id="acc-phy-tog">▼</span>
+        </div>
+        <div class="acc-bd" id="acc-phy">
+          <div class="chips">
+            <span style="font-size:10px;color:var(--ink-light);margin-right:3px;">クイック：</span>
+            <span class="chip g" onclick="chipAdd(this,'kw-phy')">異常なし</span>
+            <span class="chip" onclick="chipAdd(this,'kw-phy')">蹄葉炎痕跡</span>
+            <span class="chip" onclick="chipAdd(this,'kw-phy')">球節腫脹</span>
+            <span class="chip" onclick="chipAdd(this,'kw-phy')">飛節内腫</span>
+            <span class="chip" onclick="chipAdd(this,'kw-phy')">屈腱炎疑い</span>
+            <span class="chip" onclick="chipAdd(this,'kw-phy')">軽度跛行</span>
+            <span class="chip" onclick="chipAdd(this,'kw-phy')">裂蹄</span>
+          </div>
+          <div class="ai-row">
+            <div class="ai-kw"><input type="text" id="kw-phy" placeholder="キーワード入力（Enterで生成）" onkeydown="if(event.key==='Enter')genAI('phy')"></div>
+            <button class="btn-ai" id="btn-phy" onclick="genAI('phy')"><span id="ico-phy">✨</span> AI生成</button>
+          </div>
+          <div class="ai-out-wrap">
+            <textarea id="out-phy" placeholder="所見文（AI生成または手入力）" oninput="autoSave()"></textarea>
+            <div class="ai-badge" id="badge-phy" style="display:none">AI生成済</div>
+          </div>
+          <div class="rating-row">
+            <span style="font-size:10px;color:var(--ink-light);">評価：</span>
+            <button class="rbtn n" onclick="setRating('phy','n',this)">異常なし</button>
+            <button class="rbtn m" onclick="setRating('phy','m',this)">軽度所見あり</button>
+            <button class="rbtn s" onclick="setRating('phy','s',this)">重要所見あり</button>
+          </div>
+          <div class="action-panel" id="ap-phy" style="display:none;">
+            <div class="action-panel-title">⚕️ 対処方針（所有者・管理者への指導）</div>
+            <div class="action-checks" id="apc-phy">
+              <label class="ac-item"><input type="checkbox" id="ap-phy-watch" onchange="autoSave()"><label for="ap-phy-watch">経過観察</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-phy-recheck" onchange="autoSave()"><label for="ap-phy-recheck">再検査を推奨</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-phy-xray" onchange="autoSave()"><label for="ap-phy-xray">X線追加撮影</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-phy-rest" onchange="autoSave()"><label for="ap-phy-rest">安静・運動制限</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-phy-surgery" onchange="autoSave()"><label for="ap-phy-surgery">外科的処置を検討</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-phy-spec" onchange="autoSave()"><label for="ap-phy-spec">専門医への紹介</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-phy-med" onchange="autoSave()"><label for="ap-phy-med">投薬・保存療法</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-phy-other" onchange="autoSave()"><label for="ap-phy-other">その他（下記参照）</label></label>
+            </div>
+            <textarea id="ap-phy-note" placeholder="具体的な指導内容・補足事項を自由に記入" class="market-comment" oninput="autoSave()"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ② レントゲン -->
+      <div class="acc">
+        <div class="acc-hd" onclick="toggleAcc('xray')">
+          <span>② レントゲン（X線）検査所見</span><span id="acc-xray-tog">▼</span>
+        </div>
+        <div class="acc-bd" id="acc-xray">
+
+          <!-- 登録済み所見リスト -->
+          <div id="xray-findings-list" class="xray-findings-list"></div>
+
+          <!-- 所見ビルダー -->
+          <div class="xb-panel">
+            <div class="xb-panel-title">＋ 所見を追加</div>
+
+            <!-- STEP1: 左右 -->
+            <div class="xb-step">
+              <div class="xb-step-label">① 左右</div>
+              <div class="xb-toggle-group" id="xb-lr">
+                <button class="xbt" onclick="xbSelect('lr','左',this)">左</button>
+                <button class="xbt" onclick="xbSelect('lr','右',this)">右</button>
+                <button class="xbt" onclick="xbSelect('lr','両側',this)">両側</button>
+              </div>
+            </div>
+
+            <!-- STEP2: 前後 -->
+            <div class="xb-step">
+              <div class="xb-step-label">② 前後</div>
+              <div class="xb-toggle-group" id="xb-fb">
+                <button class="xbt" onclick="xbSelect('fb','前',this)">前肢</button>
+                <button class="xbt" onclick="xbSelect('fb','後',this)">後肢</button>
+              </div>
+            </div>
+
+            <!-- STEP3: 関節 -->
+            <div class="xb-step">
+              <div class="xb-step-label">③ 関節・部位</div>
+              <div class="joint-chip-row" id="xb-joint">
+                <div class="jchip" onclick="xbSelectJoint('球節',this)">球節<br><span style="font-size:9px;font-weight:400;">MCP/MTP</span></div>
+                <div class="jchip" onclick="xbSelectJoint('腕節',this)">腕節<br><span style="font-size:9px;font-weight:400;">Carpus</span></div>
+                <div class="jchip" onclick="xbSelectJoint('飛節',this)">飛節<br><span style="font-size:9px;font-weight:400;">Tarsus</span></div>
+                <div class="jchip" onclick="xbSelectJoint('膝関節',this)">膝関節<br><span style="font-size:9px;font-weight:400;">Stifle</span></div>
+              </div>
+            </div>
+
+            <!-- STEP4: 病変種類 -->
+            <div class="xb-step">
+              <div class="xb-step-label">④ 病変の種類</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;" id="xb-finding">
+                <div class="fchip" onclick="xbSelectFinding('OCD',this)">OCD<br><span style="font-size:9px;font-weight:400;">骨軟骨症</span></div>
+                <div class="fchip" onclick="xbSelectFinding('骨嚢胞',this)">骨嚢胞<br><span style="font-size:9px;font-weight:400;">Bone Cyst</span></div>
+                <div class="fchip" onclick="xbSelectFinding('骨片',this)">骨片<br><span style="font-size:9px;font-weight:400;">Chip/Fragment</span></div>
+                <div class="fchip" onclick="xbSelectFinding('骨棘',this)">骨棘<br><span style="font-size:9px;font-weight:400;">Osteophyte</span></div>
+                <div class="fchip" onclick="xbSelectFinding('軟骨下骨不整',this)">軟骨下骨不整<br><span style="font-size:9px;font-weight:400;">Subchondral</span></div>
+                <div class="fchip" onclick="xbSelectFinding('骨膜反応',this)">骨膜反応<br><span style="font-size:9px;font-weight:400;">Periosteal</span></div>
+                <div class="fchip" onclick="xbSelectFinding('骨硬化',this)">骨硬化<br><span style="font-size:9px;font-weight:400;">Sclerosis</span></div>
+                <div class="fchip" onclick="xbSelectFinding('関節腔狭小化',this)">関節腔狭小化<br><span style="font-size:9px;font-weight:400;">Joint space</span></div>
+              </div>
+            </div>
+
+            <!-- STEP5: 詳細部位（関節に応じて動的表示） -->
+            <div class="xb-step" id="xb-detail-wrap" style="display:none;">
+              <div class="xb-step-label">⑤ 詳細部位 <span style="font-size:9px;color:var(--accent);font-weight:400;letter-spacing:0;">（複数選択可）</span></div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;" id="xb-detail"></div>
+            </div>
+
+            <!-- STEP6: 重症度 -->
+            <div class="xb-step">
+              <div class="xb-step-label">⑥ 重症度</div>
+              <div class="xb-toggle-group" id="xb-severity">
+                <button class="xbt" onclick="xbSelect('severity','軽度',this)">軽度</button>
+                <button class="xbt" onclick="xbSelect('severity','中等度',this)">中等度</button>
+                <button class="xbt" onclick="xbSelect('severity','重度',this)">重度</button>
+                <button class="xbt" onclick="xbSelect('severity','',this)">記載なし</button>
+              </div>
+            </div>
+
+            <!-- STEP7: 所見コメント（フリーテキスト） -->
+            <div class="xb-step">
+              <div class="xb-step-label">⑦ 所見コメント（任意）</div>
+              <textarea id="xb-comment" placeholder="例：病変のサイズ、形状、辺縁の性状など追記事項を自由に記入" style="font-family:var(--font-sans);font-size:12px;padding:8px 11px;border:1.5px solid var(--border);border-radius:var(--radius);width:100%;resize:vertical;min-height:60px;line-height:1.6;" oninput="autoSave()"></textarea>
+            </div>
+
+            <!-- プレビュー表示 -->
+            <div id="xb-preview" style="background:white;border:1.5px solid var(--accent);border-radius:var(--radius);padding:10px 14px;margin-bottom:10px;font-size:13px;font-weight:600;color:var(--accent);min-height:36px;"></div>
+
+            <!-- 追加ボタン -->
+            <button class="xb-add-btn" onclick="xbAddFinding()" id="xb-add-btn" disabled>＋ この所見を追加</button>
+          </div>
+
+          <!-- 全体AI文章化 + テキスト -->
+          <div>
+            <div style="font-size:11px;color:var(--ink-light);margin-bottom:6px;">追加メモ・AI文章化（上記所見カードを統合して文章にします）</div>
+            <div class="ai-row">
+              <div class="ai-kw"><input type="text" id="kw-xray" placeholder="追加キーワード（任意）" onkeydown="if(event.key==='Enter')genAI('xray')"></div>
+              <button class="btn-ai" id="btn-xray" onclick="genAI('xray')"><span id="ico-xray">✨</span> AI統合文</button>
+            </div>
+            <div class="ai-out-wrap">
+              <textarea id="out-xray" placeholder="AI統合文または手入力" oninput="autoSave()"></textarea>
+              <div class="ai-badge" id="badge-xray" style="display:none">AI生成済</div>
+            </div>
+          </div>
+          <div class="rating-row">
+            <span style="font-size:10px;color:var(--ink-light);">評価：</span>
+            <button class="rbtn n" onclick="setRating('xray','n',this)">異常なし</button>
+            <button class="rbtn m" onclick="setRating('xray','m',this)">軽度所見あり</button>
+            <button class="rbtn s" onclick="setRating('xray','s',this)">重要所見あり</button>
+          </div>
+          <div class="action-panel" id="ap-xray" style="display:none;">
+            <div class="action-panel-title">⚕️ 対処方針（所有者・管理者への指導）</div>
+            <div class="action-checks" id="apc-xray">
+              <label class="ac-item"><input type="checkbox" id="ap-xray-watch" onchange="autoSave()"><label for="ap-xray-watch">経過観察</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-xray-recheck" onchange="autoSave()"><label for="ap-xray-recheck">再検査を推奨</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-xray-addshot" onchange="autoSave()"><label for="ap-xray-addshot">追加撮影（他方向）</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-xray-rest" onchange="autoSave()"><label for="ap-xray-rest">安静・運動制限</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-xray-surgery" onchange="autoSave()"><label for="ap-xray-surgery">外科的処置を検討</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-xray-arthro" onchange="autoSave()"><label for="ap-xray-arthro">関節鏡手術を検討</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-xray-ct" onchange="autoSave()"><label for="ap-xray-ct">CT・MRI検査を推奨</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-xray-other" onchange="autoSave()"><label for="ap-xray-other">その他（下記参照）</label></label>
+            </div>
+            <textarea id="ap-xray-note" placeholder="具体的な指導内容・補足事項を自由に記入" class="market-comment" oninput="autoSave()"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ③ 内視鏡 -->
+      <div class="acc">
+        <div class="acc-hd" onclick="toggleAcc('scope')">
+          <span>③ 内視鏡検査所見（咽頭・喉頭）</span><span id="acc-scope-tog">▼</span>
+        </div>
+        <div class="acc-bd" id="acc-scope">
+
+          <!-- 鎮静剤使用チェック -->
+          <div style="margin-bottom:14px;padding:10px 14px;background:var(--gold-light,#fef9ec);border:1.5px solid rgba(184,134,11,.3);border-radius:var(--radius);">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink);">
+                <input type="checkbox" id="sc-sedation" onchange="toggleSedation(this)" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer;">
+                鎮静剤を使用した
+              </label>
+              <span style="font-size:11px;color:var(--ink-light);">（使用した場合は薬剤・用量を記入）</span>
+            </div>
+            <div id="sedation-detail" style="display:none;margin-top:10px;display:none;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div class="field">
+                  <label>薬剤名</label>
+                  <select id="sc-sedation-drug" onchange="autoSave()" style="font-family:var(--font-sans);font-size:13px;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);background:white;">
+                    <option value="">選択または下欄に入力</option>
+                    <option>デトミジン（Domosedan）</option>
+                    <option>キシラジン（Rompun）</option>
+                    <option>アセプロマジン</option>
+                    <option>ブトルファノール</option>
+                    <option>ロミフィジン</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>用量</label>
+                  <input type="text" id="sc-sedation-dose" placeholder="例：0.01 mg/kg IV" oninput="autoSave()" style="font-family:var(--font-sans);font-size:13px;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);">
+                </div>
+                <div class="field" style="grid-column:span 2;">
+                  <label>その他・備考</label>
+                  <input type="text" id="sc-sedation-note" placeholder="例：検査前10分投与" oninput="autoSave()" style="font-family:var(--font-sans);font-size:13px;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 喉頭片麻痺グレード（必須） -->
+          <div style="margin-bottom:14px;">
+            <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;">
+              喉頭片麻痺 評価グレード <span class="grade-required">（必須）</span>
+            </div>
+            <div class="scope-grade" id="scope-grade-sel">
+              <button class="grade-btn g1" onclick="setGrade(1,this)">
+                <div style="font-size:14px;font-weight:800;">Grade 1</div>
+                <div style="font-size:10px;margin-top:2px;">完全対称・正常</div>
+              </button>
+              <button class="grade-btn g2" onclick="setGrade(2,this)">
+                <div style="font-size:14px;font-weight:800;">Grade 2</div>
+                <div style="font-size:10px;margin-top:2px;">非対称あり・機能正常</div>
+              </button>
+              <button class="grade-btn g3" onclick="setGrade(3,this)">
+                <div style="font-size:14px;font-weight:800;">Grade 3</div>
+                <div style="font-size:10px;margin-top:2px;">非対称・動的閉塞疑い</div>
+              </button>
+              <button class="grade-btn g4" onclick="setGrade(4,this)">
+                <div style="font-size:14px;font-weight:800;">Grade 4</div>
+                <div style="font-size:10px;margin-top:2px;">完全片麻痺・閉塞</div>
+              </button>
+            </div>
+            <div id="grade-unset-warn" style="font-size:11px;color:var(--red);display:none;margin-top:4px;">⚠ グレードを選択してください（必須項目）</div>
+          </div>
+
+          <!-- その他の病変チェックリスト -->
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;">その他の病変（該当するものをチェック）</div>
+            <div class="scope-checks" id="scope-checks">
+              <label class="sc-item"><input type="checkbox" id="sc-sdp" onchange="autoSave()"><label for="sc-sdp">軟口蓋背方変位（DDSP）</label></label>
+              <label class="sc-item"><input type="checkbox" id="sc-pharynx" onchange="autoSave()"><label for="sc-pharynx">咽頭リンパ組織増殖（PLH）</label></label>
+              <label class="sc-item"><input type="checkbox" id="sc-guttural" onchange="autoSave()"><label for="sc-guttural">喉嚢真菌症</label></label>
+              <label class="sc-item"><input type="checkbox" id="sc-pharyngitis" onchange="autoSave()"><label for="sc-pharyngitis">咽頭炎</label></label>
+              <label class="sc-item"><input type="checkbox" id="sc-epiglottis" onchange="autoSave()"><label for="sc-epiglottis">喉頭蓋後退</label></label>
+              <label class="sc-item"><input type="checkbox" id="sc-ethmoid" onchange="autoSave()"><label for="sc-ethmoid">篩骨血腫</label></label>
+              <label class="sc-item"><input type="checkbox" id="sc-trachea" onchange="autoSave()"><label for="sc-trachea">気管分泌物増多</label></label>
+              <label class="sc-item"><input type="checkbox" id="sc-other-scope" onchange="autoSave()"><label for="sc-other-scope">その他（下記に記入）</label></label>
+            </div>
+          </div>
+
+          <!-- 補足メモ + AI -->
+          <div class="scope-note">
+            <div class="ai-row" style="margin-top:8px;">
+              <div class="ai-kw"><input type="text" id="kw-scope" placeholder="追加キーワードまたは空欄でAI文章化" onkeydown="if(event.key==='Enter')genAI('scope')"></div>
+              <button class="btn-ai" id="btn-scope" onclick="genAI('scope')"><span id="ico-scope">✨</span> AI文章化</button>
+            </div>
+            <div class="ai-out-wrap">
+              <textarea id="out-scope" placeholder="内視鏡所見文（AI生成または手入力）" oninput="autoSave()"></textarea>
+              <div class="ai-badge" id="badge-scope" style="display:none">AI生成済</div>
+            </div>
+          </div>
+          <div class="rating-row">
+            <span style="font-size:10px;color:var(--ink-light);">評価：</span>
+            <button class="rbtn n" onclick="setRating('scope','n',this)">異常なし</button>
+            <button class="rbtn m" onclick="setRating('scope','m',this)">軽度所見あり</button>
+            <button class="rbtn s" onclick="setRating('scope','s',this)">重要所見あり</button>
+          </div>
+          <div class="action-panel" id="ap-scope" style="display:none;">
+            <div class="action-panel-title">⚕️ 対処方針（所有者・管理者への指導）</div>
+            <div class="action-checks" id="apc-scope">
+              <label class="ac-item"><input type="checkbox" id="ap-scope-watch" onchange="autoSave()"><label for="ap-scope-watch">経過観察</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-scope-recheck" onchange="autoSave()"><label for="ap-scope-recheck">運動時内視鏡（再検査）</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-scope-rest" onchange="autoSave()"><label for="ap-scope-rest">安静・運動制限</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-scope-surgery" onchange="autoSave()"><label for="ap-scope-surgery">外科的処置を検討</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-scope-gutteral" onchange="autoSave()"><label for="ap-scope-gutteral">喉嚢洗浄・処置</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-scope-laser" onchange="autoSave()"><label for="ap-scope-laser">レーザー処置を検討</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-scope-disclosure" onchange="autoSave()"><label for="ap-scope-disclosure">購買者への告知推奨</label></label>
+              <label class="ac-item"><input type="checkbox" id="ap-scope-other" onchange="autoSave()"><label for="ap-scope-other">その他（下記参照）</label></label>
+            </div>
+            <textarea id="ap-scope-note" placeholder="具体的な指導内容・補足事項を自由に記入" class="market-comment" oninput="autoSave()"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ④ 総合コメント・市場評価 -->
+      <div class="acc">
+        <div class="acc-hd" onclick="toggleAcc('overall')">
+          <span>④ 総合コメント・市場評価</span><span id="acc-overall-tog">▼</span>
+        </div>
+        <div class="acc-bd" id="acc-overall">
+
+          <!-- 競走能力への影響評価 -->
+          <div class="market-eval-wrap">
+            <div class="market-eval-title">📊 客観的評価（3段階）</div>
+
+            <!-- 競走能力への影響 -->
+            <div class="market-eval-section">
+              <div class="market-eval-section-label">🏇 競走能力への影響</div>
+              <div class="market-grade-row" id="mg-racing">
+                <button class="mgbtn g-pos" onclick="setMarketGrade('racing','pos',this)">
+                  <div>影響なし</div>
+                  <div style="font-size:9px;margin-top:2px;opacity:.8;">能力に支障なし</div>
+                </button>
+                <button class="mgbtn g-neu" onclick="setMarketGrade('racing','neu',this)">
+                  <div>要経過観察</div>
+                  <div style="font-size:9px;margin-top:2px;opacity:.8;">軽度影響の可能性</div>
+                </button>
+                <button class="mgbtn g-neg" onclick="setMarketGrade('racing','neg',this)">
+                  <div>影響あり</div>
+                  <div style="font-size:9px;margin-top:2px;opacity:.8;">競走能力に影響</div>
+                </button>
+              </div>
+              <textarea id="mg-racing-comment" class="market-comment" placeholder="競走能力への影響に関するコメントを記入（例：現時点では競走能力への影響は軽微と考えられるが、調教負荷増大により悪化する可能性がある）" oninput="autoSave()"></textarea>
+            </div>
+
+            <!-- 市場における評価 -->
+            <div class="market-eval-section">
+              <div class="market-eval-section-label">💹 市場・セリにおける評価</div>
+              <div class="market-grade-row" id="mg-market">
+                <button class="mgbtn g-pos" onclick="setMarketGrade('market','pos',this)">
+                  <div>市場優位</div>
+                  <div style="font-size:9px;margin-top:2px;opacity:.8;">価格への影響小</div>
+                </button>
+                <button class="mgbtn g-neu" onclick="setMarketGrade('market','neu',this)">
+                  <div>中程度の影響</div>
+                  <div style="font-size:9px;margin-top:2px;opacity:.8;">価格交渉の余地あり</div>
+                </button>
+                <button class="mgbtn g-neg" onclick="setMarketGrade('market','neg',this)">
+                  <div>市場不利</div>
+                  <div style="font-size:9px;margin-top:2px;opacity:.8;">価格に大きく影響</div>
+                </button>
+              </div>
+              <textarea id="mg-market-comment" class="market-comment" placeholder="市場・価格への影響に関するコメントを記入（例：本所見は同年齢馬に一般的に認められる程度であり、市場価格への影響は限定的と考える）" oninput="autoSave()"></textarea>
+            </div>
+
+            <!-- 総合的な推奨 -->
+            <div class="market-eval-section" style="margin-bottom:0;">
+              <div class="market-eval-section-label">✅ 総合的な購買推奨度</div>
+              <div class="market-grade-row" id="mg-recommend">
+                <button class="mgbtn g-pos" onclick="setMarketGrade('recommend','pos',this)">
+                  <div>推奨</div>
+                  <div style="font-size:9px;margin-top:2px;opacity:.8;">購買を推奨する</div>
+                </button>
+                <button class="mgbtn g-neu" onclick="setMarketGrade('recommend','neu',this)">
+                  <div>条件付き推奨</div>
+                  <div style="font-size:9px;margin-top:2px;opacity:.8;">価格・条件次第</div>
+                </button>
+                <button class="mgbtn g-neg" onclick="setMarketGrade('recommend','neg',this)">
+                  <div>要注意</div>
+                  <div style="font-size:9px;margin-top:2px;opacity:.8;">慎重な判断を要する</div>
+                </button>
+              </div>
+              <textarea id="mg-recommend-comment" class="market-comment" placeholder="総合的な推奨コメントを記入（例：上記所見を考慮すると、価格設定次第では購買価値があると考える。ただし今後の経過観察を強く推奨する）" oninput="autoSave()"></textarea>
+            </div>
+          </div>
+
+          <!-- 総合所見テキスト + AI -->
+          <div class="ai-row">
+            <div class="ai-kw"><input type="text" id="kw-overall" placeholder="追加キーワード（任意）" onkeydown="if(event.key==='Enter')genAI('overall')"></div>
+            <button class="btn-ai" id="btn-overall" onclick="genAI('overall')"><span id="ico-overall">✨</span> AI生成</button>
+          </div>
+          <div class="ai-out-wrap">
+            <textarea id="out-overall" placeholder="総合コメント（AI生成または手入力）" oninput="autoSave()" style="min-height:80px;"></textarea>
+            <div class="ai-badge" id="badge-overall" style="display:none">AI生成済</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- アクションバー -->
+  <div class="action-bar">
+    <div class="action-left">
+      <button class="btn btn-primary" onclick="saveCase()">💾 保存</button>
+      <button class="btn btn-secondary" onclick="switchTab('preview');buildPreview()">📄 プレビュー</button>
+      <button class="btn btn-ghost" onclick="newCase()">➕ 新規</button>
+    </div>
+    <span id="autosave-label" style="font-size:11px;color:var(--ink-light);">自動保存：待機中</span>
+  </div>
+
+</div><!-- /panel-input -->
+
+
+<!-- ======================================================
+     TAB: 保存一覧
+====================================================== -->
+<div class="panel" id="panel-saved">
+
+  <!-- フィルタバー -->
+  <div class="saved-toolbar">
+    <div class="filter-row">
+      <span style="font-size:12px;font-weight:600;color:var(--ink-light);">絞り込み：</span>
+      <select id="flt-sale" onchange="renderSavedList()">
+        <option value="">全セール</option>
+        <option>セレクトセール</option>
+        <option>セレクションセール</option>
+        <option>トレーニングセール</option>
+        <option>サマーセール</option>
+        <option>セプテンバーセール</option>
+        <option>オータムセール</option>
+        <option>その他</option>
+      </select>
+      <input type="text" id="flt-location" placeholder="撮影場所" style="width:130px;" oninput="renderSavedList()">
+      <input type="date" id="flt-date" oninput="renderSavedList()">
+      <select id="flt-rating" onchange="renderSavedList()">
+        <option value="">全評価</option>
+        <option value="n">異常なし</option>
+        <option value="m">軽度所見あり</option>
+        <option value="s">重要所見あり</option>
+      </select>
+      <button class="btn btn-ghost" style="padding:6px 12px;font-size:11px;" onclick="clearFilters()">クリア</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span id="saved-count-disp" style="font-size:12px;color:var(--ink-light);"></span>
+      <button class="btn btn-ghost" style="padding:6px 12px;font-size:11px;" onclick="exportJSON()">💾 JSONエクスポート</button>
+      <label class="btn btn-ghost" style="padding:6px 12px;font-size:11px;cursor:pointer;margin:0;">
+        📂 インポート<input type="file" accept=".json" style="display:none;" onchange="importJSON(event)">
+      </label>
+    </div>
+  </div>
+
+  <!-- 一括操作バー（チェック時に表示） -->
+  <div class="bulk-bar hidden" id="bulk-bar">
+    <span id="bulk-count-label">0件選択中</span>
+    <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="printSelected()">🖨 選択分を印刷</button>
+    <button class="btn btn-success" style="padding:6px 14px;font-size:12px;" onclick="addSelectedToSummary()">📋 まとめ表に追加</button>
+    <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;color:white;border-color:rgba(255,255,255,.3);" onclick="clearSelection()">選択解除</button>
+    <button class="btn" style="background:none;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.7);padding:6px 14px;font-size:12px;margin-left:auto;" onclick="deleteSelected()">🗑 削除</button>
+  </div>
+
+  <!-- 一覧テーブル -->
+  <div class="saved-table-wrap">
+    <table class="saved-table">
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="chk-all" onchange="toggleAllCheck(this)" style="cursor:pointer;width:14px;height:14px;accent-color:white;"></th>
+          <th>番号</th>
+          <th>馬名</th>
+          <th>性</th>
+          <th>セール</th>
+          <th>撮影場所</th>
+          <th>検査日</th>
+          <th>身体</th>
+          <th>X線</th>
+          <th>内視鏡</th>
+          <th>総合</th>
+          <th class="no-print">操作</th>
+        </tr>
+      </thead>
+      <tbody id="saved-tbody"></tbody>
+    </table>
+  </div>
+
+</div><!-- /panel-saved -->
+
+
+<!-- ======================================================
+     TAB: プレビュー
+====================================================== -->
+<div class="panel" id="panel-preview">
+  <div class="action-bar">
+    <div class="action-left">
+      <button class="btn btn-primary" onclick="window.print()">🖨 印刷 / PDF保存</button>
+      <button class="btn btn-secondary" onclick="switchTab('input')">← 入力に戻る</button>
+    </div>
+    <span style="font-size:11px;color:var(--ink-light);">⌘P / Ctrl+P → PDFとして保存</span>
+  </div>
+  <div class="preview-layout">
+    <div class="doc-wrap"><div class="doc-paper" id="doc-paper"></div></div>
+    <div class="sb-panel">
+      <div class="sb-card">
+        <div class="sb-hd">保存済みから選択</div>
+        <div class="sb-bd" id="sb-list" style="max-height:300px;overflow-y:auto;"></div>
+      </div>
+      <div class="sb-card">
+        <div class="sb-hd">印刷のヒント</div>
+        <div class="sb-bd" style="font-size:11px;line-height:1.8;color:var(--ink-light);">
+          📱 <strong>iPad</strong>：共有→「PDFを作成」<br>
+          💻 <strong>Mac</strong>：⌘P→PDF保存<br>
+          🖨 <strong>直接印刷</strong>：⌘P→プリンター選択
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- /panel-preview -->
+
+
+<!-- ======================================================
+     TAB: まとめ一覧
+====================================================== -->
+<div class="panel" id="panel-summary">
+
+  <!-- 印刷用ヘッダー（画面上は非表示） -->
+  <div class="print-only" id="sum-print-header" style="display:none;">
+    <div style="text-align:center; margin-bottom:16px; border-bottom:3px double #1a1a2e; padding-bottom:14px;">
+      <div style="font-size:9px; letter-spacing:.12em; color:#4a4a6a; font-family:'Noto Sans JP',sans-serif; margin-bottom:6px;">北洋ホースクリニック　HOKUYO HORSE CLINIC</div>
+      <div style="font-size:20px; font-weight:700; font-family:'Noto Serif JP',serif; letter-spacing:.08em;" id="sum-print-title">レポジトリー検査一覧報告書</div>
+      <div style="font-size:11px; color:#4a4a6a; font-style:italic; margin-top:3px; font-family:'IM Fell English',serif;">Repository Examination Summary Report</div>
+      <div style="display:flex; justify-content:center; gap:32px; margin-top:10px; font-size:11px; font-family:'Noto Sans JP',sans-serif; color:#1a1a2e;" id="sum-print-meta"></div>
+    </div>
+  </div>
+
+  <div class="saved-toolbar">
+    <div class="filter-row">
+      <input type="text" id="sum-sale-hd" placeholder="セール名" style="width:160px;" oninput="updateSumPrintMeta()">
+      <input type="text" id="sum-loc-hd" placeholder="撮影場所" style="width:130px;" oninput="updateSumPrintMeta()">
+      <input type="date" id="sum-date-hd" onchange="updateSumPrintMeta()">
+      <input type="text" id="sum-consignor" placeholder="コンサイナー名" style="width:160px;" oninput="updateSumPrintMeta()">
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-success" onclick="printSummaryAll()">📄 全頭一括PDF</button>
+      <button class="btn btn-primary" onclick="printSummaryList()">🖨 この一覧印刷</button>
+      <button class="btn btn-ghost" onclick="clearSummary()">🗑 リセット</button>
+    </div>
+  </div>
+  <div class="saved-table-wrap">
+    <table class="saved-table" id="sum-table">
+      <thead>
+        <tr>
+          <th style="width:36px;">No.</th>
+          <th style="width:44px;">番号</th>
+          <th>馬名</th>
+          <th style="width:36px;">性</th>
+          <th style="width:54px;">毛色</th>
+          <th>所有者</th>
+          <th style="width:72px;">撮影場所</th>
+          <th>X線所見</th>
+          <th>内視鏡所見</th>
+          <th style="width:90px;">総合評価</th>
+          <th class="no-print" style="width:40px;">操作</th>
+        </tr>
+      </thead>
+      <tbody id="sum-tbody">
+        <tr><td colspan="11"><div class="empty-st"><div class="icon">📋</div><p>保存一覧タブで馬を選択→「まとめ表に追加」してください</p></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div><!-- /panel-summary -->
+
+</div><!-- /app-body -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+//  CONSTANTS
+// ============================================================
+const STORE_KEY = 'hokuyoExam_v3';
+const JOINTS = {
+  front: ['蹄関節（DIP）','球節（MCP）','繋関節（PIP）','管骨','膝関節（Carpus）'],
+  hind:  ['蹄関節（DIP）','球節（MTP）','繋関節（PIP）','飛節（Tarsus）','膝関節（Stifle）']
+};
+const LIMBS = [
+  {id:'LF', label:'左前肢', type:'front'},
+  {id:'RF', label:'右前肢', type:'front'},
+  {id:'LH', label:'左後肢', type:'hind'},
+  {id:'RH', label:'右後肢', type:'hind'}
+];
+
+// ============================================================
+//  STATE
+// ============================================================
+let db = [];           // 全保存データ
+let currentId = null;  // 編集中ID
+let summaryList = [];  // まとめ表
+let ratings = {phy:'', xray:'', scope:''};
+let scopeGrade = null;
+let autoSaveTimer = null;
+
+// ============================================================
+//  INIT
+// ============================================================
+function init(){
+  loadDB();
+  document.getElementById('f-date').value = todayStr();
+  renderXrayFindings();
+  xbUpdatePreview();
+  buildPreview();
+  renderSavedList();
+  updateHeaderCount();
+  // iOS Safari：入力フォーカス時のズーム防止（font-size:16px で対応済み）
+  // タッチデバイス判定
+  if('ontouchstart' in window){
+    document.body.classList.add('is-touch');
+  }
+}
+
+function todayStr(){
+  return new Date().toISOString().split('T')[0];
+}
+
+// ============================================================
+//  XRAY BUILDER STATE & LOGIC
+// ============================================================
+let xbState = { lr:'', fb:'', joint:'', finding:'', details:[], severity:'' };
+let xrayFindings = []; // [{lr,fb,joint,finding,detail,severity,label,limbCode}]
+
+// 関節ごとの詳細部位マップ
+const JOINT_DETAILS = {
+  '球節': [
+    '矢状稜','中間隆起',
+    '背側','掌側','底側',
+    '内側果','外側果',
+    '内側滑車','外側滑車',
+    '掌側（底側）板','種子骨',
+    '第1指骨（趾骨）近位端','第1指骨（趾骨）遠位端',
+  ],
+  '腕節': [
+    '橈骨遠位端','第3手根骨','第2手根骨',
+    '尺骨手根骨','副手根骨',
+    '背側','掌側',
+    '内側滑車','外側滑車','中間隆起',
+  ],
+  '飛節': [
+    '距骨','踵骨','中間楔状骨','内側楔状骨',
+    '第3中足骨近位端','距骨滑車',
+    '背側','底側',
+    '内側滑車','外側滑車','中間隆起',
+    '第1趾骨近位端','第1趾骨遠位端',
+  ],
+  '膝関節': [
+    '大腿骨内側果','大腿骨外側果',
+    '大腿骨内側滑車','大腿骨外側滑車',
+    '脛骨近位端','膝蓋骨','半月板',
+    '背側','中間隆起',
+  ],
+};
+
+// 肢コード生成
+function getLimbCode(lr, fb){
+  if(lr==='両側') return 'BOTH';
+  const l = lr==='左' ? 'L' : 'R';
+  const f = fb==='前' ? 'F' : 'H';
+  return l+f;
+}
+
+// ビルダーのセレクト
+function xbSelect(type, val, btn){
+  xbState[type] = val;
+  const group = document.getElementById('xb-'+type);
+  if(group) group.querySelectorAll('.xbt').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  if(type==='joint') xbUpdateDetails();
+  xbUpdatePreview();
+}
+
+function xbSelectJoint(val, el){
+  xbState.joint = val;
+  document.querySelectorAll('#xb-joint .jchip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  xbUpdateDetails();
+  xbUpdatePreview();
+}
+
+function xbSelectFinding(val, el){
+  xbState.finding = val;
+  document.querySelectorAll('#xb-finding .fchip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  xbUpdatePreview();
+}
+
+function xbSelectDetail(val, el){
+  // 複数選択トグル
+  if(el.classList.contains('on')){
+    el.classList.remove('on');
+    xbState.details = xbState.details.filter(d => d !== val);
+  } else {
+    el.classList.add('on');
+    xbState.details = [...xbState.details, val];
+  }
+  xbUpdatePreview();
+}
+
+function xbUpdateDetails(){
+  const details = JOINT_DETAILS[xbState.joint] || [];
+  const wrap = document.getElementById('xb-detail-wrap');
+  const cont = document.getElementById('xb-detail');
+  if(details.length === 0){ wrap.style.display='none'; return; }
+  wrap.style.display = 'block';
+  xbState.details = [];
+  cont.innerHTML = details.map(d =>
+    `<span class="lchip" onclick="xbSelectDetail('${d}',this)">${d}</span>`
+  ).join('');
+}
+
+function xbBuildLabel(){
+  const {lr, fb, joint, finding, details, severity} = xbState;
+  if(!lr || !fb || !joint || !finding) return '';
+  const loc = lr==='両側' ? `両側${fb}肢${joint}` : `${lr}${fb}${joint}`;
+  const det = details.length > 0 ? ` ${details.join('・')}` : '';
+  const sev = severity && severity!=='' ? ` ${severity}` : '';
+  return `${loc}${det} の ${finding}${sev}`;
+}
+
+function xbUpdatePreview(){
+  const label = xbBuildLabel();
+  const prev = document.getElementById('xb-preview');
+  const addBtn = document.getElementById('xb-add-btn');
+  if(label){
+    prev.textContent = '📋 ' + label;
+    prev.style.color = 'var(--accent)';
+    addBtn.disabled = false;
+  } else {
+    prev.textContent = '← 左右・前後・関節・病変を選択すると所見名が表示されます';
+    prev.style.color = 'var(--ink-light)';
+    addBtn.disabled = true;
+  }
+}
+
+function xbAddFinding(){
+  const label = xbBuildLabel();
+  if(!label) return;
+  const {lr, fb, joint, finding, details, severity} = xbState;
+  const limbCode = getLimbCode(lr, fb);
+  const comment = document.getElementById('xb-comment')?.value.trim() || '';
+  xrayFindings.push({lr, fb, joint, finding, details:[...details], severity, label, limbCode, comment});
+  renderXrayFindings();
+  // finding/details/severity/commentのみリセット、部位は保持
+  xbState.finding = ''; xbState.details = []; xbState.severity = '';
+  document.querySelectorAll('#xb-finding .fchip').forEach(c=>c.classList.remove('on'));
+  document.querySelectorAll('#xb-detail .lchip').forEach(c=>c.classList.remove('on'));
+  document.querySelectorAll('#xb-severity .xbt').forEach(b=>b.classList.remove('on'));
+  const commentEl = document.getElementById('xb-comment');
+  if(commentEl) commentEl.value = '';
+  xbUpdatePreview();
+  autoSave();
+}
+
+function removeXrayFinding(idx){
+  xrayFindings.splice(idx,1);
+  renderXrayFindings();
+  autoSave();
+}
+
+function renderXrayFindings(){
+  const el = document.getElementById('xray-findings-list');
+  if(xrayFindings.length === 0){
+    el.innerHTML = `<div style="text-align:center;padding:10px;font-size:12px;color:var(--ink-light);border:1.5px dashed var(--border);border-radius:var(--radius);">所見を追加してください（なければ「全肢異常なし」として扱われます）</div>`;
+    return;
+  }
+  el.innerHTML = xrayFindings.map((f,i) => {
+    const cls = f.limbCode==='BOTH'?'LF':f.limbCode;
+    const detStr = (f.details||[]).length > 0 ? (f.details||[]).join('・') : (f.detail||'');
+    return `<div class="xfcard">
+      <span class="xfcard-tag ${cls}">${f.lr}${f.fb}</span>
+      <div class="xfcard-body">
+        ${f.joint}${detStr?' <span style="color:var(--ink-light);font-size:11px;">'+detStr+'</span>':''} — <span style="color:var(--gold);font-weight:700;">${f.finding}</span>${f.severity?' <span style="font-size:11px;">('+f.severity+')</span>':''}
+        <div class="xfcard-sub">${f.label}</div>
+        ${f.comment ? `<div style="margin-top:4px;font-size:11px;color:var(--ink);background:var(--accent-light);padding:4px 8px;border-radius:4px;border-left:3px solid var(--accent);">${f.comment}</div>` : ''}
+      </div>
+      <button class="xfcard-del" onclick="removeXrayFinding(${i})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function getXrayData(){
+  return { findings: [...xrayFindings] };
+}
+
+function setXrayData(data){
+  xrayFindings = data?.findings ? [...data.findings] : [];
+  renderXrayFindings();
+}
+
+function xrayFindingsToText(){
+  if(xrayFindings.length === 0) return '各部位のレントゲン検査において、特記すべき骨格的異常を認めない。';
+  return xrayFindings.map(f => f.comment ? `${f.label}（${f.comment}）` : f.label).join('\n');
+}
+
+function buildJointInputs(){ /* legacy stub - no longer used */ }
+
+// ============================================================
+//  SCOPE GRADE
+// ============================================================
+function setGrade(g, btn){
+  scopeGrade = g;
+  document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('grade-unset-warn').style.display = 'none';
+  autoSave();
+}
+
+function getScopeChecks(){
+  return ['sdp','pharynx','guttural','pharyngitis','epiglottis','ethmoid','trachea','other-scope']
+    .filter(id => document.getElementById('sc-'+id)?.checked)
+    .map(id => ({
+      sdp:'軟口蓋背方変位', pharynx:'咽頭リンパ組織増殖', guttural:'喉嚢真菌症',
+      pharyngitis:'咽頭炎', epiglottis:'喉頭蓋後退', ethmoid:'篩骨血腫',
+      trachea:'気管分泌物増多', 'other-scope':'その他'
+    }[id]));
+}
+
+function setScopeChecks(checks){
+  const map = {
+    '軟口蓋背方変位':'sdp','咽頭リンパ組織増殖':'pharynx','喉嚢真菌症':'guttural',
+    '咽頭炎':'pharyngitis','喉頭蓋後退':'epiglottis','篩骨血腫':'ethmoid',
+    '気管分泌物増多':'trachea','その他':'other-scope'
+  };
+  ['sdp','pharynx','guttural','pharyngitis','epiglottis','ethmoid','trachea','other-scope'].forEach(id => {
+    const el = document.getElementById('sc-'+id);
+    if(el) el.checked = false;
+  });
+  (checks||[]).forEach(c => {
+    const id = map[c];
+    if(id){ const el = document.getElementById('sc-'+id); if(el) el.checked = true; }
+  });
+}
+
+// ============================================================
+//  SEDATION
+// ============================================================
+function toggleSedation(cb){
+  const detail = document.getElementById('sedation-detail');
+  detail.style.display = cb.checked ? 'block' : 'none';
+  autoSave();
+}
+
+function getSedationData(){
+  const used = document.getElementById('sc-sedation')?.checked || false;
+  if(!used) return { used: false };
+  return {
+    used: true,
+    drug: document.getElementById('sc-sedation-drug')?.value || '',
+    dose: document.getElementById('sc-sedation-dose')?.value || '',
+    note: document.getElementById('sc-sedation-note')?.value || '',
+  };
+}
+
+function setSedationData(data){
+  const cb = document.getElementById('sc-sedation');
+  if(!cb) return;
+  cb.checked = data?.used || false;
+  const detail = document.getElementById('sedation-detail');
+  if(detail) detail.style.display = data?.used ? 'block' : 'none';
+  if(data?.used){
+    const drug = document.getElementById('sc-sedation-drug');
+    const dose = document.getElementById('sc-sedation-dose');
+    const note = document.getElementById('sc-sedation-note');
+    if(drug) drug.value = data.drug || '';
+    if(dose) dose.value = data.dose || '';
+    if(note) note.value = data.note || '';
+  }
+}
+
+function buildSedationText(sedation){
+  if(!sedation?.used) return '';
+  const parts = [];
+  if(sedation.drug) parts.push(sedation.drug);
+  if(sedation.dose) parts.push(sedation.dose);
+  if(sedation.note) parts.push(sedation.note);
+  return `【鎮静剤使用】${parts.join('　')}`;
+}
+
+// ============================================================
+//  RATING
+// ============================================================
+function setRating(sec, val, btn){
+  ratings[sec] = val;
+  const row = btn.closest('.rating-row');
+  row.querySelectorAll('.rbtn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  // 軽度・重要所見の場合に対処方針パネルを表示
+  const ap = document.getElementById('ap-'+sec);
+  if(ap) ap.style.display = (val === 'm' || val === 's') ? 'block' : 'none';
+  autoSave();
+}
+
+// ============================================================
+//  MARKET GRADE (総合評価3段階)
+// ============================================================
+let marketGrades = { racing:'', market:'', recommend:'' };
+
+function setMarketGrade(type, val, btn){
+  marketGrades[type] = val;
+  const row = document.getElementById('mg-'+type);
+  if(row) row.querySelectorAll('.mgbtn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  autoSave();
+}
+
+function getMarketEval(){
+  return {
+    racing:    { grade: marketGrades.racing,    comment: document.getElementById('mg-racing-comment')?.value || '' },
+    market:    { grade: marketGrades.market,    comment: document.getElementById('mg-market-comment')?.value || '' },
+    recommend: { grade: marketGrades.recommend, comment: document.getElementById('mg-recommend-comment')?.value || '' },
+  };
+}
+
+function setMarketEval(data){
+  if(!data) return;
+  marketGrades = { racing: data.racing?.grade||'', market: data.market?.grade||'', recommend: data.recommend?.grade||'' };
+  ['racing','market','recommend'].forEach(t => {
+    const g = marketGrades[t];
+    const row = document.getElementById('mg-'+t);
+    if(row){
+      row.querySelectorAll('.mgbtn').forEach(b => b.classList.remove('on'));
+      if(g){
+        const btn = row.querySelector('.mgbtn.g-'+g);
+        if(btn) btn.classList.add('on');
+      }
+    }
+    const ta = document.getElementById('mg-'+t+'-comment');
+    if(ta) ta.value = data[t]?.comment || '';
+  });
+}
+
+const MARKET_GRADE_LABELS = {
+  racing:    { pos:'競走能力への影響なし', neu:'競走能力への影響：要経過観察', neg:'競走能力への影響あり' },
+  market:    { pos:'市場評価：優位', neu:'市場評価：中程度の影響', neg:'市場評価：不利' },
+  recommend: { pos:'購買推奨', neu:'条件付き購買推奨', neg:'購買要注意' },
+};
+
+function buildMarketEvalText(eval_){
+  if(!eval_) return '';
+  const lines = [];
+  ['racing','market','recommend'].forEach(t => {
+    const g = eval_[t]?.grade;
+    const c = eval_[t]?.comment;
+    if(g){
+      const label = MARKET_GRADE_LABELS[t]?.[g] || g;
+      lines.push(c ? `【${label}】${c}` : `【${label}】`);
+    }
+  });
+  return lines.join('\n');
+}
+
+// ============================================================
+//  ACTION PLAN (対処方針)
+// ============================================================
+const ACTION_PLAN_IDS = {
+  phy:   ['watch','recheck','xray','rest','surgery','spec','med','other'],
+  xray:  ['watch','recheck','addshot','rest','surgery','arthro','ct','other'],
+  scope: ['watch','recheck','rest','surgery','gutteral','laser','disclosure','other'],
+};
+const ACTION_PLAN_LABELS = {
+  watch:'経過観察', recheck:'再検査を推奨', xray:'X線追加撮影', rest:'安静・運動制限',
+  surgery:'外科的処置を検討', spec:'専門医への紹介', med:'投薬・保存療法',
+  addshot:'追加撮影（他方向）', arthro:'関節鏡手術を検討', ct:'CT・MRI検査を推奨',
+  gutteral:'喉嚢洗浄・処置', laser:'レーザー処置を検討', disclosure:'購買者への告知推奨',
+  other:'その他',
+};
+
+function getActionPlan(sec){
+  const ids = ACTION_PLAN_IDS[sec] || [];
+  const checked = ids.filter(id => document.getElementById(`ap-${sec}-${id}`)?.checked)
+    .map(id => ACTION_PLAN_LABELS[id] || id);
+  const note = document.getElementById(`ap-${sec}-note`)?.value || '';
+  return { checked, note };
+}
+
+function setActionPlan(sec, data){
+  if(!data) return;
+  const ids = ACTION_PLAN_IDS[sec] || [];
+  ids.forEach(id => {
+    const el = document.getElementById(`ap-${sec}-${id}`);
+    if(el) el.checked = (data.checked||[]).includes(ACTION_PLAN_LABELS[id]||id);
+  });
+  const noteEl = document.getElementById(`ap-${sec}-note`);
+  if(noteEl) noteEl.value = data.note || '';
+  // パネル表示状態を復元
+  const ap = document.getElementById('ap-'+sec);
+  const r = ratings[sec];
+  if(ap) ap.style.display = (r === 'm' || r === 's') ? 'block' : 'none';
+}
+
+function buildActionPlanText(sec, plan){
+  if(!plan || (!plan.checked?.length && !plan.note)) return '';
+  const lines = [];
+  if(plan.checked?.length) lines.push('対処方針：' + plan.checked.join('、'));
+  if(plan.note) lines.push(plan.note);
+  return lines.join('\n');
+}
+
+// ============================================================
+//  ACCORDION
+// ============================================================
+function toggleAcc(id){
+  const bd = document.getElementById('acc-'+id);
+  const tog = document.getElementById('acc-'+id+'-tog');
+  bd.classList.toggle('closed');
+  tog.textContent = bd.classList.contains('closed') ? '▶' : '▼';
+}
+
+// ============================================================
+//  CHIPS
+// ============================================================
+function chipAdd(el, kwId){
+  el.classList.toggle('on');
+  const sel = [...el.closest('.chips').querySelectorAll('.chip.on')].map(c=>c.textContent.trim()).join('、');
+  document.getElementById(kwId).value = sel;
+}
+
+// ============================================================
+//  AI GENERATION
+// ============================================================
+async function genAI(sec){
+  let kw = document.getElementById('kw-'+sec)?.value.trim() || '';
+  
+  // xray: findingsから自動構築
+  if(sec === 'xray' && !kw){
+    const text = xrayFindingsToText();
+    kw = text;
+  } else if(sec === 'xray' && kw){
+    // ユーザーキーワード + findings
+    const base = xrayFindingsToText();
+    if(base && !base.includes('異常を認めない')) kw = base + '　' + kw;
+  }
+  
+  // scope: グレード+チェックから自動構築
+  if(sec === 'scope'){
+    const grade = scopeGrade ? `喉頭片麻痺Grade${scopeGrade}` : '喉頭片麻痺未評価';
+    const checks = getScopeChecks();
+    kw = [grade, ...checks, kw].filter(Boolean).join('、');
+  }
+  
+  if(!kw){ showToast('キーワードを入力してください'); return; }
+  
+  const btn = document.getElementById('btn-'+sec);
+  const ico = document.getElementById('ico-'+sec);
+  btn.disabled = true;
+  ico.innerHTML = '<span class="spin"></span>';
+  
+  const secNames = {
+    phy:'身体検査（外貌・四肢・蹄）',
+    xray:'レントゲン（X線）検査',
+    scope:'内視鏡検査（咽頭・喉頭）',
+    overall:'総合コメント'
+  };
+  
+  const prompt = `あなたは日本の競走馬専門獣医師です。以下のキーワードを基に「${secNames[sec]}」の所見文を、獣医学的に正確な日本語で2〜4文で作成してください。
+
+キーワード：${kw}
+
+条件：
+- 異常なし系のキーワードは正常所見として記載
+- 病変がある場合は部位・性状・程度を明記し、臨床的意義を1文加える
+- 箇条書き不可、文章形式のみ
+- 200文字以内
+- 前置き・説明不要、所見文のみを出力`;
+
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '';
+    document.getElementById('out-'+sec).value = text;
+    document.getElementById('badge-'+sec).style.display = 'block';
+    autoSave();
+    showToast('✅ AI所見文を生成しました', 'ok');
+  }catch(e){
+    showToast('⚠ AI生成エラー。手動で入力してください');
+  }finally{
+    btn.disabled = false; ico.textContent = '✨';
+  }
+}
+
+// ============================================================
+//  FORM DATA
+// ============================================================
+function getFormData(){
+  return {
+    id: currentId || newId(),
+    savedAt: new Date().toISOString(),
+    saleName: v('f-sale'),
+    shootLocation: v('f-location'),
+    examDate: v('f-date'),
+    vetName: v('f-vet'),
+    horseNumber: v('f-num'),
+    horseName: v('f-name'),
+    horseSex: v('f-sex'),
+    horseColor: v('f-color'),
+    horseDob: v('f-dob'),
+    horseSire: v('f-sire'),
+    horseBreeder: v('f-breeder'),
+    resultPhy: v('out-phy'),
+    xrayData: getXrayData(),
+    resultXray: v('out-xray'),
+    scopeGrade: scopeGrade,
+    scopeChecks: getScopeChecks(),
+    sedation: getSedationData(),
+    resultScope: v('out-scope'),
+    resultOverall: v('out-overall'),
+    ratings: {...ratings},
+    actionPlan: { phy: getActionPlan('phy'), xray: getActionPlan('xray'), scope: getActionPlan('scope') },
+    marketEval: getMarketEval(),
+  };
+}
+
+function v(id){ return document.getElementById(id)?.value || ''; }
+function newId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+// 検査日の年度 + セール名を結合して返す
+function saleWithYear(saleName, examDate){
+  if(!saleName) return saleName || '─';
+  if(!examDate) return saleName;
+  const year = new Date(examDate).getFullYear();
+  return `${year}年 ${saleName}`;
+}
+
+function loadForm(d){
+  currentId = d.id;
+  sv('f-sale', d.saleName);
+  sv('f-location', d.shootLocation||'');
+  sv('f-date', d.examDate);
+  sv('f-vet', d.vetName);
+  sv('f-num', d.horseNumber);
+  sv('f-name', d.horseName);
+  sv('f-sex', d.horseSex);
+  sv('f-color', d.horseColor);
+  sv('f-dob', d.horseDob);
+  sv('f-sire', d.horseSire);
+  sv('f-breeder', d.horseBreeder);
+  sv('out-phy', d.resultPhy);
+  setXrayData(d.xrayData);
+  // reset builder state
+  xbState = { lr:'', fb:'', joint:'', finding:'', details:[], severity:'' };
+  document.querySelectorAll('#xb-lr .xbt, #xb-fb .xbt, #xb-severity .xbt').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('#xb-joint .jchip, #xb-finding .fchip').forEach(c=>c.classList.remove('on'));
+  xbUpdatePreview();
+  sv('out-xray', d.resultXray);
+  sv('out-scope', d.resultScope);
+  sv('out-overall', d.resultOverall);
+  
+  // scope grade
+  scopeGrade = d.scopeGrade || null;
+  document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('on'));
+  if(scopeGrade){
+    const btn = document.querySelectorAll('.grade-btn')[scopeGrade-1];
+    if(btn) btn.classList.add('on');
+  }
+  setScopeChecks(d.scopeChecks);
+  setSedationData(d.sedation);
+  
+  // ratings
+  ratings = {...(d.ratings||{phy:'',xray:'',scope:''})};
+  ['phy','xray','scope'].forEach(s => {
+    document.querySelectorAll(`#acc-${s === 'phy' ? 'phy' : s} .rbtn`).forEach(b => b.classList.remove('on'));
+    if(ratings[s]){
+      const rb = document.querySelector(`#acc-${s === 'phy' ? 'phy' : s} .rbtn.${ratings[s]}`);
+      if(rb) rb.classList.add('on');
+    }
+    // 対処方針パネル表示状態を復元
+    const ap = document.getElementById('ap-'+s);
+    if(ap) ap.style.display = (ratings[s]==='m'||ratings[s]==='s') ? 'block' : 'none';
+  });
+  // 対処方針
+  ['phy','xray','scope'].forEach(s => setActionPlan(s, d.actionPlan?.[s]));
+  // 市場評価
+  setMarketEval(d.marketEval);
+  // badges
+  ['phy','xray','scope','overall'].forEach(s => {
+    const b = document.getElementById('badge-'+s);
+    if(b) b.style.display = 'none';
+  });
+}
+
+function sv(id, val){ const el = document.getElementById(id); if(el) el.value = val || ''; }
+
+// ============================================================
+//  AUTO SAVE
+// ============================================================
+function autoSave(){
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(()=>{
+    const d = getFormData();
+    if(!d.horseName) return;
+    const idx = db.findIndex(r => r.id === d.id);
+    if(idx >= 0) db[idx] = d; else { currentId = d.id; db.push(d); }
+    persistDB();
+    document.getElementById('autosave-label').textContent = `自動保存：${new Date().toLocaleTimeString('ja-JP')}`;
+    updateHeaderCount();
+    renderSavedList();
+  }, 1200);
+}
+
+function saveCase(){
+  const d = getFormData();
+  if(!d.horseName){ showToast('馬名を入力してください'); return; }
+  currentId = d.id;
+  const idx = db.findIndex(r => r.id === d.id);
+  if(idx >= 0) db[idx] = d; else db.push(d);
+  persistDB();
+  updateHeaderCount();
+  renderSavedList();
+  showToast(`✅ ${d.horseName} を保存しました`, 'ok');
+}
+
+// ============================================================
+//  NEW CASE
+// ============================================================
+function newCase(){
+  currentId = null;
+  ratings = {phy:'', xray:'', scope:''};
+  scopeGrade = null;
+  ['f-sale','f-location','f-num','f-name','f-sex','f-color','f-dob','f-sire','f-breeder',
+   'out-phy','out-xray','out-scope','out-overall','kw-phy','kw-xray','kw-scope','kw-overall']
+    .forEach(id => sv(id,''));
+  document.getElementById('f-date').value = todayStr();
+  xrayFindings = [];
+  xbState = { lr:'', fb:'', joint:'', finding:'', details:[], severity:'' };
+  renderXrayFindings();
+  document.querySelectorAll('#xb-lr .xbt, #xb-fb .xbt, #xb-severity .xbt').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('#xb-joint .jchip, #xb-finding .fchip').forEach(c=>c.classList.remove('on'));
+  xbUpdatePreview();
+  document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('on'));
+  setScopeChecks([]);
+  setSedationData({used:false});
+  document.querySelectorAll('.rbtn').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  document.querySelectorAll('.ai-badge').forEach(b => b.style.display='none');
+  // 対処方針パネルをリセット
+  ['phy','xray','scope'].forEach(s => {
+    const ap = document.getElementById('ap-'+s); if(ap) ap.style.display='none';
+    (ACTION_PLAN_IDS[s]||[]).forEach(id => { const el=document.getElementById(`ap-${s}-${id}`); if(el) el.checked=false; });
+    const note = document.getElementById(`ap-${s}-note`); if(note) note.value='';
+  });
+  // 市場評価リセット
+  marketGrades = {racing:'', market:'', recommend:''};
+  document.querySelectorAll('.mgbtn').forEach(b=>b.classList.remove('on'));
+  ['mg-racing-comment','mg-market-comment','mg-recommend-comment'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  // テキストエリアリセット
+  ['mg-racing-comment','mg-market-comment','mg-recommend-comment'].forEach(id=>sv(id,''));
+  document.getElementById('autosave-label').textContent = '自動保存：待機中';
+  showToast('📋 新規入力モードです');
+}
+
+// ============================================================
+//  GOOGLE DRIVE 同期
+// ============================================================
+const GAPI_CLIENT_ID = '876862843041-k1kaibt7knta96gf9gr5ohro6fu5mo27.apps.googleusercontent.com';
+const GAPI_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+const DRIVE_FILE_NAME = 'hokuyoExam_shared.json';
+
+let gAccessToken = null;
+let gDriveFileId  = null;
+let gUserName     = '';
+let gSyncing      = false;
+
+// ---- ログイン ----
+function driveSignIn(){
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: GAPI_CLIENT_ID,
+    scope: GAPI_SCOPE,
+    callback: async (resp) => {
+      if(resp.error){ showToast('⚠ Googleログイン失敗: '+resp.error); return; }
+      gAccessToken = resp.access_token;
+      // ユーザー情報取得
+      try{
+        const r = await fetch('https://www.googleapis.com/oauth2/v3/userinfo',
+          {headers:{Authorization:'Bearer '+gAccessToken}});
+        const u = await r.json();
+        gUserName = u.name || u.email || 'ユーザー';
+      }catch(e){ gUserName = 'ログイン済'; }
+      onDriveSignedIn();
+    }
+  });
+  client.requestAccessToken();
+}
+
+function driveSignOut(){
+  if(gAccessToken) google.accounts.oauth2.revoke(gAccessToken, ()=>{});
+  gAccessToken = null; gDriveFileId = null; gUserName = '';
+  document.getElementById('btn-drive-login').style.display = 'flex';
+  document.getElementById('drive-status-bar').style.display = 'none';
+  document.getElementById('btn-drive-sync').style.display = 'none';
+  document.getElementById('sync-status-label').textContent = 'ローカル保存中';
+  showToast('Googleアカウントからログアウトしました');
+}
+
+async function onDriveSignedIn(){
+  document.getElementById('btn-drive-login').style.display = 'none';
+  document.getElementById('drive-status-bar').style.display = 'flex';
+  document.getElementById('drive-user-name').textContent = gUserName;
+  document.getElementById('btn-drive-sync').style.display = 'block';
+  document.getElementById('sync-status-label').textContent = `Drive同期中 (${gUserName})`;
+  showToast(`✅ ${gUserName} でログインしました。Driveからデータを読み込みます...`,'ok');
+  await driveLoadOrCreate();
+}
+
+// ---- ファイル検索 or 作成 ----
+async function driveFindFile(){
+  const q = encodeURIComponent(`name='${DRIVE_FILE_NAME}' and trashed=false`);
+  const r = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&fields=files(id,name,modifiedTime)`,
+    {headers:{Authorization:'Bearer '+gAccessToken}}
+  );
+  const data = await r.json();
+  return data.files?.[0]?.id || null;
+}
+
+async function driveLoadOrCreate(){
+  if(!gAccessToken) return;
+  setSyncLabel('🔄 検索中...');
+  try{
+    gDriveFileId = await driveFindFile();
+    if(gDriveFileId){
+      // 既存ファイルを読み込み
+      await driveRead();
+    } else {
+      // 新規作成（初回）
+      await driveWrite();
+      showToast('☁️ Drive上に新規データファイルを作成しました','ok');
+    }
+  }catch(e){
+    setSyncLabel('⚠ 同期エラー');
+    showToast('⚠ Drive同期エラー: '+e.message);
+  }
+}
+
+// ---- Driveから読み込み ----
+async function driveRead(){
+  if(!gAccessToken || !gDriveFileId) return;
+  setSyncLabel('🔄 読み込み中...');
+  try{
+    const r = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${gDriveFileId}?alt=media`,
+      {headers:{Authorization:'Bearer '+gAccessToken}}
+    );
+    const data = await r.json();
+    if(data.db){
+      // Drive側が新しければ上書き、古ければマージ
+      const merged = mergeDB(db, data.db);
+      db = merged;
+      summaryList = data.summaryList || summaryList;
+      localStorage.setItem(STORE_KEY, JSON.stringify(db));
+      updateHeaderCount();
+      renderSavedList();
+      renderSummaryTable();
+      setSyncLabel(`☁️ 同期済 ${nowStr()}`);
+      showToast(`☁️ Driveから ${db.length}件読み込みました`,'ok');
+    }
+  }catch(e){
+    setSyncLabel('⚠ 読込エラー');
+    showToast('⚠ Drive読込エラー: '+e.message);
+  }
+}
+
+// ---- Driveへ書き込み ----
+async function driveWrite(){
+  if(!gAccessToken) return;
+  if(gSyncing) return;
+  gSyncing = true;
+  setSyncLabel('🔄 保存中...');
+  try{
+    const body = JSON.stringify({
+      version:'v3',
+      savedAt: new Date().toISOString(),
+      db, summaryList
+    });
+    const meta = JSON.stringify({name: DRIVE_FILE_NAME, mimeType:'application/json'});
+    const form = new FormData();
+    form.append('metadata', new Blob([meta],{type:'application/json'}));
+    form.append('file', new Blob([body],{type:'application/json'}));
+
+    let url, method;
+    if(gDriveFileId){
+      url = `https://www.googleapis.com/upload/drive/v3/files/${gDriveFileId}?uploadType=multipart`;
+      method = 'PATCH';
+    } else {
+      url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+      method = 'POST';
+    }
+    const r = await fetch(url,{method,headers:{Authorization:'Bearer '+gAccessToken},body:form});
+    const result = await r.json();
+    if(result.id) gDriveFileId = result.id;
+    setSyncLabel(`☁️ 保存済 ${nowStr()}`);
+  }catch(e){
+    setSyncLabel('⚠ 保存エラー');
+    showToast('⚠ Drive保存エラー: '+e.message);
+  }finally{
+    gSyncing = false;
+  }
+}
+
+// ---- 手動同期ボタン ----
+async function driveSyncNow(){
+  if(!gAccessToken){ showToast('先にGoogleログインしてください'); return; }
+  await driveRead();
+  await driveWrite();
+}
+
+// ---- DBマージ（両者のデータを統合・重複IDは新しい方を優先） ----
+function mergeDB(localDB, remoteDB){
+  const map = new Map();
+  localDB.forEach(d => map.set(d.id, d));
+  remoteDB.forEach(d => {
+    const local = map.get(d.id);
+    if(!local || new Date(d.savedAt||0) >= new Date(local.savedAt||0)){
+      map.set(d.id, d);
+    }
+  });
+  return [...map.values()].sort((a,b)=>new Date(b.savedAt||0)-new Date(a.savedAt||0));
+}
+
+function setSyncLabel(txt){
+  const el = document.getElementById('sync-status-label');
+  if(el) el.textContent = txt;
+}
+function nowStr(){ return new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}); }
+
+// ============================================================
+//  PERSIST / LOAD（Drive対応版）
+// ============================================================
+function persistDB(){
+  // 1. ローカルに保存（オフラインバックアップ）
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(db)); }catch(e){ console.warn('storage full'); }
+  // 2. ログイン済みならDriveにも保存
+  if(gAccessToken){
+    driveWrite();
+  }
+}
+
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw) db = JSON.parse(raw);
+  }catch(e){ db = []; }
+  // ※ Drive読み込みはログイン後に onDriveSignedIn() が呼ぶ
+}
+
+function updateHeaderCount(){
+  document.getElementById('hdr-count').textContent = db.length;
+  const disp = document.getElementById('saved-count-disp');
+  if(disp) disp.textContent = `${db.length}件`;
+}
+
+// ============================================================
+//  SAVED LIST RENDER
+// ============================================================
+function renderSavedList(){
+  const sale = document.getElementById('flt-sale')?.value || '';
+  const loc  = (document.getElementById('flt-location')?.value||'').toLowerCase();
+  const date = document.getElementById('flt-date')?.value || '';
+  const rat  = document.getElementById('flt-rating')?.value || '';
+
+  let list = db.filter(d => {
+    if(sale && d.saleName !== sale) return false;
+    if(loc && !(d.shootLocation||'').toLowerCase().includes(loc)) return false;
+    if(date && d.examDate !== date) return false;
+    if(rat){
+      const or = overallRating(d.ratings);
+      if(!or || or.cls !== rat) return false;
+    }
+    return true;
+  });
+
+  document.getElementById('saved-count-disp').textContent = `${list.length} / ${db.length}件`;
+
+  const tbody = document.getElementById('saved-tbody');
+  if(list.length === 0){
+    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-st"><div class="icon">📁</div><p>保存されたデータがありません</p></div></td></tr>`;
+    return;
+  }
+  const rLabel = cls => ({n:'異常なし',m:'軽度所見あり',s:'重要所見あり'}[cls]||'');
+  tbody.innerHTML = list.map(d => {
+    const or = overallRating(d.ratings);
+    const rPhy = d.ratings?.phy;
+    const rXr  = d.ratings?.xray;
+    const rSc  = d.ratings?.scope;
+    return `<tr id="row-${d.id}">
+      <td style="text-align:center;"><input type="checkbox" class="row-chk" data-id="${d.id}" onchange="onRowCheck()" style="cursor:pointer;width:14px;height:14px;accent-color:var(--accent);"></td>
+      <td>${d.horseNumber||'─'}</td>
+      <td class="hname">${d.horseName}</td>
+      <td>${d.horseSex||'─'}</td>
+      <td style="white-space:nowrap;">${d.saleName||'─'}</td>
+      <td>${d.shootLocation||'─'}</td>
+      <td style="white-space:nowrap;">${fmtDate(d.examDate)}</td>
+      <td class="rating-cell">${rPhy?`<span class="rbadge ${rPhy}">${rLabel(rPhy)}</span>`:'─'}</td>
+      <td class="rating-cell">${rXr?`<span class="rbadge ${rXr}">${rLabel(rXr)}</span>`:'─'}</td>
+      <td class="rating-cell">${rSc?`<span class="rbadge ${rSc}">${rLabel(rSc)}</span>`:'─'}</td>
+      <td class="rating-cell">${or?`<span class="rbadge ${or.cls}">${rLabel(or.cls)}</span>`:'─'}</td>
+      <td class="row-actions no-print">
+        <button class="row-btn" onclick="openCase('${d.id}')">編集</button>
+        <button class="row-btn" onclick="previewCase('${d.id}')">📄</button>
+        <button class="row-btn del" onclick="deleteCase('${d.id}')">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function clearFilters(){
+  ['flt-sale','flt-location','flt-date','flt-rating'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  renderSavedList();
+}
+
+// ============================================================
+//  ROW CHECKBOX
+// ============================================================
+function onRowCheck(){
+  const sel = getSelectedIds();
+  const bar = document.getElementById('bulk-bar');
+  bar.classList.toggle('hidden', sel.length === 0);
+  if(sel.length) document.getElementById('bulk-count-label').textContent = `${sel.length}件選択中`;
+}
+
+function toggleAllCheck(master){
+  document.querySelectorAll('.row-chk').forEach(cb => cb.checked = master.checked);
+  onRowCheck();
+}
+
+function getSelectedIds(){
+  return [...document.querySelectorAll('.row-chk:checked')].map(cb => cb.dataset.id);
+}
+
+function clearSelection(){
+  document.querySelectorAll('.row-chk').forEach(cb => cb.checked = false);
+  document.getElementById('chk-all').checked = false;
+  onRowCheck();
+}
+
+// ============================================================
+//  CASE OPERATIONS
+// ============================================================
+function openCase(id){
+  const d = db.find(r => r.id === id);
+  if(!d) return;
+  loadForm(d);
+  switchTab('input');
+  showToast(`📂 ${d.horseName} を読み込みました`);
+}
+
+function previewCase(id){
+  const d = db.find(r => r.id === id);
+  if(!d) return;
+  loadForm(d);
+  switchTab('preview');
+  buildPreview();
+}
+
+function deleteCase(id){
+  const d = db.find(r => r.id === id);
+  if(!d) return;
+  if(!confirm(`「${d.horseName}」を削除しますか？`)) return;
+  db = db.filter(r => r.id !== id);
+  if(currentId === id){ currentId = null; }
+  persistDB(); updateHeaderCount(); renderSavedList();
+  showToast('🗑 削除しました');
+}
+
+function deleteSelected(){
+  const ids = getSelectedIds();
+  if(!ids.length) return;
+  if(!confirm(`${ids.length}件を削除しますか？`)) return;
+  db = db.filter(r => !ids.includes(r.id));
+  if(ids.includes(currentId)) currentId = null;
+  persistDB(); updateHeaderCount(); renderSavedList(); clearSelection();
+  showToast(`🗑 ${ids.length}件を削除しました`);
+}
+
+// ============================================================
+//  PRINT SELECTED
+// ============================================================
+function printSelected(){
+  const ids = getSelectedIds();
+  if(!ids.length){ showToast('印刷する診断書を選択してください'); return; }
+  const targets = ids.map(id => db.find(r => r.id === id)).filter(Boolean);
+  openPrintWindow(targets);
+}
+
+function addSelectedToSummary(){
+  const ids = getSelectedIds();
+  if(!ids.length){ showToast('追加する馬を選択してください'); return; }
+  ids.forEach(id => {
+    const d = db.find(r => r.id === id);
+    if(!d) return;
+    const idx = summaryList.findIndex(r => r.id === id);
+    if(idx >= 0) summaryList[idx] = d; else summaryList.push(d);
+  });
+  renderSummaryTable();
+  showToast(`📋 ${ids.length}頭をまとめ表に追加しました`, 'ok');
+  clearSelection();
+}
+
+// ============================================================
+//  PRINT WINDOW
+// ============================================================
+function openPrintWindow(targets){
+  const pages = targets.map(d => buildDocHTML(d)).join('<div style="page-break-after:always;"></div>');
+  const win = window.open('','_blank');
+  if(!win){ showToast('⚠ ポップアップが許可されていません'); return; }
+  win.document.write(printWindowHTML(pages));
+  win.document.close();
+}
+
+function printWindowHTML(pagesHtml){
+  return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500&family=IM+Fell+English:ital@1&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--ink:#1a1a2e;--ink-light:#4a4a6a;--paper-warm:#f5f0e8;--accent:#2c5f8a;
+--gold:#b8860b;--red:#8b2020;--green:#1a5c3a;--green-light:#e8f4ed;
+--border:#d0ccc0;--border-light:#e8e4dc;
+--font-serif:'Noto Serif JP',serif;--font-sans:'Noto Sans JP',sans-serif;}
+html,body{font-family:var(--font-sans);background:white;height:100%;}
+/* A4縦：297mm × 210mm、余白8mm → 印刷エリア 281mm */
+.dp{padding:8mm 10mm;position:relative;}
+.dh{text-align:center;padding-bottom:7px;margin-bottom:8px;border-bottom:2.5px double var(--ink);position:relative;}
+.dc{font-size:7.5px;color:var(--ink-light);letter-spacing:.1em;font-family:var(--font-sans);font-weight:500;margin-bottom:3px;}
+.dt{font-size:15px;font-weight:700;letter-spacing:.07em;}
+.dte{font-size:8.5px;color:var(--ink-light);font-style:italic;margin-top:2px;font-family:'IM Fell English',serif;}
+.ds-area{position:absolute;right:0;top:50%;transform:translateY(-50%);}
+.ds{width:42px;height:42px;border:1.5px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:6px;color:var(--accent);font-family:var(--font-sans);font-weight:700;text-align:center;line-height:1.3;}
+.dm{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:9.5px;font-family:var(--font-sans);}
+.dm td{padding:3px 6px;border:1px solid var(--border);vertical-align:top;}
+.dm .l{background:var(--paper-warm);color:var(--ink-light);font-size:8px;font-weight:600;letter-spacing:.03em;white-space:nowrap;width:60px;}
+.dm .v{font-weight:500;}.dm .hn{font-family:var(--font-serif);font-size:12px;font-weight:700;}
+.sec{margin-bottom:7px;}
+.sth{font-size:8.5px;font-weight:700;letter-spacing:.05em;color:white;background:var(--ink);padding:3px 8px;display:flex;align-items:center;gap:4px;}
+.sth .n{background:var(--accent);width:12px;height:12px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:6.5px;flex-shrink:0;}
+.scb{border:1px solid var(--border);border-top:none;padding:5px 8px;font-size:9.5px;font-family:var(--font-sans);line-height:1.65;white-space:pre-wrap;min-height:24px;}
+.dr{display:inline-block;padding:1px 7px;border-radius:10px;font-size:8px;font-weight:700;margin-top:3px;}
+.dr.n{background:var(--green-light);color:var(--green);border:1px solid var(--green);}
+.dr.m{background:#fef3e2;color:#92520a;border:1px solid #c87d2a;}
+.dr.s{background:#fde8e8;color:var(--red);border:1px solid var(--red);}
+.sig{margin-top:10px;padding-top:8px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:20px;font-size:9px;font-family:var(--font-sans);}
+.si{text-align:right;}.sl{font-size:7.5px;color:var(--ink-light);margin-bottom:2px;}
+.sv{font-size:11px;font-family:var(--font-serif);font-weight:600;}
+.sln{width:130px;border-bottom:1.5px solid var(--ink);margin-top:18px;}
+.disc{margin-top:8px;padding:5px 8px;border-top:1px solid var(--border);font-size:7.5px;color:var(--ink-light);font-family:var(--font-sans);line-height:1.8;}
+.overall-row{text-align:right;margin:4px 0;font-size:8.5px;}
+/* ブラウザ印刷時に自動縮小 */
+@page{margin:0;size:A4 portrait;}
+@media print{
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body{margin:0;}
+}
+</style></head><body>${pagesHtml}
+<script>
+  document.fonts.ready.then(()=>{ setTimeout(()=>window.print(), 300); });
+<\/script></body></html>`;
+}
+
+function buildDocHTML(d){
+  const rl = r => {
+    if(r==='n') return {t:'異常なし',c:'n'};
+    if(r==='m') return {t:'軽度所見あり',c:'m'};
+    if(r==='s') return {t:'重要所見あり',c:'s'};
+    return null;
+  };
+  const or = overallRating(d.ratings);
+  const rP = rl(d.ratings?.phy);
+  const rX = rl(d.ratings?.xray);
+  const rS = rl(d.ratings?.scope);
+  
+  // Build xray text from findings if no manual text
+  let xrayText = d.resultXray || '';
+  if(!xrayText){
+    if(d.xrayData?.findings?.length > 0){
+      xrayText = d.xrayData.findings.map(f => f.comment ? `${f.label}（${f.comment}）` : f.label).join('\n');
+    } else {
+      xrayText = '各部位のレントゲン検査において、特記すべき骨格的異常を認めない。';
+    }
+  }
+  
+  // Build scope text
+  let scopeText = d.resultScope || '';
+  if(!scopeText){
+    const g = d.scopeGrade ? `喉頭片麻痺 Grade ${d.scopeGrade}` : '';
+    const checks = (d.scopeChecks||[]).join('、');
+    scopeText = [g, checks].filter(Boolean).join('　') || '（記録なし）';
+  }
+  const sedText = buildSedationText(d.sedation);
+  if(sedText) scopeText = sedText + '\n' + scopeText;
+
+  return `<div class="dp">
+  <div class="dh">
+    <div class="dc">北洋ホースクリニック　HOKUYO HORSE CLINIC</div>
+    <div class="dt">レポジトリー検査報告書</div>
+    <div class="dte">Repository Examination Report</div>
+    <div class="ds-area"><div class="ds">北洋<br>ホース<br>クリニック</div></div>
+  </div>
+  <table class="dm">
+    <tr><td class="l">セール名</td><td class="v" colspan="3">${saleWithYear(d.saleName, d.examDate)}</td><td class="l">検査日</td><td class="v">${fmtDate(d.examDate)}</td></tr>
+    <tr><td class="l">撮影場所</td><td class="v" colspan="3">${d.shootLocation||'─'}</td><td class="l">番号</td><td class="v">${d.horseNumber||'─'}</td></tr>
+    <tr><td class="l">馬名</td><td class="v hn" colspan="5">${d.horseName||'─'}</td></tr>
+    <tr><td class="l">性別</td><td class="v">${d.horseSex||'─'}</td><td class="l">毛色</td><td class="v">${d.horseColor||'─'}</td><td class="l">生年月日</td><td class="v">${fmtDate(d.horseDob)}</td></tr>
+    <tr><td class="l">父馬</td><td class="v" colspan="3">${d.horseSire||'─'}</td><td class="l">所有者</td><td class="v">${d.horseBreeder||'─'}</td></tr>
+  </table>
+  <div class="sec">
+    <div class="sth"><span class="n">1</span> 身体検査所見</div>
+    <div class="scb">${d.resultPhy||'特記すべき異常を認めない。'}${rP?`\n\n<span class="dr ${rP.c}">${rP.t}</span>`:''}</div>
+  </div>
+  <div class="sec">
+    <div class="sth"><span class="n">2</span> レントゲン（X線）検査所見</div>
+    <div class="scb">${xrayText}${rX?`\n\n<span class="dr ${rX.c}">${rX.t}</span>`:''}</div>
+  </div>
+  <div class="sec">
+    <div class="sth"><span class="n">3</span> 内視鏡検査所見（咽頭・喉頭）</div>
+    <div class="scb">${scopeText}${rS?`\n\n<span class="dr ${rS.c}">${rS.t}</span>`:''}</div>
+  </div>
+  ${d.resultOverall?`<div class="sec"><div class="sth"><span class="n">4</span> 総合コメント</div><div class="scb">${d.resultOverall}</div></div>`:''}
+  ${(()=>{
+    const mText = buildMarketEvalText(d.marketEval);
+    return mText ? `<div class="sec"><div class="sth"><span class="n">5</span> 市場・競走能力評価</div><div class="scb">${mText}</div></div>` : '';
+  })()}
+  ${(()=>{
+    const apLines = ['phy','xray','scope'].map(s=>{
+      const t = buildActionPlanText(s, d.actionPlan?.[s]);
+      if(!t) return '';
+      const names = {phy:'身体検査',xray:'X線検査',scope:'内視鏡検査'};
+      return `${names[s]}：${t}`;
+    }).filter(Boolean);
+    return apLines.length ? `<div class="sec"><div class="sth"><span class="n">6</span> 対処方針・管理者への指導事項</div><div class="scb">${apLines.join('\n')}</div></div>` : '';
+  })()}
+  ${or?`<div class="overall-row"><span style="color:var(--ink-light);">総合評価：</span><span class="dr ${or.cls}">${or.cls==='n'?'異常なし':or.cls==='m'?'軽度所見あり':'重要所見あり'}</span></div>`:''}
+  <div class="sig">
+    <div class="si"><div class="sl">担当獣医師</div><div class="sv">${d.vetName||''}</div><div class="sln"></div></div>
+  </div>
+  <div class="disc">
+    本検査は購買前検査として実施されたものであり、検査時点における所見を記載したものである。将来的な競走能力、運動能力および健康状態を保証するものではない。
+  </div>
+</div>`;
+}
+
+// ============================================================
+//  PREVIEW
+// ============================================================
+function buildPreview(){
+  const d = currentId ? db.find(r => r.id === currentId) : getFormData();
+  if(!d) return;
+  
+  let xrayText = d.resultXray || '';
+  if(!xrayText){
+    if(d.xrayData?.findings?.length > 0){
+      xrayText = d.xrayData.findings.map(f => f.comment ? `${f.label}（${f.comment}）` : f.label).join('\n');
+    } else {
+      xrayText = '各部位のレントゲン検査において、特記すべき骨格的異常を認めない。';
+    }
+  }
+  let scopeText = d.resultScope || '';
+  if(!scopeText){
+    const g = d.scopeGrade ? `喉頭片麻痺 Grade ${d.scopeGrade}` : '';
+    const checks = (d.scopeChecks||[]).join('、');
+    scopeText = [g, checks].filter(Boolean).join('　') || '';
+  }
+  const sedText2 = buildSedationText(d.sedation);
+  if(sedText2) scopeText = sedText2 + '\n' + scopeText;
+
+  const or = overallRating(d.ratings);
+  const rl = r => {
+    if(r==='n') return {t:'異常なし',c:'n'};
+    if(r==='m') return {t:'軽度所見あり',c:'m'};
+    if(r==='s') return {t:'重要所見あり',c:'s'};
+    return null;
+  };
+  const rP = rl(d.ratings?.phy);
+  const rX = rl(d.ratings?.xray);
+  const rS = rl(d.ratings?.scope);
+
+  document.getElementById('doc-paper').innerHTML = `
+  <div class="doc-hd">
+    <div class="doc-clinic">北洋ホースクリニック　HOKUYO HORSE CLINIC</div>
+    <div class="doc-title">レポジトリー検査報告書</div>
+    <div class="doc-title-en">Repository Examination Report</div>
+    <div class="doc-seal-area"><div class="doc-seal">北洋<br>ホース<br>クリニック</div></div>
+  </div>
+  <table class="doc-meta">
+    <tr><td class="lbl">セール名</td><td class="val" colspan="3">${saleWithYear(d.saleName, d.examDate)}</td><td class="lbl">検査日</td><td class="val">${fmtDate(d.examDate)}</td></tr>
+    <tr><td class="lbl">撮影場所</td><td class="val" colspan="3">${d.shootLocation||'─'}</td><td class="lbl">番号</td><td class="val">${d.horseNumber||'─'}</td></tr>
+    <tr><td class="lbl">馬名</td><td class="val hn" colspan="5">${d.horseName||'─'}</td></tr>
+    <tr><td class="lbl">性別</td><td class="val">${d.horseSex||'─'}</td><td class="lbl">毛色</td><td class="val">${d.horseColor||'─'}</td><td class="lbl">生年月日</td><td class="val">${fmtDate(d.horseDob)}</td></tr>
+    <tr><td class="lbl">父馬</td><td class="val" colspan="3">${d.horseSire||'─'}</td><td class="lbl">所有者</td><td class="val">${d.horseBreeder||'─'}</td></tr>
+  </table>
+  <div class="doc-sec">
+    <div class="doc-sec-title"><span class="num">1</span> 身体検査所見</div>
+    <div class="doc-sec-body">${d.resultPhy||'特記すべき異常を認めない。'}${rP?`\n\n<span class="drating ${rP.c}">${rP.t}</span>`:''}</div>
+  </div>
+  <div class="doc-sec">
+    <div class="doc-sec-title"><span class="num">2</span> レントゲン（X線）検査所見</div>
+    <div class="doc-sec-body">${xrayText||'（未入力）'}${rX?`\n\n<span class="drating ${rX.c}">${rX.t}</span>`:''}</div>
+  </div>
+  <div class="doc-sec">
+    <div class="doc-sec-title"><span class="num">3</span> 内視鏡検査所見（咽頭・喉頭）</div>
+    <div class="doc-sec-body">${scopeText||'（未入力）'}${rS?`\n\n<span class="drating ${rS.c}">${rS.t}</span>`:''}</div>
+  </div>
+  ${d.resultOverall?`<div class="doc-sec"><div class="doc-sec-title"><span class="num">4</span> 総合コメント</div><div class="doc-sec-body">${d.resultOverall}</div></div>`:''}
+  ${(()=>{
+    const mText = buildMarketEvalText(d.marketEval);
+    return mText ? `<div class="doc-sec"><div class="doc-sec-title"><span class="num">5</span> 市場・競走能力評価</div><div class="doc-sec-body">${mText}</div></div>` : '';
+  })()}
+  ${(()=>{
+    const apLines = ['phy','xray','scope'].map(s=>{
+      const t = buildActionPlanText(s, d.actionPlan?.[s]);
+      if(!t) return '';
+      const names = {phy:'身体検査',xray:'X線検査',scope:'内視鏡検査'};
+      return `${names[s]}：${t}`;
+    }).filter(Boolean);
+    return apLines.length ? `<div class="doc-sec"><div class="doc-sec-title"><span class="num">6</span> 対処方針・管理者への指導事項</div><div class="doc-sec-body">${apLines.join('\n')}</div></div>` : '';
+  })()}
+  ${or?`<div style="text-align:right;margin:6px 0;"><span style="font-size:11px;color:var(--ink-light);">総合評価：</span><span class="drating ${or.cls}">${or.cls==='n'?'異常なし':or.cls==='m'?'軽度所見あり':'重要所見あり'}</span></div>`:''}
+  <div class="doc-sig">
+    <div class="sig-item"><div class="sig-lbl">担当獣医師</div><div class="sig-val">${d.vetName||''}</div><div class="sig-line"></div></div>
+  </div>
+  <div style="margin-top:18px;padding:9px 12px;border-top:1px solid var(--border-light);font-size:10px;color:var(--ink-light);font-family:var(--font-sans);line-height:1.9;letter-spacing:.02em;">
+    本検査は購買前検査として実施されたものであり、検査時点における所見を記載したものである。<br>
+    将来的な競走能力、運動能力および健康状態を保証するものではない。
+  </div>`;
+
+  // sidebar list
+  const sb = document.getElementById('sb-list');
+  if(db.length === 0){ sb.innerHTML = '<div class="empty-st" style="padding:16px;"><p style="font-size:12px;">保存された診断書はありません</p></div>'; return; }
+  sb.innerHTML = db.map(c => {
+    const or2 = overallRating(c.ratings);
+    return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--border-light);cursor:pointer;${currentId===c.id?'background:var(--accent-light);':''}" onclick="previewCase('${c.id}')">
+      <span style="font-family:var(--font-serif);font-weight:600;flex:1;font-size:13px;">${c.horseName}</span>
+      ${or2?`<span class="rbadge ${or2.cls}" style="font-size:10px;">${or2.cls==='n'?'異常なし':or2.cls==='m'?'軽度所見あり':'重要所見あり'}</span>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+//  SUMMARY TABLE
+// ============================================================
+function renderSummaryTable(){
+  const tbody = document.getElementById('sum-tbody');
+  if(summaryList.length === 0){
+    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-st"><div class="icon">📋</div><p>保存一覧タブで馬を選択→「まとめ表に追加」してください</p></div></td></tr>`;
+    return;
+  }
+  const rl = cls => ({n:'異常なし',m:'軽度所見あり',s:'重要所見あり'}[cls]||'');
+  tbody.innerHTML = summaryList.map((d,i) => {
+    const or = overallRating(d.ratings);
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${d.horseNumber||'─'}</td>
+      <td class="hname">${d.horseName}</td>
+      <td>${d.horseSex||'─'}</td>
+      <td>${d.horseColor||'─'}</td>
+      <td style="font-size:11px;">${d.horseBreeder||'─'}</td>
+      <td style="font-size:11px;">${d.shootLocation||'─'}</td>
+      <td style="font-size:11px;line-height:1.5;">${buildXraySummary(d)}</td>
+      <td style="font-size:11px;line-height:1.5;">${buildScopeSummary(d)}</td>
+      <td>${or?`<span class="rbadge ${or.cls}">${rl(or.cls)}</span>`:'─'}</td>
+      <td class="no-print"><button onclick="removeFromSummary(${i})" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:15px;">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function buildXraySummary(d){
+  if(d.resultXray) return d.resultXray.slice(0,40)+(d.resultXray.length>40?'…':'');
+  if(d.xrayData?.findings?.length > 0){
+    return d.xrayData.findings.map(f=>`${f.lr}${f.fb}${f.joint} ${f.finding}`).join('、');
+  }
+  return '異常なし';
+}
+
+function buildScopeSummary(d){
+  const g = d.scopeGrade ? `G${d.scopeGrade}` : '';
+  const checks = (d.scopeChecks||[]).join('、');
+  return [g, checks].filter(Boolean).join(' ') || (d.resultScope||'─').slice(0,30);
+}
+
+function removeFromSummary(i){ summaryList.splice(i,1); renderSummaryTable(); }
+function clearSummary(){ if(!confirm('リセットしますか？')) return; summaryList=[]; renderSummaryTable(); }
+
+// 免責文言（共通）
+const DISCLAIMER = `本検査は購買前検査として実施されたものであり、検査時点における所見を記載したものである。\n将来的な競走能力、運動能力および健康状態を保証するものではない。`;
+
+function updateSumPrintMeta(){
+  const el = document.getElementById('sum-print-meta');
+  const title = document.getElementById('sum-print-title');
+  if(!el) return;
+  const sale  = document.getElementById('sum-sale-hd')?.value || '';
+  const loc   = document.getElementById('sum-loc-hd')?.value || '';
+  const date  = document.getElementById('sum-date-hd')?.value || '';
+  const cons  = document.getElementById('sum-consignor')?.value || '';
+  const year  = date ? new Date(date).getFullYear() + '年 ' : '';
+  if(title) title.textContent = `${year}${sale||''}　レポジトリー検査一覧報告書`;
+  const parts = [];
+  if(sale)  parts.push(`セール：${sale}`);
+  if(loc)   parts.push(`撮影場所：${loc}`);
+  if(date)  parts.push(`検査日：${fmtDate(date)}`);
+  if(cons)  parts.push(`コンサイナー：${cons}`);
+  el.innerHTML = parts.map(p=>`<span>${p}</span>`).join('');
+}
+
+function printSummaryList(){
+  if(summaryList.length === 0){ showToast('まとめ表に馬を追加してください'); return; }
+  updateSumPrintMeta();
+  const sale     = document.getElementById('sum-sale-hd')?.value || '';
+  const loc      = document.getElementById('sum-loc-hd')?.value || '';
+  const dateVal  = document.getElementById('sum-date-hd')?.value || '';
+  const consignor= document.getElementById('sum-consignor')?.value || '';
+  const year     = dateVal ? new Date(dateVal).getFullYear()+'年 ' : '';
+  const title    = `${year}${sale}　レポジトリー検査一覧報告書`;
+  const metaParts= [sale&&`セール：${sale}`, loc&&`撮影場所：${loc}`, dateVal&&`検査日：${fmtDate(dateVal)}`, consignor&&`コンサイナー：${consignor}`].filter(Boolean);
+  const rl = cls => ({n:'異常なし',m:'軽度所見あり',s:'重要所見あり'}[cls]||'');
+
+  const rows = summaryList.map((d,i) => {
+    const or = overallRating(d.ratings);
+    const xray = buildXraySummary(d);
+    const scope = buildScopeSummary(d);
+    const badgeCls = or ? (or.cls==='n'?'badge-n':or.cls==='m'?'badge-m':'badge-s') : '';
+    return `<tr>
+      <td class="c">${i+1}</td>
+      <td class="c">${d.horseNumber||'─'}</td>
+      <td class="bold">${d.horseName||'─'}</td>
+      <td class="c">${d.horseSex||'─'}</td>
+      <td class="c">${d.horseColor||'─'}</td>
+      <td>${d.horseBreeder||'─'}</td>
+      <td>${d.shootLocation||'─'}</td>
+      <td class="finding">${xray}</td>
+      <td class="finding">${scope}</td>
+      <td class="c">${or?`<span class="badge ${badgeCls}">${rl(or.cls)}</span>`:'─'}</td>
+    </tr>`;
+  }).join('');
+
+  const win = window.open('','_blank');
+  if(!win){ showToast('⚠ ポップアップが許可されていません'); return; }
+  win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#1a1a2e;--ink-light:#4a4a6a;--paper-warm:#f5f0e8;--accent:#2c5f8a;
+  --green:#1a5c3a;--green-light:#e8f4ed;--red:#8b2020;--gold:#b8860b;
+  --border:#c8c4bc;--font-serif:'Noto Serif JP',serif;--font-sans:'Noto Sans JP',sans-serif;
+}
+html,body{font-family:var(--font-sans);background:white;color:var(--ink);}
+/* A4横：297mm × 210mm、余白6mm → 印刷エリア 285mm × 198mm */
+.page{padding:6mm 8mm;}
+
+/* ヘッダー */
+.hd{text-align:center;border-bottom:2px double var(--ink);padding-bottom:5px;margin-bottom:7px;}
+.hd-clinic{font-size:7.5px;letter-spacing:.1em;color:var(--ink-light);margin-bottom:3px;}
+.hd-title{font-size:15px;font-weight:700;font-family:var(--font-serif);letter-spacing:.05em;}
+.hd-en{font-size:8px;color:var(--ink-light);font-style:italic;margin-top:1px;}
+.hd-meta{display:flex;justify-content:center;gap:16px;margin-top:4px;font-size:8px;color:var(--ink-light);}
+
+/* テーブル */
+table{width:100%;border-collapse:collapse;table-layout:fixed;}
+thead tr{background:var(--ink);}
+th{color:white;font-size:8px;font-weight:600;letter-spacing:.03em;padding:4px 4px;text-align:left;white-space:nowrap;overflow:hidden;}
+td{font-size:8px;padding:4px 4px;border-bottom:1px solid var(--border);vertical-align:top;word-break:keep-all;overflow-wrap:anywhere;line-height:1.55;}
+tr:nth-child(even) td{background:#f9f8f6;}
+
+/* 列幅：A4横285mm基準 */
+.col-no   {width:18px;}
+.col-num  {width:28px;}
+.col-name {width:60px;}
+.col-sex  {width:16px;}
+.col-color{width:32px;}
+.col-owner{width:56px;}
+.col-loc  {width:46px;}
+.col-xray {width:21%;}
+.col-scope{width:19%;}
+.col-eval {width:54px;}
+
+.c{text-align:center;}
+.bold{font-family:var(--font-serif);font-weight:700;font-size:9px;}
+.finding{font-size:7.5px;line-height:1.55;word-break:keep-all;}
+
+/* バッジ */
+.badge{display:inline-block;padding:1px 5px;border-radius:9px;font-size:7px;font-weight:700;white-space:nowrap;}
+.badge-n{background:var(--green-light);color:var(--green);border:1px solid var(--green);}
+.badge-m{background:#fef3e2;color:#92520a;border:1px solid #c87d2a;}
+.badge-s{background:#fde8e8;color:var(--red);border:1px solid var(--red);}
+
+/* フッター */
+.ft{margin-top:6px;font-size:7px;color:var(--ink-light);border-top:1px solid var(--border);padding-top:4px;line-height:1.6;}
+
+@page{margin:0;size:A4 landscape;}
+@media print{
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body{margin:0;}
+}
+</style></head><body>
+<div class="page">
+  <div class="hd">
+    <div class="hd-clinic">北洋ホースクリニック　HOKUYO HORSE CLINIC</div>
+    <div class="hd-title">${title||'レポジトリー検査一覧報告書'}</div>
+    <div class="hd-en">Repository Examination Summary Report</div>
+    <div class="hd-meta">${metaParts.map(p=>`<span>${p}</span>`).join('')}</div>
+  </div>
+  <table>
+    <colgroup>
+      <col class="col-no"><col class="col-num"><col class="col-name">
+      <col class="col-sex"><col class="col-color"><col class="col-owner">
+      <col class="col-loc"><col class="col-xray"><col class="col-scope"><col class="col-eval">
+    </colgroup>
+    <thead>
+      <tr>
+        <th class="col-no">No.</th>
+        <th class="col-num">番号</th>
+        <th class="col-name">馬名</th>
+        <th class="col-sex">性</th>
+        <th class="col-color">毛色</th>
+        <th class="col-owner">所有者</th>
+        <th class="col-loc">撮影場所</th>
+        <th class="col-xray">X線所見</th>
+        <th class="col-scope">内視鏡所見</th>
+        <th class="col-eval">総合評価</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="ft">
+    本検査はレポジトリー検査として実施されたものであり、検査時点における所見を記載したものである。将来的な競走能力、運動能力および健康状態を保証するものではない。
+    &nbsp;&nbsp;｜&nbsp;&nbsp;発行：北洋ホースクリニック
+  </div>
+</div>
+<script>
+  // フォント読み込み後に印刷
+  document.fonts.ready.then(()=>{ setTimeout(()=>window.print(), 300); });
+<\/script>
+</body></html>`);
+  win.document.close();
+}
+
+function printSummaryAll(){
+  if(summaryList.length === 0){ showToast('まとめ表に馬を追加してください'); return; }
+  openPrintWindow(summaryList);
+}
+
+// ============================================================
+//  EXPORT / IMPORT
+// ============================================================
+function exportJSON(){
+  const blob = new Blob([JSON.stringify({version:'v3',exportDate:new Date().toISOString(),db,summaryList},null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `診断書DB_${todayStr()}.json`;
+  a.click();
+  showToast('💾 JSONファイルを保存しました', 'ok');
+}
+
+function importJSON(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try{
+      const data = JSON.parse(e.target.result);
+      db = data.db || [];
+      summaryList = data.summaryList || [];
+      persistDB(); updateHeaderCount(); renderSavedList(); renderSummaryTable();
+      showToast(`📂 ${db.length}件読み込みました`, 'ok');
+    }catch(err){ showToast('⚠ 読み込みエラー'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ============================================================
+//  HELPERS
+// ============================================================
+function overallRating(r){
+  if(!r) return null;
+  const vals = Object.values(r).filter(Boolean);
+  if(vals.includes('s')) return {cls:'s'};
+  if(vals.includes('m')) return {cls:'m'};
+  if(vals.length > 0 && vals.every(v=>v==='n')) return {cls:'n'};
+  return null;
+}
+
+function fmtDate(s){
+  if(!s) return '─';
+  const d = new Date(s);
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+}
+
+// ============================================================
+//  TAB SWITCH
+// ============================================================
+function switchTab(tab){
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.htab, .mtab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  const tabs = ['input','saved','preview','summary'];
+  const idx = tabs.indexOf(tab);
+  document.querySelectorAll('.htab')[idx]?.classList.add('active');
+  document.querySelectorAll('.mtab')[idx]?.classList.add('active');
+  if(tab==='preview') buildPreview();
+  if(tab==='saved') renderSavedList();
+}
+
+// ============================================================
+//  TOAST
+// ============================================================
+function showToast(msg, type=''){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show'+(type==='ok'?' ok':'');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ============================================================
+//  START
+// ============================================================
+init();
+</script>
+</body>
+</html>
