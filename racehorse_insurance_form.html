@@ -12,6 +12,9 @@
       --msm-l: #2563a8;
       --sj: #1a8040;
       --sj-l: #16652e;
+      --death: #1a1a1a;
+      --death-l: #333;
+      --revenue: #b45309;
       --text: #1a1a1a;
       --border: #d0d0d0;
       --bg: #f5f5f5;
@@ -54,11 +57,11 @@
 
     .tab {
       flex: 1;
-      padding: 12px;
+      padding: 10px 4px;
       text-align: center;
       cursor: pointer;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 12px;
       border-bottom: 3px solid transparent;
       transition: all 0.3s ease;
       color: #666;
@@ -72,6 +75,8 @@
 
     .tab.sj.active { color: var(--sj); border-bottom-color: var(--sj); }
     .tab.history.active { color: #666; border-bottom-color: #666; }
+    .tab.revenue.active { color: var(--revenue); border-bottom-color: var(--revenue); }
+    .tab.death.active { color: var(--death); border-bottom-color: var(--death); }
 
     /* Tab content */
     .tab-content { display: none; padding: 20px; }
@@ -443,6 +448,82 @@
 
     .strikethrough { text-decoration: line-through; }
 
+    /* Agent dropdown row */
+    .agent-row {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+    .agent-row select { flex: 1; }
+    .agent-row .btn { flex: 0 0 auto; padding: 13px 14px; font-size: 14px; white-space: nowrap; }
+
+    /* Voice recording indicator */
+    .voice-btn { position: relative; }
+    .voice-btn.recording {
+      background: var(--error);
+      color: #fff;
+      animation: pulse-rec 1.2s infinite;
+    }
+    @keyframes pulse-rec {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.5); }
+      50% { box-shadow: 0 0 0 10px rgba(225, 29, 72, 0); }
+    }
+    .rec-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ff0000;
+      margin-right: 6px;
+      animation: blink-dot 1s infinite;
+    }
+    @keyframes blink-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    /* Revenue tab */
+    .revenue-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    .revenue-table th, .revenue-table td {
+      border: 1px solid var(--border);
+      padding: 8px 6px;
+      text-align: left;
+    }
+    .revenue-table th {
+      background: #f0f0f0;
+      font-weight: 700;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .revenue-table .total-row {
+      background: #fef3c7;
+      font-weight: 700;
+    }
+    .revenue-table .total-row td { border-top: 2px solid var(--revenue); }
+
+    .farm-summary { margin-top: 24px; }
+    .farm-summary-card {
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+    }
+    .farm-summary-card .farm-name {
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+    .farm-summary-card .farm-total {
+      font-size: 14px;
+      color: var(--revenue);
+      font-weight: 700;
+    }
+
     @media print {
       body { background: #fff; }
       .tabs, .btn-group, .section-heading, .modal { display: none; }
@@ -467,6 +548,8 @@
       <div class="tab msm active" onclick="switchTab(0)">🔵 三井住友</div>
       <div class="tab sj" onclick="switchTab(1)">🟢 損保ジャパン</div>
       <div class="tab history" onclick="switchTab(2)">📁 保存済み</div>
+      <div class="tab revenue" onclick="switchTab(3)">💰 売上</div>
+      <div class="tab death" onclick="switchTab(4)">⚫ 死亡診断</div>
     </div>
 
     <!-- MSM Tab -->
@@ -475,6 +558,16 @@
       <div class="fgroup">
         <div class="flabel">診断獣医師</div>
         <div class="chips" id="msm_vet_chips"></div>
+      </div>
+      <div class="section-heading">依頼元</div>
+      <div class="fgroup">
+        <div class="flabel">依頼元（代理店）</div>
+        <div class="agent-row">
+          <select id="msm_agent" onchange="autoSave()">
+            <option value="">選択してください</option>
+          </select>
+          <button class="btn btn-secondary" onclick="addAgentPrompt('msm')">＋ 追加</button>
+        </div>
       </div>
       <div class="section-heading">記載日</div>
       <div class="fgroup">
@@ -673,6 +766,16 @@
         <div class="flabel">診断獣医師</div>
         <div class="chips" id="sj_vet_chips"></div>
       </div>
+      <div class="section-heading">依頼元</div>
+      <div class="fgroup">
+        <div class="flabel">依頼元（代理店）</div>
+        <div class="agent-row">
+          <select id="sj_agent" onchange="autoSave()">
+            <option value="">選択してください</option>
+          </select>
+          <button class="btn btn-secondary" onclick="addAgentPrompt('sj')">＋ 追加</button>
+        </div>
+      </div>
       <div class="section-heading">作成日</div>
       <div class="fgroup">
         <div class="flabel">作成日</div>
@@ -856,6 +959,119 @@
       <div class="section-heading">保存済みレコード</div>
       <div id="saved_records"></div>
       <button class="btn btn-secondary" style="width: 100%; margin-top: 16px;" onclick="exportData()">📥 全データをエクスポート</button>
+    </div>
+
+    <!-- Revenue Tab -->
+    <div class="tab-content" id="revenue-tab">
+      <div class="section-heading">売上集計</div>
+      <div class="fgroup">
+        <div class="flabel">対象月</div>
+        <select id="revenue_month" onchange="renderRevenue()"></select>
+      </div>
+      <div id="revenue_content"></div>
+    </div>
+
+    <!-- Death Certificate Tab -->
+    <div class="tab-content" id="death-tab">
+      <div class="section-heading">死亡診断書</div>
+      <div class="fgroup">
+        <div class="flabel">診断獣医師</div>
+        <div class="chips" id="death_vet_chips"></div>
+      </div>
+      <div class="fgroup">
+        <div class="flabel">依頼元（代理店）</div>
+        <div class="agent-row">
+          <select id="death_agent" onchange="autoSaveDeath()">
+            <option value="">選択してください</option>
+          </select>
+          <button class="btn btn-secondary" onclick="addAgentPrompt('death')">＋ 追加</button>
+        </div>
+      </div>
+
+      <div class="section-heading">馬の情報</div>
+      <div class="fgroup">
+        <div class="flabel">馬名</div>
+        <input type="text" id="death_horse" placeholder="例：ダイワスカーレット" onchange="autoSaveDeath()" onblur="addHistory('death_horse')">
+        <div class="chips" id="death_horse_history"></div>
+      </div>
+      <div class="fgroup">
+        <div class="flabel">生年月日</div>
+        <input type="date" class="date-input" id="death_birth" onchange="autoSaveDeath()">
+      </div>
+      <div class="fgroup">
+        <div class="flabel">性別</div>
+        <div class="chips" id="death_sex_chips"></div>
+      </div>
+      <div class="fgroup">
+        <div class="flabel">毛色</div>
+        <select id="death_color" onchange="autoSaveDeath()">
+          <option value="">選択してください</option>
+          <option value="栗毛">栗毛</option>
+          <option value="黒鹿毛">黒鹿毛</option>
+          <option value="鹿毛">鹿毛</option>
+          <option value="青毛">青毛</option>
+          <option value="白毛">白毛</option>
+          <option value="芦毛">芦毛</option>
+          <option value="小栗毛">小栗毛</option>
+          <option value="栃栗毛">栃栗毛</option>
+        </select>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">飼養場所</div>
+        <input type="text" id="death_farm_loc" placeholder="例：北海道日高郡..." onchange="autoSaveDeath()" onblur="addHistory('death_farm_loc')">
+        <div class="chips" id="death_farm_loc_history"></div>
+      </div>
+      <div class="fgroup">
+        <div class="flabel">管理人</div>
+        <input type="text" id="death_farm_mgr" placeholder="例：佐藤　和茂" onchange="autoSaveDeath()" onblur="addHistory('death_farm_mgr'); saveFarmPair('death')">
+        <div class="chips" id="death_farm_mgr_history"></div>
+      </div>
+
+      <div class="section-heading">死亡情報</div>
+      <div class="fgroup row">
+        <div class="fgroup">
+          <div class="flabel">死亡日</div>
+          <input type="date" class="date-input" id="death_date" onchange="autoSaveDeath()">
+        </div>
+        <div class="fgroup">
+          <div class="flabel">死亡時刻</div>
+          <input type="text" id="death_time" placeholder="例：14:30" onchange="autoSaveDeath()">
+        </div>
+      </div>
+      <div class="fgroup">
+        <div class="flabel">死亡場所</div>
+        <input type="text" id="death_location" placeholder="例：飼養場所と同じ" onchange="autoSaveDeath()">
+      </div>
+      <div class="fgroup">
+        <div class="flabel">死因</div>
+        <div class="chips" id="death_cause_chips"></div>
+        <input type="text" id="death_cause_detail" placeholder="死因の詳細を記入" onchange="autoSaveDeath()" style="margin-top:8px;">
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">経緯・所見</div>
+        <textarea id="death_findings" placeholder="死亡に至る経緯・臨床所見を記入" rows="6" onchange="autoSaveDeath()"></textarea>
+        <button class="btn btn-secondary voice-btn" id="voice_btn" onclick="toggleVoiceInput()" style="margin-top:8px;">🎤 音声入力</button>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">写真メモ</div>
+        <textarea id="death_photo_notes" placeholder="撮影した写真についてのメモ" rows="3" onchange="autoSaveDeath()"></textarea>
+      </div>
+
+      <div class="section-heading">請求額</div>
+      <div class="fgroup">
+        <div class="flabel">請求項目</div>
+        <div class="chips" id="death_fee_items_chips"></div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="saveRecord('death')">💾 保存</button>
+        <button class="btn btn-secondary" onclick="newRecordDeath()">🆕 新規</button>
+        <button class="btn btn-secondary" onclick="previewPrint('death')">📄 プレビュー</button>
+        <button class="btn btn-secondary" onclick="printForm('death')" style="background:var(--death);color:#fff;">🖨️ 印刷</button>
+      </div>
     </div>
   </div>
 
@@ -1065,7 +1281,7 @@
       container.innerHTML = '';
       const hist = HISTORY[fieldId];
       if (!hist) return;
-      const isFarmMgr = fieldId === 'msm_farm_mgr' || fieldId === 'sj_farm_mgr';
+      const isFarmMgr = fieldId === 'msm_farm_mgr' || fieldId === 'sj_farm_mgr' || fieldId === 'death_farm_mgr';
       Object.entries(hist).sort((a, b) => b[1] - a[1]).slice(0, 5).forEach(([val]) => {
         const chip = document.createElement('button');
         chip.className = 'chip';
@@ -1154,7 +1370,7 @@
         health_detail: getField('msm_health_detail'), hist_flag: getChip('msm', 'hist_flag'),
         histname: getField('msm_histname'), histtime: getField('msm_histtime'),
         histcure: getField('msm_histcure'), note: getField('msm_note'),
-        fee_items: getMultiChips('msm_fee_items'), vet: getChip('msm', 'vet'), form: 'msm', saved_at: new Date().toISOString()
+        fee_items: getMultiChips('msm_fee_items'), vet: getChip('msm', 'vet'), agent: selVal('msm_agent'), form: 'msm', saved_at: new Date().toISOString()
       };
     }
 
@@ -1176,7 +1392,7 @@
         mucosa: getChip('sj', 'mucosa'), palp: getChip('sj', 'palp'), ausc: getChip('sj', 'ausc'),
         hist_flag: getChip('sj', 'hist_flag'), histname: getField('sj_histname'), histtime: getField('sj_histtime'),
         note: getField('sj_note'), diagloc_sj: getField('sj_diagloc_sj'), microchip: getField('sj_microchip'),
-        vet: getChip('sj', 'vet'), form: 'sj', saved_at: new Date().toISOString()
+        vet: getChip('sj', 'vet'), agent: selVal('sj_agent'), form: 'sj', saved_at: new Date().toISOString()
       };
     }
 
@@ -1187,6 +1403,12 @@
       localStorage.setItem('draft_sj', JSON.stringify(sj));
       saveHistory();
       showToast('保存しました', 'success');
+    }
+
+    function autoSaveDeath() {
+      const d = collectDeath();
+      localStorage.setItem('draft_death', JSON.stringify(d));
+      saveHistory();
     }
 
     function loadMSM(d) {
@@ -1201,6 +1423,7 @@
       setField('msm_diagloc_other', d.diagloc_other); setField('msm_temp_detail', d.temp_detail);
       setField('msm_health_detail', d.health_detail); setField('msm_histname', d.histname);
       setField('msm_histtime', d.histtime); setField('msm_histcure', d.histcure); setField('msm_note', d.note);
+      if (d.agent) setField('msm_agent', d.agent);
       setChip('msm', 'vet', d.vet); setChip('msm', 'sex', d.sex); setChip('msm', 'diagloc', d.diagloc); setChip('msm', 'build', d.build);
       setChip('msm', 'temp', d.temp); setChip('msm', 'nutr', d.nutr); setChip('msm', 'pulse', d.pulse);
       setChip('msm', 'gait', d.gait); setChip('msm', 'test', d.test); setChip('msm', 'health', d.health);
@@ -1221,6 +1444,7 @@
       setField('sj_feature', d.feature); setField('sj_farm_loc', d.farm_loc); setField('sj_farm_mgr', d.farm_mgr);
       setField('sj_microchip', d.microchip); setField('sj_diagloc_sj', d.diagloc_sj);
       setField('sj_histname', d.histname); setField('sj_histtime', d.histtime); setField('sj_note', d.note);
+      if (d.agent) setField('sj_agent', d.agent);
       setChip('sj', 'vet', d.vet); setChip('sj', 'sex', d.sex); setChip('sj', 'build', d.build); setChip('sj', 'nutr', d.nutr);
       setChip('sj', 'gait', d.gait); setChip('sj', 'mucosa', d.mucosa); setChip('sj', 'palp', d.palp);
       setChip('sj', 'ausc', d.ausc); setChip('sj', 'hist_flag', d.hist_flag);
@@ -1235,6 +1459,7 @@
       tabs.forEach((t, i) => t.classList.toggle('active', i === idx));
       contents.forEach((c, i) => c.classList.toggle('active', i === idx));
       if (idx === 2) renderSavedRecords();
+      if (idx === 3) renderRevenue();
     }
 
     // ============ Feature Modal ============
@@ -1434,8 +1659,11 @@
     // ============ Print Functions ============
     function previewPrint(prefix) {
       CURRENT_PRINT_FORM = prefix;
-      const data = prefix === 'msm' ? collectMSM() : collectSJ();
-      let html = prefix === 'msm' ? generateMSMPrintHTML(data) : generateSJPrintHTML(data);
+      let data, html;
+      if (prefix === 'msm') { data = collectMSM(); html = generateMSMPrintHTML(data); }
+      else if (prefix === 'sj') { data = collectSJ(); html = generateSJPrintHTML(data); }
+      else if (prefix === 'death') { data = collectDeath(); html = generateDeathPrintHTML(data); }
+      else { data = collectMSM(); html = generateMSMPrintHTML(data); }
       document.getElementById('print-content').innerHTML = html;
       const m = document.getElementById('print-modal');
       m.style.display = 'block';
@@ -1832,7 +2060,11 @@
 
     // ============ Saved Records ============
     function saveRecord(prefix) {
-      const data = prefix === 'msm' ? collectMSM() : collectSJ();
+      let data;
+      if (prefix === 'msm') data = collectMSM();
+      else if (prefix === 'sj') data = collectSJ();
+      else if (prefix === 'death') data = collectDeath();
+      else data = collectMSM();
       const saved = localStorage.getItem('saved_records');
       const records = saved ? JSON.parse(saved) : [];
       records.unshift(data);
@@ -1887,14 +2119,17 @@
         records.forEach((record, idx) => {
           const div = document.createElement('div');
           div.style.cssText = 'border: 1px solid var(--border); border-radius: 9px; padding: 16px; margin-bottom: 12px; cursor: pointer; position: relative;';
-          const badge = record.form === 'msm' ? '🔵 三井住友' : '🟢 損保ジャパン';
+          const badge = record.form === 'msm' ? '🔵 三井住友' : record.form === 'sj' ? '🟢 損保ジャパン' : '⚫ 死亡診断書';
+          const agentDisp = record.agent ? '　代理店: ' + record.agent : '';
           div.innerHTML = `
             <div style="font-weight:700;margin-bottom:5px;padding-right:56px;">${record.horse || '（未指定）'}</div>
-            <div style="font-size:13px;color:#666;">${badge} ／ ${new Date(record.saved_at).toLocaleString('ja-JP')}</div>
+            <div style="font-size:13px;color:#666;">${badge}${agentDisp} ／ ${new Date(record.saved_at).toLocaleString('ja-JP')}</div>
             <button onclick="event.stopPropagation();deleteRecord(${idx})" style="position:absolute;top:12px;right:12px;background:none;border:1px solid #ddd;border-radius:6px;padding:3px 10px;color:#aaa;font-size:12px;cursor:pointer;">削除</button>
           `;
           div.onclick = () => {
-            if (record.form === 'msm') { switchTab(0); loadMSM(record); } else { switchTab(1); loadSJ(record); }
+            if (record.form === 'msm') { switchTab(0); loadMSM(record); }
+            else if (record.form === 'sj') { switchTab(1); loadSJ(record); }
+            else if (record.form === 'death') { switchTab(4); loadDeath(record); }
           };
           container.appendChild(div);
         });
@@ -1905,8 +2140,10 @@
       const data = {
         draft_msm: localStorage.getItem('draft_msm'),
         draft_sj: localStorage.getItem('draft_sj'),
+        draft_death: localStorage.getItem('draft_death'),
         saved_records: localStorage.getItem('saved_records'),
-        history: localStorage.getItem('history')
+        history: localStorage.getItem('history'),
+        agents_master: localStorage.getItem('agents_master')
       };
       const json = JSON.stringify(data, null, 2);
       const blob = new Blob([json], { type: 'application/json' });
@@ -1926,10 +2163,341 @@
       setTimeout(() => toast.remove(), 3000);
     }
 
+    // ============ Agent Management ============
+    let AGENTS_MASTER = [];
+
+    function loadAgentsMaster() {
+      const a = localStorage.getItem('agents_master');
+      if (a) { try { AGENTS_MASTER = JSON.parse(a); } catch(e) { AGENTS_MASTER = []; } }
+    }
+
+    function saveAgentsMaster() {
+      localStorage.setItem('agents_master', JSON.stringify(AGENTS_MASTER));
+    }
+
+    function renderAgentDropdowns() {
+      ['msm_agent', 'sj_agent', 'death_agent'].forEach(id => {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        const currentVal = sel.value;
+        sel.innerHTML = '<option value="">選択してください</option>';
+        AGENTS_MASTER.forEach(agent => {
+          const opt = document.createElement('option');
+          opt.value = agent;
+          opt.textContent = agent;
+          sel.appendChild(opt);
+        });
+        if (currentVal) sel.value = currentVal;
+      });
+    }
+
+    function addAgentPrompt(prefix) {
+      const name = prompt('依頼元（代理店）名を入力してください:');
+      if (!name || !name.trim()) return;
+      const trimmed = name.trim();
+      if (!AGENTS_MASTER.includes(trimmed)) {
+        AGENTS_MASTER.push(trimmed);
+        saveAgentsMaster();
+      }
+      renderAgentDropdowns();
+      const sel = document.getElementById(prefix + '_agent');
+      if (sel) sel.value = trimmed;
+      if (prefix === 'death') autoSaveDeath(); else autoSave();
+    }
+
+    // ============ Death Certificate ============
+    const DEATH_CAUSE_OPTIONS = ['疝痛', '骨折', '心不全', '出血', '感染症', '事故', '不明', 'その他'];
+    const DEATH_FEE_OPTIONS = ['死亡診断書作成料（14,300円）'];
+
+    function collectDeath() {
+      return {
+        form: 'death',
+        horse: getField('death_horse'),
+        birth: getField('death_birth'),
+        sex: getChip('death', 'sex'),
+        color: selVal('death_color'),
+        farm_loc: getField('death_farm_loc'),
+        farm_mgr: getField('death_farm_mgr'),
+        agent: selVal('death_agent'),
+        death_date: getField('death_date'),
+        death_time: getField('death_time'),
+        death_location: getField('death_location'),
+        cause: getChip('death', 'cause'),
+        cause_detail: getField('death_cause_detail'),
+        findings: getField('death_findings'),
+        photo_notes: getField('death_photo_notes'),
+        fee_items: getMultiChips('death_fee_items'),
+        vet: getChip('death', 'vet'),
+        saved_at: new Date().toISOString()
+      };
+    }
+
+    function loadDeath(d) {
+      if (!d) return;
+      setField('death_horse', d.horse);
+      setField('death_birth', d.birth);
+      setField('death_color', d.color);
+      setField('death_farm_loc', d.farm_loc);
+      setField('death_farm_mgr', d.farm_mgr);
+      if (d.agent) setField('death_agent', d.agent);
+      setField('death_date', d.death_date);
+      setField('death_time', d.death_time);
+      setField('death_location', d.death_location);
+      setField('death_cause_detail', d.cause_detail);
+      setField('death_findings', d.findings);
+      setField('death_photo_notes', d.photo_notes);
+      setChip('death', 'vet', d.vet);
+      setChip('death', 'sex', d.sex);
+      setChip('death', 'cause', d.cause);
+      if (d.fee_items) {
+        const container = document.getElementById('death_fee_items_chips');
+        if (container) container.querySelectorAll('.chip').forEach(c => {
+          if (d.fee_items.includes(c.textContent)) c.classList.add('selected');
+        });
+      }
+    }
+
+    function newRecordDeath() {
+      if (!confirm('現在の入力内容をクリアして新規死亡診断書を作成しますか？')) return;
+      document.querySelectorAll('#death-tab .chip').forEach(c => c.classList.remove('selected'));
+      ['death_horse','death_birth','death_color','death_farm_loc','death_farm_mgr','death_agent',
+       'death_date','death_time','death_location','death_cause_detail','death_findings','death_photo_notes'].forEach(id => {
+        setField(id, '');
+      });
+      showToast('新規死亡診断書を作成しました', 'info');
+    }
+
+    // ============ Voice Input ============
+    let voiceRecognition = null;
+    let isRecording = false;
+
+    function toggleVoiceInput() {
+      if (isRecording) {
+        stopVoice();
+      } else {
+        startVoice();
+      }
+    }
+
+    function startVoice() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        showToast('このブラウザは音声入力に対応していません', 'error');
+        return;
+      }
+      voiceRecognition = new SpeechRecognition();
+      voiceRecognition.lang = 'ja-JP';
+      voiceRecognition.continuous = true;
+      voiceRecognition.interimResults = false;
+
+      voiceRecognition.onresult = (event) => {
+        const textarea = document.getElementById('death_findings');
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            const text = event.results[i][0].transcript;
+            textarea.value += (textarea.value ? '' : '') + text;
+          }
+        }
+        autoSaveDeath();
+      };
+
+      voiceRecognition.onerror = (event) => {
+        if (event.error === 'no-speech') return; // ignore silence
+        showToast('音声認識エラー: ' + event.error, 'error');
+        stopVoice();
+      };
+
+      voiceRecognition.onend = () => {
+        // Restart if still recording (continuous mode may stop)
+        if (isRecording) {
+          try { voiceRecognition.start(); } catch(e) {}
+        }
+      };
+
+      try {
+        voiceRecognition.start();
+        isRecording = true;
+        const btn = document.getElementById('voice_btn');
+        btn.innerHTML = '<span class="rec-dot"></span>⏹ 停止';
+        btn.classList.add('recording');
+      } catch(e) {
+        showToast('音声入力を開始できませんでした', 'error');
+      }
+    }
+
+    function stopVoice() {
+      isRecording = false;
+      if (voiceRecognition) {
+        try { voiceRecognition.stop(); } catch(e) {}
+        voiceRecognition = null;
+      }
+      const btn = document.getElementById('voice_btn');
+      if (btn) {
+        btn.innerHTML = '🎤 音声入力';
+        btn.classList.remove('recording');
+      }
+    }
+
+    // ============ Death Certificate Print ============
+    function generateDeathPrintHTML(data) {
+      const vetInfo = getVetInfo(data.vet);
+      const birthJa = dateToJaEra(data.birth);
+      const deathJa = dateToJaEra(data.death_date);
+      const birthStr = birthJa ? birthJa.full : '　　年　月　日';
+      const deathDateStr = deathJa ? deathJa.full : '　　年　月　日';
+      const deathTimeStr = data.death_time || '　　時　　分';
+      const S = 'border:1px solid #000;padding:6px 8px;vertical-align:middle;font-size:10pt;';
+      const SH = S + 'font-weight:bold;text-align:center;background:#f0f0f0;width:20%;';
+      const findings = (data.findings || '').replace(/\n/g, '<br>');
+
+      return '<div style="font-family:\'MS Mincho\',\'游明朝\',\'ヒラギノ明朝 ProN\',serif;font-size:10pt;color:#000;line-height:1.5;">'
+        + '<div style="text-align:center;font-size:18pt;font-weight:bold;letter-spacing:6px;margin-bottom:16px;border-bottom:3px double #000;padding-bottom:8px;">死 亡 診 断 書</div>'
+        + '<div style="text-align:right;margin-bottom:16px;font-size:10pt;">作成日：' + (dateToJaEra(new Date().toISOString().split('T')[0])?.full || '') + '</div>'
+        + '<table style="border-collapse:collapse;width:100%;margin-bottom:20px;">'
+        + '<tr><td style="' + SH + '">馬　名</td><td colspan="3" style="' + S + 'font-size:13pt;font-weight:bold;letter-spacing:2px;">' + (data.horse || '') + '</td></tr>'
+        + '<tr><td style="' + SH + '">生年月日</td><td style="' + S + '">' + birthStr + '</td>'
+        + '<td style="' + SH + '">性　別</td><td style="' + S + '">' + (data.sex || '') + '</td></tr>'
+        + '<tr><td style="' + SH + '">毛　色</td><td style="' + S + '">' + (data.color || '') + '</td>'
+        + '<td style="' + SH + '">管理人</td><td style="' + S + '">' + (data.farm_mgr || '') + '</td></tr>'
+        + '<tr><td style="' + SH + '">飼養場所</td><td colspan="3" style="' + S + '">' + (data.farm_loc || '') + '</td></tr>'
+        + '</table>'
+        + '<table style="border-collapse:collapse;width:100%;margin-bottom:20px;">'
+        + '<tr><td style="' + SH + '">死亡日時</td><td style="' + S + '">' + deathDateStr + '　　' + deathTimeStr + '</td></tr>'
+        + '<tr><td style="' + SH + '">死亡場所</td><td style="' + S + '">' + (data.death_location || '') + '</td></tr>'
+        + '<tr><td style="' + SH + '">死　因</td><td style="' + S + '">' + (data.cause || '') + (data.cause_detail ? '（' + data.cause_detail + '）' : '') + '</td></tr>'
+        + '</table>'
+        + '<div style="font-size:11pt;font-weight:bold;margin:16px 0 8px;border-bottom:2px solid #000;padding-bottom:4px;">経緯・所見</div>'
+        + '<div style="border:1px solid #000;padding:12px;min-height:120px;line-height:1.8;font-size:10pt;">' + findings + '</div>'
+        + (data.photo_notes ? '<div style="margin-top:12px;font-size:9pt;color:#666;">写真メモ：' + data.photo_notes.replace(/\n/g, '<br>') + '</div>' : '')
+        + '<div style="margin-top:40px;">'
+        + '<div style="text-align:right;padding-right:40px;">'
+        + '<div style="font-size:10pt;margin-bottom:4px;">〒056-0144　北海道日高郡新ひだか町静内田原569</div>'
+        + '<div style="font-size:10pt;margin-bottom:4px;">北洋ホースクリニック</div>'
+        + '<div style="font-size:12pt;letter-spacing:2px;">' + vetInfo.fullname + '　　<span style="font-size:14pt;">㊞</span></div>'
+        + '</div></div></div>';
+    }
+
+    // ============ Revenue Summary ============
+    function parseFeeAmount(feeStr) {
+      // Extract yen amount from strings like '競走馬審査料（14,300円）'
+      const m = feeStr.match(/（([\d,]+)円）/);
+      if (m) return parseInt(m[1].replace(/,/g, ''), 10);
+      // Fallback for death certificate fee
+      if (feeStr.includes('14,300')) return 14300;
+      if (feeStr.includes('5,000')) return 5000;
+      return 0;
+    }
+
+    function renderRevenue() {
+      const saved = localStorage.getItem('saved_records');
+      const records = saved ? JSON.parse(saved) : [];
+      const monthSel = document.getElementById('revenue_month');
+      const content = document.getElementById('revenue_content');
+
+      // Collect all months from records
+      const months = new Set();
+      records.forEach(r => {
+        if (r.saved_at) {
+          const d = new Date(r.saved_at);
+          const ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+          months.add(ym);
+        }
+      });
+
+      // Current month
+      const now = new Date();
+      const currentYM = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+      months.add(currentYM);
+
+      // Sort months descending
+      const sortedMonths = Array.from(months).sort().reverse();
+
+      // Populate month selector preserving current selection
+      const prevSel = monthSel.value;
+      monthSel.innerHTML = '';
+      sortedMonths.forEach(ym => {
+        const opt = document.createElement('option');
+        opt.value = ym;
+        const [y, m] = ym.split('-');
+        opt.textContent = y + '年' + parseInt(m) + '月';
+        monthSel.appendChild(opt);
+      });
+      if (prevSel && sortedMonths.includes(prevSel)) monthSel.value = prevSel;
+      else monthSel.value = sortedMonths[0] || currentYM;
+
+      const selectedMonth = monthSel.value;
+
+      // Filter records for selected month
+      const filtered = records.filter(r => {
+        if (!r.saved_at) return false;
+        const d = new Date(r.saved_at);
+        const ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+        return ym === selectedMonth;
+      });
+
+      if (!filtered.length) {
+        content.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">この月のレコードはありません</p>';
+        return;
+      }
+
+      // Build summary table
+      let html = '<table class="revenue-table"><thead><tr>'
+        + '<th>日付</th><th>馬名</th><th>牧場</th><th>保険会社</th><th>代理店</th><th>請求項目</th><th>合計</th>'
+        + '</tr></thead><tbody>';
+
+      let grandTotal = 0;
+      const farmTotals = {};
+
+      filtered.forEach(r => {
+        const d = new Date(r.saved_at);
+        const dateStr = (d.getMonth() + 1) + '/' + d.getDate();
+        const formLabel = r.form === 'msm' ? '三井住友' : r.form === 'sj' ? '損保ジャパン' : '死亡診断書';
+        const feeItems = r.fee_items || [];
+        let rowTotal = 0;
+        feeItems.forEach(fi => { rowTotal += parseFeeAmount(fi); });
+        grandTotal += rowTotal;
+        const mgr = r.farm_mgr || '';
+        if (mgr) {
+          farmTotals[mgr] = (farmTotals[mgr] || 0) + rowTotal;
+        }
+
+        html += '<tr>'
+          + '<td>' + dateStr + '</td>'
+          + '<td>' + (r.horse || '') + '</td>'
+          + '<td>' + mgr + '</td>'
+          + '<td>' + formLabel + '</td>'
+          + '<td>' + (r.agent || '') + '</td>'
+          + '<td>' + feeItems.join(', ') + '</td>'
+          + '<td style="text-align:right;white-space:nowrap;">' + (rowTotal > 0 ? rowTotal.toLocaleString() + '円' : '-') + '</td>'
+          + '</tr>';
+      });
+
+      html += '<tr class="total-row">'
+        + '<td colspan="6" style="text-align:right;font-weight:700;">月合計</td>'
+        + '<td style="text-align:right;white-space:nowrap;font-weight:700;">' + grandTotal.toLocaleString() + '円</td>'
+        + '</tr></tbody></table>';
+
+      // Farm summary
+      const farmEntries = Object.entries(farmTotals).sort((a, b) => b[1] - a[1]);
+      if (farmEntries.length) {
+        html += '<div class="farm-summary"><div class="section-heading">牧場別集計</div>';
+        farmEntries.forEach(([farm, total]) => {
+          html += '<div class="farm-summary-card">'
+            + '<div class="farm-name">' + farm + '</div>'
+            + '<div class="farm-total">' + total.toLocaleString() + '円</div>'
+            + '</div>';
+        });
+        html += '</div>';
+      }
+
+      content.innerHTML = html;
+    }
+
     // ============ Init ============
     window.addEventListener('load', () => {
       loadAllHistory();
       loadFarmMaster();
+      loadAgentsMaster();
       const today = new Date().toISOString().split('T')[0];
       ['msm_date_in', 'msm_diag_in', 'msm_fee1_in', 'sj_date_in', 'sj_diag_in'].forEach(id => {
         const el = document.getElementById(id);
@@ -1942,17 +2510,31 @@
       updateBanner('sj_diag_in', 'banner_sj_diag');
       setField('msm_type', 'サラブレッド');
       setField('sj_type', 'サラブレッド');
+      // Render chips for MSM and SJ
       Object.keys(CHIPS_DATA).forEach(key => {
         ['msm', 'sj'].forEach(prefix => {
           const containerId = prefix + '_' + key + '_chips';
           if (document.getElementById(containerId)) renderChips(containerId, CHIPS_DATA[key], prefix, key, autoSave);
         });
       });
+      // Render chips for Death Certificate
+      renderChips('death_vet_chips', CHIPS_DATA.vet, 'death', 'vet', autoSaveDeath);
+      renderChips('death_sex_chips', CHIPS_DATA.sex, 'death', 'sex', autoSaveDeath);
+      renderChips('death_cause_chips', DEATH_CAUSE_OPTIONS, 'death', 'cause', autoSaveDeath);
+      renderChips('death_fee_items_chips', DEATH_FEE_OPTIONS, 'death', 'fee_items', autoSaveDeath);
+      // Render agent dropdowns
+      renderAgentDropdowns();
+      // Default death date to today
+      const deathDateEl = document.getElementById('death_date');
+      if (deathDateEl && !deathDateEl.value) deathDateEl.value = today;
+      // Load drafts
       try {
         const dm = localStorage.getItem('draft_msm');
         if (dm) loadMSM(JSON.parse(dm));
         const ds = localStorage.getItem('draft_sj');
         if (ds) loadSJ(JSON.parse(ds));
+        const dd = localStorage.getItem('draft_death');
+        if (dd) loadDeath(JSON.parse(dd));
       } catch (e) {}
       calcAgeFromInputs('msm');
       calcAgeFromInputs('sj');
