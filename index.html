@@ -4,12 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>競走馬保険審査報告書</title>
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="競走馬診断書">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#254ba8">
-  <link rel="manifest" id="pwa-manifest">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -18,6 +12,9 @@
       --msm-l: #2563a8;
       --sj: #1a8040;
       --sj-l: #16652e;
+      --death: #1a1a1a;
+      --death-l: #333;
+      --revenue: #b45309;
       --text: #1a1a1a;
       --border: #d0d0d0;
       --bg: #f5f5f5;
@@ -60,11 +57,11 @@
 
     .tab {
       flex: 1;
-      padding: 12px;
+      padding: 10px 4px;
       text-align: center;
       cursor: pointer;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 12px;
       border-bottom: 3px solid transparent;
       transition: all 0.3s ease;
       color: #666;
@@ -78,23 +75,25 @@
 
     .tab.sj.active { color: var(--sj); border-bottom-color: var(--sj); }
     .tab.history.active { color: #666; border-bottom-color: #666; }
+    .tab.revenue.active { color: var(--revenue); border-bottom-color: var(--revenue); }
+    .tab.death.active { color: var(--death); border-bottom-color: var(--death); }
 
     /* Tab content */
-    .tab-content { display: none; padding: 8px 12px; }
+    .tab-content { display: none; padding: 20px; }
     .tab-content.active { display: block; }
 
     /* Form groups */
     .fgroup {
-      margin-bottom: 8px;
+      margin-bottom: 16px;
       display: flex;
       flex-direction: column;
     }
 
     .flabel {
       font-weight: 600;
-      font-size: 12px;
-      margin-bottom: 3px;
-      color: #666;
+      font-size: 15px;
+      margin-bottom: 8px;
+      color: var(--text);
     }
 
     .fgroup.row {
@@ -115,10 +114,10 @@
     textarea,
     select {
       width: 100%;
-      padding: 6px 9px;
+      padding: 13px 12px;
       border: 1.5px solid var(--border);
-      border-radius: 5px;
-      font-size: 14px;
+      border-radius: 9px;
+      font-size: 17px;
       font-family: inherit;
       color: var(--text);
       background: #fff;
@@ -151,7 +150,7 @@
     }
 
     textarea {
-      min-height: 70px;
+      min-height: 100px;
       resize: vertical;
       font-family: inherit;
     }
@@ -159,10 +158,10 @@
     /* Date input styling */
     .date-input {
       width: 100%;
-      padding: 6px 9px;
+      padding: 13px 12px;
       border: 1.5px solid var(--border);
-      border-radius: 5px;
-      font-size: 14px;
+      border-radius: 9px;
+      font-size: 17px;
       font-family: inherit;
       color: var(--text);
       background: #fff;
@@ -178,13 +177,13 @@
     /* Age display */
     .age-disp {
       background: var(--bg);
-      border-radius: 7px;
-      padding: 5px 8px;
-      font-size: 14px;
+      border-radius: 9px;
+      padding: 12px 14px;
+      font-size: 17px;
       font-weight: 700;
       color: var(--msm);
       border: 1.5px solid var(--border);
-      min-height: 26px;
+      min-height: 48px;
       display: flex;
       align-items: center;
     }
@@ -193,13 +192,13 @@
     .date-banner {
       background: linear-gradient(135deg, #1a3f6b, #2563a8);
       color: #fff;
-      border-radius: 7px;
-      padding: 3px 10px;
-      margin-top: 3px;
-      font-size: 12px;
+      border-radius: 8px;
+      padding: 8px 14px;
+      margin-top: 6px;
+      font-size: 18px;
       font-weight: 700;
-      letter-spacing: 0.04em;
-      min-height: 22px;
+      letter-spacing: 0.06em;
+      min-height: 38px;
       display: flex;
       align-items: center;
     }
@@ -211,22 +210,21 @@
     /* Chips */
     .chips {
       display: flex;
-      gap: 4px;
+      gap: 8px;
       flex-wrap: wrap;
-      margin-bottom: 4px;
+      margin-bottom: 8px;
     }
 
     .chip {
-      padding: 3px 9px;
-      border: 1.5px solid var(--border);
-      border-radius: 4px;
+      padding: 8px 14px;
+      border: 2px solid var(--border);
+      border-radius: 20px;
       cursor: pointer;
-      font-size: 12px;
-      font-weight: 500;
+      font-size: 14px;
+      font-weight: 600;
       background: #fff;
-      color: #444;
-      transition: all 0.15s ease;
-      line-height: 1.4;
+      color: var(--text);
+      transition: all 0.2s ease;
     }
 
     .chip:active {
@@ -245,7 +243,6 @@
       border-color: var(--msm);
       background: var(--msm);
       color: #fff;
-      font-weight: 700;
     }
 
     .tab.sj.active ~ .tab-content .chip.selected {
@@ -293,16 +290,12 @@
 
     /* Section heading */
     .section-heading {
-      font-size: 11px;
+      font-size: 18px;
       font-weight: 700;
-      margin: 10px 0 6px 0;
-      padding: 2px 6px;
-      background: var(--bg);
-      border-left: 3px solid var(--msm);
-      color: #555;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      border-radius: 0 3px 3px 0;
+      margin: 24px 0 16px 0;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border);
+      color: var(--text);
     }
 
     /* Modal */
@@ -455,9 +448,85 @@
 
     .strikethrough { text-decoration: line-through; }
 
+    /* Agent dropdown row */
+    .agent-row {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+    .agent-row select { flex: 1; }
+    .agent-row .btn { flex: 0 0 auto; padding: 13px 14px; font-size: 14px; white-space: nowrap; }
+
+    /* Voice recording indicator */
+    .voice-btn { position: relative; }
+    .voice-btn.recording {
+      background: var(--error);
+      color: #fff;
+      animation: pulse-rec 1.2s infinite;
+    }
+    @keyframes pulse-rec {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.5); }
+      50% { box-shadow: 0 0 0 10px rgba(225, 29, 72, 0); }
+    }
+    .rec-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ff0000;
+      margin-right: 6px;
+      animation: blink-dot 1s infinite;
+    }
+    @keyframes blink-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    /* Revenue tab */
+    .revenue-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    .revenue-table th, .revenue-table td {
+      border: 1px solid var(--border);
+      padding: 8px 6px;
+      text-align: left;
+    }
+    .revenue-table th {
+      background: #f0f0f0;
+      font-weight: 700;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .revenue-table .total-row {
+      background: #fef3c7;
+      font-weight: 700;
+    }
+    .revenue-table .total-row td { border-top: 2px solid var(--revenue); }
+
+    .farm-summary { margin-top: 24px; }
+    .farm-summary-card {
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+    }
+    .farm-summary-card .farm-name {
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+    .farm-summary-card .farm-total {
+      font-size: 14px;
+      color: var(--revenue);
+      font-weight: 700;
+    }
+
     @media print {
       body { background: #fff; }
-      .tabs, .btn-group, .section-heading, .modal, #action-toolbar { display: none; }
+      .tabs, .btn-group, .section-heading, .modal { display: none; }
       .container { max-width: 100%; }
       .print-preview { padding: 0; }
     }
@@ -479,20 +548,26 @@
       <div class="tab msm active" onclick="switchTab(0)">🔵 三井住友</div>
       <div class="tab sj" onclick="switchTab(1)">🟢 損保ジャパン</div>
       <div class="tab history" onclick="switchTab(2)">📁 保存済み</div>
+      <div class="tab revenue" onclick="switchTab(3)">💰 売上</div>
+      <div class="tab death" onclick="switchTab(4)">⚫ 死亡診断</div>
     </div>
 
-    <!-- 固定ボタンツールバー -->
-    <div id="action-toolbar" style="position:sticky;top:48px;z-index:99;background:#fff;border-bottom:2px solid var(--border);padding:8px 12px;display:flex;gap:8px;">
-      <button id="toolbar-save" class="btn btn-primary" style="flex:1;background:#16a34a;font-size:15px;padding:10px 6px;" onclick="saveFromToolbar()">💾 保存</button>
-      <button id="toolbar-new" class="btn btn-secondary" style="flex:1;font-size:15px;padding:10px 6px;" onclick="newFromToolbar()">🆕 新規</button>
-      <button id="toolbar-preview" class="btn btn-secondary" style="flex:1;font-size:15px;padding:10px 6px;" onclick="previewFromToolbar()">📄 PDF保存</button>
-      <button id="toolbar-print" class="btn btn-secondary" style="flex:1;font-size:15px;padding:10px 6px;" onclick="printFromToolbar()">🖨️ 印刷</button>
-    </div>
+    <!-- MSM Tab -->
     <div class="tab-content active" id="msm-tab">
       <div class="section-heading">獣医師</div>
       <div class="fgroup">
         <div class="flabel">診断獣医師</div>
         <div class="chips" id="msm_vet_chips"></div>
+      </div>
+      <div class="section-heading">依頼元</div>
+      <div class="fgroup">
+        <div class="flabel">依頼元（代理店）</div>
+        <div class="agent-row">
+          <select id="msm_agent" onchange="autoSave()">
+            <option value="">選択してください</option>
+          </select>
+          <button class="btn btn-secondary" onclick="addAgentPrompt('msm')">＋ 追加</button>
+        </div>
       </div>
       <div class="section-heading">記載日</div>
       <div class="fgroup">
@@ -504,56 +579,29 @@
       <div class="section-heading">馬の情報</div>
       <div class="fgroup">
         <div class="flabel">馬名</div>
-        <div class="chips" style="margin-bottom:6px;">
-          <button type="button" class="chip" onclick="appendHorseYear('msm','2026')">2026</button>
-          <button type="button" class="chip" onclick="appendHorseYear('msm','2025')">2025</button>
-          <button type="button" class="chip" onclick="appendHorseYear('msm','2027')">2027</button>
-          <button type="button" class="chip" onclick="appendHorseYear('msm','2024')">2024</button>
-        </div>
-        <input type="text" id="msm_horse" placeholder="例：ダイワスカーレット2026" oninput="onHorseInput('msm')" onchange="autoSave()" onblur="addHistory('msm_horse')">
+        <input type="text" id="msm_horse" placeholder="例：ダイワスカーレット" onchange="autoSave()" onblur="addHistory('msm_horse')">
         <div class="chips" id="msm_horse_history"></div>
       </div>
 
-      <div class="fgroup row">
-        <div class="fgroup">
-          <div class="flabel">種類</div>
-          <select id="msm_type" onchange="autoSave()">
-            <option value="">選択</option>
-            <option value="サラブレッド">サラブレッド</option>
-            <option value="日本馬">日本馬</option>
-            <option value="その他">その他</option>
-          </select>
-        </div>
-        <div class="fgroup">
-          <div class="flabel">性別</div>
-          <div class="chips" id="msm_sex_chips"></div>
-        </div>
-        <div class="fgroup">
-          <div class="flabel">毛色</div>
-          <select id="msm_color" onchange="autoSave()">
-            <option value="">選択</option>
-            <option value="栗毛">栗毛</option>
-            <option value="黒鹿毛">黒鹿毛</option>
-            <option value="鹿毛">鹿毛</option>
-            <option value="青毛">青毛</option>
-            <option value="白毛">白毛</option>
-            <option value="芦毛">芦毛</option>
-            <option value="小栗毛">小栗毛</option>
-            <option value="栃栗毛">栃栗毛</option>
-          </select>
-        </div>
+      <div class="fgroup">
+        <div class="flabel">種類</div>
+        <select id="msm_type" onchange="autoSave()">
+          <option value="">選択してください</option>
+          <option value="サラブレッド">サラブレッド</option>
+          <option value="日本馬">日本馬</option>
+          <option value="その他">その他</option>
+        </select>
       </div>
 
-      <div class="fgroup row">
-        <div class="fgroup" style="flex:2;">
-          <div class="flabel">生年月日</div>
-          <input type="date" class="date-input" id="msm_birth_in" onchange="onDateChangeMSM('birth'); autoSave()" min="2020-01-01" max="2027-12-31">
-          <div class="date-banner" id="banner_msm_birth">（未選択）</div>
-        </div>
-        <div class="fgroup" style="flex:1;">
-          <div class="flabel">年齢（才）</div>
-          <div class="age-disp" id="msm_age_disp">－</div>
-        </div>
+      <div class="fgroup">
+        <div class="flabel">生年月日</div>
+        <input type="date" class="date-input" id="msm_birth_in" onchange="onDateChangeMSM('birth'); autoSave()">
+        <div class="date-banner" id="banner_msm_birth">（未選択）</div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">年齢（才）※生年月日から自動計算</div>
+        <div class="age-disp" id="msm_age_disp">（生年月日を選択してください）</div>
       </div>
 
       <div class="fgroup">
@@ -569,11 +617,31 @@
       </div>
 
       <div class="fgroup">
+        <div class="flabel">性別</div>
+        <div class="chips" id="msm_sex_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">毛色</div>
+        <select id="msm_color" onchange="autoSave()">
+          <option value="">選択してください</option>
+          <option value="栗毛">栗毛</option>
+          <option value="黒鹿毛">黒鹿毛</option>
+          <option value="鹿毛">鹿毛</option>
+          <option value="青毛">青毛</option>
+          <option value="白毛">白毛</option>
+          <option value="芦毛">芦毛</option>
+          <option value="小栗毛">小栗毛</option>
+          <option value="栃栗毛">栃栗毛</option>
+        </select>
+      </div>
+
+      <div class="fgroup">
         <div class="flabel">血統</div>
         <div class="fgroup row">
           <div class="fgroup">
-            <div class="flabel">父 <button type="button" onclick="openSireModal('msm')" style="font-size:10px;padding:1px 6px;border:1px solid var(--border);border-radius:4px;background:#f5f5f5;cursor:pointer;margin-left:4px;">📋 登録リスト</button></div>
-            <input type="text" id="msm_sire" placeholder="父の名前" onchange="autoSave()" onblur="saveSireToList(getField('msm_sire'));addHistory('msm_sire')">
+            <div class="flabel">父</div>
+            <input type="text" id="msm_sire" placeholder="父の名前" onchange="autoSave()" onblur="addHistory('msm_sire')">
             <div class="chips" id="msm_sire_history"></div>
           </div>
           <div class="fgroup">
@@ -622,39 +690,41 @@
         <div class="date-banner" id="banner_msm_diag">（未選択）</div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px;">
-        <div class="fgroup" style="margin-bottom:0;">
-          <div class="flabel">体格</div>
-          <div class="chips" id="msm_build_chips"></div>
-        </div>
-        <div class="fgroup" style="margin-bottom:0;">
-          <div class="flabel">体温</div>
-          <div class="chips" id="msm_temp_chips"></div>
-        </div>
-        <div class="fgroup" style="margin-bottom:0;">
-          <div class="flabel">栄養</div>
-          <div class="chips" id="msm_nutr_chips"></div>
-        </div>
-        <div class="fgroup" style="margin-bottom:0;">
-          <div class="flabel">脈拍</div>
-          <div class="chips" id="msm_pulse_chips"></div>
-        </div>
-        <div class="fgroup" style="margin-bottom:0;">
-          <div class="flabel">歩様</div>
-          <div class="chips" id="msm_gait_chips"></div>
-        </div>
-        <div class="fgroup" style="margin-bottom:0;">
-          <div class="flabel">睾丸</div>
-          <div class="chips" id="msm_test_chips"></div>
-        </div>
-      </div>
       <div class="fgroup">
-        <div class="flabel">健康状態</div>
+        <div class="flabel">体格</div>
+        <div class="chips" id="msm_build_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">体温</div>
+        <div class="chips" id="msm_temp_chips"></div>
+        <input type="text" id="msm_temp_detail" placeholder="異常の場合、詳細を記入" onchange="autoSave()">
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">栄養</div>
+        <div class="chips" id="msm_nutr_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">脈拍</div>
+        <div class="chips" id="msm_pulse_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">歩様</div>
+        <div class="chips" id="msm_gait_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">睾丸</div>
+        <div class="chips" id="msm_test_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">現在の健康状態</div>
         <div class="chips" id="msm_health_chips"></div>
         <input type="text" id="msm_health_detail" placeholder="異常の場合、詳細を記入" onchange="autoSave()">
-      </div>
-      <div class="fgroup" style="display:none;">
-        <input type="text" id="msm_temp_detail" placeholder="" onchange="autoSave()">
       </div>
 
       <div class="fgroup">
@@ -681,6 +751,12 @@
       </div>
 
 
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="saveRecord('msm')">💾 保存</button>
+        <button class="btn btn-secondary" onclick="newRecord('msm')">🆕 新規</button>
+        <button class="btn btn-primary" onclick="previewPrint('msm')">📄 プレビュー</button>
+        <button class="btn btn-primary" onclick="printForm('msm')">🖨️ 印刷</button>
+      </div>
     </div>
 
     <!-- SJ Tab -->
@@ -689,6 +765,16 @@
       <div class="fgroup">
         <div class="flabel">診断獣医師</div>
         <div class="chips" id="sj_vet_chips"></div>
+      </div>
+      <div class="section-heading">依頼元</div>
+      <div class="fgroup">
+        <div class="flabel">依頼元（代理店）</div>
+        <div class="agent-row">
+          <select id="sj_agent" onchange="autoSave()">
+            <option value="">選択してください</option>
+          </select>
+          <button class="btn btn-secondary" onclick="addAgentPrompt('sj')">＋ 追加</button>
+        </div>
       </div>
       <div class="section-heading">作成日</div>
       <div class="fgroup">
@@ -700,56 +786,29 @@
       <div class="section-heading">馬の情報</div>
       <div class="fgroup">
         <div class="flabel">馬名</div>
-        <div class="chips" style="margin-bottom:6px;">
-          <button type="button" class="chip" onclick="appendHorseYear('sj','2026')">2026</button>
-          <button type="button" class="chip" onclick="appendHorseYear('sj','2025')">2025</button>
-          <button type="button" class="chip" onclick="appendHorseYear('sj','2027')">2027</button>
-          <button type="button" class="chip" onclick="appendHorseYear('sj','2024')">2024</button>
-        </div>
-        <input type="text" id="sj_horse" placeholder="例：ダイワスカーレット2026" oninput="onHorseInput('sj')" onchange="autoSave()" onblur="addHistory('sj_horse')">
+        <input type="text" id="sj_horse" placeholder="例：ダイワスカーレット" onchange="autoSave()" onblur="addHistory('sj_horse')">
         <div class="chips" id="sj_horse_history"></div>
       </div>
 
-      <div class="fgroup row">
-        <div class="fgroup">
-          <div class="flabel">種類</div>
-          <select id="sj_type" onchange="autoSave()">
-            <option value="">選択</option>
-            <option value="サラブレッド">サラブレッド</option>
-            <option value="日本馬">日本馬</option>
-            <option value="その他">その他</option>
-          </select>
-        </div>
-        <div class="fgroup">
-          <div class="flabel">性別</div>
-          <div class="chips" id="sj_sex_chips"></div>
-        </div>
-        <div class="fgroup">
-          <div class="flabel">毛色</div>
-          <select id="sj_color" onchange="autoSave()">
-            <option value="">選択</option>
-            <option value="栗毛">栗毛</option>
-            <option value="黒鹿毛">黒鹿毛</option>
-            <option value="鹿毛">鹿毛</option>
-            <option value="青毛">青毛</option>
-            <option value="白毛">白毛</option>
-            <option value="芦毛">芦毛</option>
-            <option value="小栗毛">小栗毛</option>
-            <option value="栃栗毛">栃栗毛</option>
-          </select>
-        </div>
+      <div class="fgroup">
+        <div class="flabel">種類</div>
+        <select id="sj_type" onchange="autoSave()">
+          <option value="">選択してください</option>
+          <option value="サラブレッド">サラブレッド</option>
+          <option value="日本馬">日本馬</option>
+          <option value="その他">その他</option>
+        </select>
       </div>
 
-      <div class="fgroup row">
-        <div class="fgroup" style="flex:2;">
-          <div class="flabel">生年月日</div>
-          <input type="date" class="date-input" id="sj_birth_in" onchange="onDateChangeSJ('birth'); autoSave()" min="2020-01-01" max="2027-12-31">
-          <div class="date-banner sj-banner" id="banner_sj_birth">（未選択）</div>
-        </div>
-        <div class="fgroup" style="flex:1;">
-          <div class="flabel">年齢（才）</div>
-          <div class="age-disp" id="sj_age_disp">－</div>
-        </div>
+      <div class="fgroup">
+        <div class="flabel">生年月日</div>
+        <input type="date" class="date-input" id="sj_birth_in" onchange="onDateChangeSJ('birth'); autoSave()">
+        <div class="date-banner sj-banner" id="banner_sj_birth">（未選択）</div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">年齢（才）※生年月日から自動計算</div>
+        <div class="age-disp" id="sj_age_disp">（生年月日を選択してください）</div>
       </div>
 
       <div class="fgroup">
@@ -765,11 +824,31 @@
       </div>
 
       <div class="fgroup">
+        <div class="flabel">性別</div>
+        <div class="chips" id="sj_sex_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">毛色</div>
+        <select id="sj_color" onchange="autoSave()">
+          <option value="">選択してください</option>
+          <option value="栗毛">栗毛</option>
+          <option value="黒鹿毛">黒鹿毛</option>
+          <option value="鹿毛">鹿毛</option>
+          <option value="青毛">青毛</option>
+          <option value="白毛">白毛</option>
+          <option value="芦毛">芦毛</option>
+          <option value="小栗毛">小栗毛</option>
+          <option value="栃栗毛">栃栗毛</option>
+        </select>
+      </div>
+
+      <div class="fgroup">
         <div class="flabel">血統</div>
         <div class="fgroup row">
           <div class="fgroup">
-            <div class="flabel">父 <button type="button" onclick="openSireModal('sj')" style="font-size:10px;padding:1px 6px;border:1px solid var(--border);border-radius:4px;background:#f5f5f5;cursor:pointer;margin-left:4px;">📋 登録リスト</button></div>
-            <input type="text" id="sj_sire" placeholder="父の名前" onchange="autoSave()" onblur="saveSireToList(getField('sj_sire'));addHistory('sj_sire')">
+            <div class="flabel">父</div>
+            <input type="text" id="sj_sire" placeholder="父の名前" onchange="autoSave()" onblur="addHistory('sj_sire')">
             <div class="chips" id="sj_sire_history"></div>
           </div>
           <div class="fgroup">
@@ -805,31 +884,34 @@
 
       <div class="section-heading">診断情報</div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px;">
-        <div class="fgroup" style="margin-bottom:0;">
-          <div class="flabel">体格</div>
-          <div class="chips" id="sj_build_chips"></div>
-        </div>
-        <div class="fgroup" style="margin-bottom:0;">
-          <div class="flabel">栄養</div>
-          <div class="chips" id="sj_nutr_chips"></div>
-        </div>
-        <div class="fgroup" style="margin-bottom:0;">
-          <div class="flabel">歩様</div>
-          <div class="chips" id="sj_gait_chips"></div>
-        </div>
-        <div class="fgroup" style="margin-bottom:0;">
-          <div class="flabel">可視粘膜</div>
-          <div class="chips" id="sj_mucosa_chips"></div>
-        </div>
-        <div class="fgroup" style="margin-bottom:0;">
-          <div class="flabel">触診</div>
-          <div class="chips" id="sj_palp_chips"></div>
-        </div>
-        <div class="fgroup" style="margin-bottom:0;">
-          <div class="flabel">聴診</div>
-          <div class="chips" id="sj_ausc_chips"></div>
-        </div>
+      <div class="fgroup">
+        <div class="flabel">体格</div>
+        <div class="chips" id="sj_build_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">栄養</div>
+        <div class="chips" id="sj_nutr_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">歩様</div>
+        <div class="chips" id="sj_gait_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">可視粘膜</div>
+        <div class="chips" id="sj_mucosa_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">触診</div>
+        <div class="chips" id="sj_palp_chips"></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">聴診</div>
+        <div class="chips" id="sj_ausc_chips"></div>
       </div>
 
       <div class="fgroup">
@@ -864,41 +946,137 @@
         <textarea id="sj_note" placeholder="特記事項があればご記入ください" onchange="autoSave()"></textarea>
       </div>
 
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="saveRecord('sj')">💾 保存</button>
+        <button class="btn btn-secondary" onclick="newRecord('sj')">🆕 新規</button>
+        <button class="btn btn-primary sj" onclick="previewPrint('sj')">📄 プレビュー</button>
+        <button class="btn btn-primary sj" onclick="printForm('sj')">🖨️ 印刷</button>
+      </div>
     </div>
 
     <!-- History Tab -->
     <div class="tab-content" id="history-tab">
       <div class="section-heading">保存済みレコード</div>
-      <div style="background:#fff8e1;border:2px solid #f59e0b;border-radius:10px;padding:14px;margin-bottom:16px;font-size:14px;line-height:1.7;">
-        <div style="font-weight:700;margin-bottom:6px;">💾 データの保存・読み込み方法</div>
-        <div>① 入力後に各タブの <strong>「💾 保存」ボタン</strong> を押す</div>
-        <div>② 下の <strong>「📥 データをファイルに保存」</strong> でJSONファイルとして保存</div>
-        <div>③ 次回は <strong>「📂 ファイルから読み込む」</strong> でデータを復元</div>
-      </div>
       <div id="saved_records"></div>
-      <button class="btn btn-primary" style="width:100%;margin-top:16px;font-size:17px;padding:16px;" onclick="exportData()">📥 データをファイルに保存（バックアップ）</button>
-      <button class="btn btn-secondary" style="width:100%;margin-top:10px;font-size:17px;padding:16px;" onclick="document.getElementById('import-file').click()">📂 ファイルから読み込む（復元）</button>
-      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+      <button class="btn btn-secondary" style="width: 100%; margin-top: 16px;" onclick="exportData()">📥 全データをエクスポート</button>
+    </div>
+
+    <!-- Revenue Tab -->
+    <div class="tab-content" id="revenue-tab">
+      <div class="section-heading">売上集計</div>
+      <div class="fgroup">
+        <div class="flabel">対象月</div>
+        <select id="revenue_month" onchange="renderRevenue()"></select>
+      </div>
+      <div id="revenue_content"></div>
+    </div>
+
+    <!-- Death Certificate Tab -->
+    <div class="tab-content" id="death-tab">
+      <div class="section-heading">死亡診断書</div>
+      <div class="fgroup">
+        <div class="flabel">診断獣医師</div>
+        <div class="chips" id="death_vet_chips"></div>
+      </div>
+      <div class="fgroup">
+        <div class="flabel">依頼元（代理店）</div>
+        <div class="agent-row">
+          <select id="death_agent" onchange="autoSaveDeath()">
+            <option value="">選択してください</option>
+          </select>
+          <button class="btn btn-secondary" onclick="addAgentPrompt('death')">＋ 追加</button>
+        </div>
+      </div>
+
+      <div class="section-heading">馬の情報</div>
+      <div class="fgroup">
+        <div class="flabel">馬名</div>
+        <input type="text" id="death_horse" placeholder="例：ダイワスカーレット" onchange="autoSaveDeath()" onblur="addHistory('death_horse')">
+        <div class="chips" id="death_horse_history"></div>
+      </div>
+      <div class="fgroup">
+        <div class="flabel">生年月日</div>
+        <input type="date" class="date-input" id="death_birth" onchange="autoSaveDeath()">
+      </div>
+      <div class="fgroup">
+        <div class="flabel">性別</div>
+        <div class="chips" id="death_sex_chips"></div>
+      </div>
+      <div class="fgroup">
+        <div class="flabel">毛色</div>
+        <select id="death_color" onchange="autoSaveDeath()">
+          <option value="">選択してください</option>
+          <option value="栗毛">栗毛</option>
+          <option value="黒鹿毛">黒鹿毛</option>
+          <option value="鹿毛">鹿毛</option>
+          <option value="青毛">青毛</option>
+          <option value="白毛">白毛</option>
+          <option value="芦毛">芦毛</option>
+          <option value="小栗毛">小栗毛</option>
+          <option value="栃栗毛">栃栗毛</option>
+        </select>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">飼養場所</div>
+        <input type="text" id="death_farm_loc" placeholder="例：北海道日高郡..." onchange="autoSaveDeath()" onblur="addHistory('death_farm_loc')">
+        <div class="chips" id="death_farm_loc_history"></div>
+      </div>
+      <div class="fgroup">
+        <div class="flabel">管理人</div>
+        <input type="text" id="death_farm_mgr" placeholder="例：佐藤　和茂" onchange="autoSaveDeath()" onblur="addHistory('death_farm_mgr'); saveFarmPair('death')">
+        <div class="chips" id="death_farm_mgr_history"></div>
+      </div>
+
+      <div class="section-heading">死亡情報</div>
+      <div class="fgroup row">
+        <div class="fgroup">
+          <div class="flabel">死亡日</div>
+          <input type="date" class="date-input" id="death_date" onchange="autoSaveDeath()">
+        </div>
+        <div class="fgroup">
+          <div class="flabel">死亡時刻</div>
+          <input type="text" id="death_time" placeholder="例：14:30" onchange="autoSaveDeath()">
+        </div>
+      </div>
+      <div class="fgroup">
+        <div class="flabel">死亡場所</div>
+        <input type="text" id="death_location" placeholder="例：飼養場所と同じ" onchange="autoSaveDeath()">
+      </div>
+      <div class="fgroup">
+        <div class="flabel">死因</div>
+        <div class="chips" id="death_cause_chips"></div>
+        <input type="text" id="death_cause_detail" placeholder="死因の詳細を記入" onchange="autoSaveDeath()" style="margin-top:8px;">
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">経緯・所見</div>
+        <textarea id="death_findings" placeholder="死亡に至る経緯・臨床所見を記入" rows="6" onchange="autoSaveDeath()"></textarea>
+        <button class="btn btn-secondary voice-btn" id="voice_btn" onclick="toggleVoiceInput()" style="margin-top:8px;">🎤 音声入力</button>
+      </div>
+
+      <div class="fgroup">
+        <div class="flabel">写真メモ</div>
+        <textarea id="death_photo_notes" placeholder="撮影した写真についてのメモ" rows="3" onchange="autoSaveDeath()"></textarea>
+      </div>
+
+      <div class="section-heading">請求額</div>
+      <div class="fgroup">
+        <div class="flabel">請求項目</div>
+        <div class="chips" id="death_fee_items_chips"></div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="saveRecord('death')">💾 保存</button>
+        <button class="btn btn-secondary" onclick="newRecordDeath()">🆕 新規</button>
+        <button class="btn btn-secondary" onclick="previewPrint('death')">📄 プレビュー</button>
+        <button class="btn btn-secondary" onclick="printForm('death')" style="background:var(--death);color:#fff;">🖨️ 印刷</button>
+      </div>
     </div>
   </div>
 
   <!-- Feature Modal -->
   <div class="modal" id="feature-modal">
-
-  <!-- Sire Modal -->
-  <div id="sire-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:2000;overflow-y:auto;">
-    <div style="background:#fff;width:100%;max-width:500px;margin:40px auto;border-radius:12px;padding:20px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <div style="font-size:16px;font-weight:700;">📋 父の登録リスト</div>
-        <button onclick="closeSireModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#666;">✕</button>
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:14px;">
-        <input type="text" id="sire-modal-input" placeholder="父の名前を入力" onkeydown="if(event.key==='Enter')addSireFromModal()" style="flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;">
-        <button onclick="addSireFromModal()" style="background:var(--msm);color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:14px;font-weight:700;cursor:pointer;">追加</button>
-      </div>
-      <div id="sire-modal-list" style="max-height:300px;overflow-y:auto;"></div>
-    </div>
-  </div>
     <div class="modal-content">
       <div class="modal-header">
         特徴・マーキング選択
@@ -952,7 +1130,6 @@
       <div style="position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #ddd;padding:8px 0 10px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         <span style="font-size:16px;font-weight:700;">📄 印刷プレビュー</span>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-primary" onclick="savePDF()" style="padding:8px 18px;font-size:14px;background:#16a34a;">📄 PDFで保存</button>
           <button class="btn btn-primary" onclick="executePrint()" style="padding:8px 18px;font-size:14px;">🖨️ 印刷</button>
           <button class="btn btn-secondary" onclick="closePrintModal()" style="padding:8px 14px;font-size:14px;">✕</button>
         </div>
@@ -1052,25 +1229,12 @@
       const container = document.getElementById(containerId);
       if (!container) return;
       container.innerHTML = '';
-      // 単一選択のみ（複数選択不可）
-      const singleSelectKeys = ['sex','build','temp','nutr','pulse','gait','test','health','hist_flag','mucosa','palp','ausc','diagloc','vet'];
-      const isSingle = singleSelectKeys.some(k => containerId.includes('_' + k + '_'));
       chipsList.forEach(chip => {
         const btn = document.createElement('button');
         btn.className = 'chip';
         btn.textContent = chip;
         btn.type = 'button';
-        btn.onclick = (e) => {
-          e.preventDefault();
-          if (isSingle) {
-            // 単一選択：他を全解除してから自分を選択
-            container.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-            btn.classList.add('selected');
-          } else {
-            btn.classList.toggle('selected');
-          }
-          if (onchange) onchange();
-        };
+        btn.onclick = (e) => { e.preventDefault(); btn.classList.toggle('selected'); if (onchange) onchange(); };
         container.appendChild(btn);
       });
     }
@@ -1117,7 +1281,7 @@
       container.innerHTML = '';
       const hist = HISTORY[fieldId];
       if (!hist) return;
-      const isFarmMgr = fieldId === 'msm_farm_mgr' || fieldId === 'sj_farm_mgr';
+      const isFarmMgr = fieldId === 'msm_farm_mgr' || fieldId === 'sj_farm_mgr' || fieldId === 'death_farm_mgr';
       Object.entries(hist).sort((a, b) => b[1] - a[1]).slice(0, 5).forEach(([val]) => {
         const chip = document.createElement('button');
         chip.className = 'chip';
@@ -1158,41 +1322,6 @@
     }
 
     function saveHistory() { localStorage.setItem('history', JSON.stringify(HISTORY)); }
-
-    // ============ 馬名・母馬自動入力 ============
-    function appendHorseYear(prefix, year) {
-      const el = document.getElementById(prefix + '_horse');
-      if (!el) return;
-      // 既存の年号（4桁数字）を除去してから末尾に追加
-      let name = el.value.replace(/\d{4}$/, '').trim();
-      el.value = name + year;
-      onHorseInput(prefix);
-
-      // 生年月日を選択年号の1月1日に自動設定
-      const birthEl = document.getElementById(prefix + '_birth_in');
-      if (birthEl) {
-        birthEl.value = year + '-01-01';
-        // min/maxをその年に絞り込む
-        birthEl.min = year + '-01-01';
-        birthEl.max = year + '-12-31';
-        if (prefix === 'msm') onDateChangeMSM('birth');
-        else onDateChangeSJ('birth');
-      }
-      autoSave();
-    }
-
-    function onHorseInput(prefix) {
-      const horseEl = document.getElementById(prefix + '_horse');
-      const damEl = document.getElementById(prefix + '_dam');
-      if (!horseEl || !damEl) return;
-      const horseName = horseEl.value;
-      // 末尾の年号（4桁数字）を除いた名前を母馬に自動入力
-      const damName = horseName.replace(/\d{4}$/, '').trim();
-      if (damName) {
-        damEl.value = damName;
-      }
-      autoSave();
-    }
 
     function setOrigin(prefix, val) {
       document.getElementById(prefix + '_origin').value = val;
@@ -1241,7 +1370,7 @@
         health_detail: getField('msm_health_detail'), hist_flag: getChip('msm', 'hist_flag'),
         histname: getField('msm_histname'), histtime: getField('msm_histtime'),
         histcure: getField('msm_histcure'), note: getField('msm_note'),
-        fee_items: getMultiChips('msm_fee_items'), vet: getChip('msm', 'vet'), form: 'msm', saved_at: new Date().toISOString()
+        fee_items: getMultiChips('msm_fee_items'), vet: getChip('msm', 'vet'), agent: selVal('msm_agent'), form: 'msm', saved_at: new Date().toISOString()
       };
     }
 
@@ -1263,7 +1392,7 @@
         mucosa: getChip('sj', 'mucosa'), palp: getChip('sj', 'palp'), ausc: getChip('sj', 'ausc'),
         hist_flag: getChip('sj', 'hist_flag'), histname: getField('sj_histname'), histtime: getField('sj_histtime'),
         note: getField('sj_note'), diagloc_sj: getField('sj_diagloc_sj'), microchip: getField('sj_microchip'),
-        vet: getChip('sj', 'vet'), form: 'sj', saved_at: new Date().toISOString()
+        vet: getChip('sj', 'vet'), agent: selVal('sj_agent'), form: 'sj', saved_at: new Date().toISOString()
       };
     }
 
@@ -1274,6 +1403,12 @@
       localStorage.setItem('draft_sj', JSON.stringify(sj));
       saveHistory();
       showToast('保存しました', 'success');
+    }
+
+    function autoSaveDeath() {
+      const d = collectDeath();
+      localStorage.setItem('draft_death', JSON.stringify(d));
+      saveHistory();
     }
 
     function loadMSM(d) {
@@ -1288,6 +1423,7 @@
       setField('msm_diagloc_other', d.diagloc_other); setField('msm_temp_detail', d.temp_detail);
       setField('msm_health_detail', d.health_detail); setField('msm_histname', d.histname);
       setField('msm_histtime', d.histtime); setField('msm_histcure', d.histcure); setField('msm_note', d.note);
+      if (d.agent) setField('msm_agent', d.agent);
       setChip('msm', 'vet', d.vet); setChip('msm', 'sex', d.sex); setChip('msm', 'diagloc', d.diagloc); setChip('msm', 'build', d.build);
       setChip('msm', 'temp', d.temp); setChip('msm', 'nutr', d.nutr); setChip('msm', 'pulse', d.pulse);
       setChip('msm', 'gait', d.gait); setChip('msm', 'test', d.test); setChip('msm', 'health', d.health);
@@ -1308,6 +1444,7 @@
       setField('sj_feature', d.feature); setField('sj_farm_loc', d.farm_loc); setField('sj_farm_mgr', d.farm_mgr);
       setField('sj_microchip', d.microchip); setField('sj_diagloc_sj', d.diagloc_sj);
       setField('sj_histname', d.histname); setField('sj_histtime', d.histtime); setField('sj_note', d.note);
+      if (d.agent) setField('sj_agent', d.agent);
       setChip('sj', 'vet', d.vet); setChip('sj', 'sex', d.sex); setChip('sj', 'build', d.build); setChip('sj', 'nutr', d.nutr);
       setChip('sj', 'gait', d.gait); setChip('sj', 'mucosa', d.mucosa); setChip('sj', 'palp', d.palp);
       setChip('sj', 'ausc', d.ausc); setChip('sj', 'hist_flag', d.hist_flag);
@@ -1315,159 +1452,6 @@
     }
 
     // ============ Tab Functions ============
-    // ============ 父登録リスト ============
-    let SIRE_CURRENT_PREFIX = 'msm';
-
-    function getSireList() {
-      try { return JSON.parse(localStorage.getItem('sire_list') || '[]'); } catch(e) { return []; }
-    }
-
-    function saveSireList(list) {
-      localStorage.setItem('sire_list', JSON.stringify(list));
-    }
-
-    function saveSireToList(name) {
-      if (!name || !name.trim()) return;
-      const list = getSireList();
-      const n = name.trim();
-      if (!list.includes(n)) {
-        list.unshift(n);
-        saveSireList(list);
-        // 履歴チップも更新
-        ['msm', 'sj'].forEach(p => renderSireChips(p));
-      }
-    }
-
-    function renderSireChips(prefix) {
-      const list = getSireList();
-      const container = document.getElementById(prefix + '_sire_history');
-      if (!container) return;
-      container.innerHTML = '';
-      list.slice(0, 8).forEach(name => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'chip';
-        btn.textContent = name;
-        btn.onclick = () => {
-          document.getElementById(prefix + '_sire').value = name;
-          autoSave();
-        };
-        container.appendChild(btn);
-      });
-    }
-
-    function openSireModal(prefix) {
-      SIRE_CURRENT_PREFIX = prefix;
-      document.getElementById('sire-modal').style.display = 'block';
-      renderSireModalList();
-      document.getElementById('sire-modal-input').focus();
-    }
-
-    function closeSireModal() {
-      document.getElementById('sire-modal').style.display = 'none';
-    }
-
-    function addSireFromModal() {
-      const input = document.getElementById('sire-modal-input');
-      const name = input.value.trim();
-      if (!name) return;
-      saveSireToList(name);
-      input.value = '';
-      renderSireModalList();
-      // 現在のタブの父フィールドに入力
-      document.getElementById(SIRE_CURRENT_PREFIX + '_sire').value = name;
-      autoSave();
-    }
-
-    function renderSireModalList() {
-      const list = getSireList();
-      const container = document.getElementById('sire-modal-list');
-      if (!list.length) {
-        container.innerHTML = '<div style="color:#999;text-align:center;padding:20px;font-size:14px;">登録された父はありません</div>';
-        return;
-      }
-      container.innerHTML = '';
-      list.forEach((name, idx) => {
-        const row = document.createElement('div');
-        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-bottom:1px solid #f0f0f0;';
-        row.innerHTML = `
-          <button type="button" onclick="selectSireFromModal('${name.replace(/'/g, "\\'")}')" style="flex:1;text-align:left;background:none;border:none;font-size:14px;cursor:pointer;color:var(--text);padding:0;">${name}</button>
-          <button type="button" onclick="deleteSireFromModal(${idx})" style="background:none;border:1px solid #ddd;border-radius:4px;padding:2px 8px;font-size:12px;color:#aaa;cursor:pointer;">削除</button>
-        `;
-        container.appendChild(row);
-      });
-    }
-
-    function selectSireFromModal(name) {
-      document.getElementById(SIRE_CURRENT_PREFIX + '_sire').value = name;
-      autoSave();
-      closeSireModal();
-    }
-
-    function deleteSireFromModal(idx) {
-      const list = getSireList();
-      list.splice(idx, 1);
-      saveSireList(list);
-      renderSireModalList();
-      ['msm', 'sj'].forEach(p => renderSireChips(p));
-    }
-
-    // ============ Toolbar Functions ============
-    function getCurrentPrefix() {
-      const tabs = document.querySelectorAll('.tab');
-      for (let i = 0; i < tabs.length; i++) {
-        if (tabs[i].classList.contains('active')) {
-          if (i === 0) return 'msm';
-          if (i === 1) return 'sj';
-          return null;
-        }
-      }
-      return 'msm';
-    }
-
-    function saveFromToolbar() {
-      const prefix = getCurrentPrefix();
-      if (!prefix) { showToast('保存済みタブでは保存できません', 'error'); return; }
-      saveRecord(prefix);
-    }
-
-    function newFromToolbar() {
-      const prefix = getCurrentPrefix();
-      if (!prefix) { showToast('保存済みタブでは新規作成できません', 'error'); return; }
-      newRecord(prefix);
-    }
-
-    function previewFromToolbar() {
-      const prefix = getCurrentPrefix();
-      if (!prefix) { showToast('三井住友か損保ジャパンタブを選択してください', 'error'); return; }
-      previewPrint(prefix);
-      setTimeout(() => savePDF(), 300);
-    }
-
-    function printFromToolbar() {
-      const prefix = getCurrentPrefix();
-      if (!prefix) { showToast('三井住友か損保ジャパンタブを選択してください', 'error'); return; }
-      printForm(prefix);
-    }
-
-    function updateToolbar(tabIndex) {
-      const toolbar = document.getElementById('action-toolbar');
-      if (!toolbar) return;
-      if (tabIndex === 2) {
-        // 保存済みタブではボタンを非表示
-        toolbar.style.display = 'none';
-      } else {
-        toolbar.style.display = 'flex';
-        // タブ色に合わせてボタン色を変更
-        const saveBtn = document.getElementById('toolbar-save');
-        if (tabIndex === 1) {
-          saveBtn.style.background = 'var(--sj)';
-        } else {
-          saveBtn.style.background = '#16a34a';
-        }
-      }
-    }
-
     function switchTab(idx) {
       CURRENT_TAB = idx;
       const tabs = document.querySelectorAll('.tab');
@@ -1475,7 +1459,7 @@
       tabs.forEach((t, i) => t.classList.toggle('active', i === idx));
       contents.forEach((c, i) => c.classList.toggle('active', i === idx));
       if (idx === 2) renderSavedRecords();
-      updateToolbar(idx);
+      if (idx === 3) renderRevenue();
     }
 
     // ============ Feature Modal ============
@@ -1675,8 +1659,11 @@
     // ============ Print Functions ============
     function previewPrint(prefix) {
       CURRENT_PRINT_FORM = prefix;
-      const data = prefix === 'msm' ? collectMSM() : collectSJ();
-      let html = prefix === 'msm' ? generateMSMPrintHTML(data) : generateSJPrintHTML(data);
+      let data, html;
+      if (prefix === 'msm') { data = collectMSM(); html = generateMSMPrintHTML(data); }
+      else if (prefix === 'sj') { data = collectSJ(); html = generateSJPrintHTML(data); }
+      else if (prefix === 'death') { data = collectDeath(); html = generateDeathPrintHTML(data); }
+      else { data = collectMSM(); html = generateMSMPrintHTML(data); }
       document.getElementById('print-content').innerHTML = html;
       const m = document.getElementById('print-modal');
       m.style.display = 'block';
@@ -1996,62 +1983,6 @@
       m.style.display = 'none';
     }
 
-    function savePDF() {
-      const data = CURRENT_PRINT_FORM === 'msm' ? collectMSM() : collectSJ();
-      const horse = data.horse || '診断書';
-      const now = new Date();
-      const ym = now.getFullYear() + '年' + (now.getMonth()+1) + '月';
-      const company = CURRENT_PRINT_FORM === 'msm' ? '三井住友' : '損保ジャパン';
-      const fname = ym + '_' + horse + '_' + company + '.pdf';
-      const isLandscape = CURRENT_PRINT_FORM === 'sj';
-
-      showToast('📄 PDF生成中...少々お待ちください', 'info');
-
-      // html2canvas + jsPDFで自動ダウンロード
-      const printDiv = document.getElementById('print-content');
-      if (!printDiv || !printDiv.innerHTML.trim()) {
-        alert('先に「プレビュー」ボタンを押してから「PDFで保存」を押してください。');
-        return;
-      }
-
-      // jsPDF・html2canvasをCDNから動的ロード
-      function loadScript(src, cb) {
-        if (document.querySelector('script[src="'+src+'"]')) { cb(); return; }
-        const s = document.createElement('script');
-        s.src = src; s.onload = cb; document.head.appendChild(s);
-      }
-
-      loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', function() {
-        loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', function() {
-          const { jsPDF } = window.jspdf;
-          const orientation = isLandscape ? 'landscape' : 'portrait';
-          const pdf = new jsPDF({ orientation, unit: 'mm', format: 'a4' });
-          const pageW = isLandscape ? 297 : 210;
-          const pageH = isLandscape ? 210 : 297;
-
-          html2canvas(printDiv, {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: '#ffffff',
-            width: printDiv.scrollWidth,
-            height: printDiv.scrollHeight
-          }).then(function(canvas) {
-            const imgData = canvas.toDataURL('image/jpeg', 0.95);
-            const margin = 8;
-            const imgW = pageW - margin * 2;
-            const imgH = (canvas.height * imgW) / canvas.width;
-            const finalH = Math.min(imgH, pageH - margin * 2);
-            pdf.addImage(imgData, 'JPEG', margin, margin, imgW, finalH);
-            pdf.save(fname);
-            showToast('✅ ' + fname + ' をダウンロードフォルダに保存しました', 'success');
-          }).catch(function(err) {
-            console.error(err);
-            showToast('❌ PDF生成に失敗しました。印刷ボタンをお使いください。', 'error');
-          });
-        });
-      });
-    }
-
     function executePrint() {
       const content = document.getElementById('print-content').innerHTML;
       const win = window.open('', '_blank');
@@ -2071,15 +2002,25 @@
       let css;
       let vpWidth;
       if (isLandscape) {
-        // 損保ジャパン：A4横印刷
+        // iOS Safari横印刷：A4縦用紙にコンテンツを-90度回転して横レイアウトを実現
+        // A4縦: 210mm×297mm → -90deg回転で横297mm×210mmとして印刷
         vpWidth = '1122';
         css = ''
-          + '@page{size:A4 landscape;margin:8mm 10mm;}'
-          + 'html,body{height:auto;overflow:visible;}'
+          + '@page{size:A4 portrait;margin:0;}'
+          + 'html,body{margin:0;padding:0;}'
           + 'body{'
           +   'font-family:"MS Mincho","游明朝","ヒラギノ明朝 ProN","Hiragino Mincho ProN",serif;'
           +   'font-size:8.5pt;color:#000;line-height:1.3;'
           +   '-webkit-print-color-adjust:exact;print-color-adjust:exact;'
+          +   'position:absolute;top:297mm;left:0;'
+          +   'width:297mm;height:210mm;'
+          +   'padding:8mm 12mm;'
+          +   'box-sizing:border-box;'
+          +   '-webkit-transform:rotate(-90deg);'
+          +   'transform:rotate(-90deg);'
+          +   '-webkit-transform-origin:top left;'
+          +   'transform-origin:top left;'
+          +   'overflow:hidden;'
           + '}'
           + commonCSS
           + '@media print{'
@@ -2087,7 +2028,6 @@
           +   'table,tr,td{page-break-inside:avoid;}'
           + '}';
       } else {
-        // 三井住友：A4縦印刷
         vpWidth = '794';
         css = ''
           + '@page{size:A4 portrait;margin:8mm 10mm;}'
@@ -2116,61 +2056,20 @@
       setTimeout(function(){ win.focus(); win.print(); }, 600);
     }
 
-    function printForm(prefix) {
-      previewPrint(prefix);
-      setTimeout(() => {
-        executePrint();
-        setTimeout(() => autoDownloadJSON(), 800);
-      }, 500);
-    }
+    function printForm(prefix) { previewPrint(prefix); setTimeout(() => executePrint(), 500); }
 
     // ============ Saved Records ============
     function saveRecord(prefix) {
-      const data = prefix === 'msm' ? collectMSM() : collectSJ();
-      // 未選択チェック
-      const missing = [];
-      if (!data.horse) missing.push('馬名');
-      if (!data.sex) missing.push('性別');
-      if (prefix === 'msm') {
-        if (!data.build) missing.push('体格');
-        if (!data.temp) missing.push('体温');
-        if (!data.nutr) missing.push('栄養');
-        if (!data.gait) missing.push('歩様');
-        if (!data.health) missing.push('健康状態');
-      } else {
-        if (!data.build) missing.push('体格');
-        if (!data.nutr) missing.push('栄養');
-        if (!data.gait) missing.push('歩様');
-        if (!data.mucosa) missing.push('可視粘膜');
-        if (!data.palp) missing.push('触診');
-        if (!data.ausc) missing.push('聴診');
-      }
-      if (missing.length > 0) {
-        if (!confirm('以下の項目が未選択です。\n\n・' + missing.join('\n・') + '\n\nこのまま保存しますか？')) return;
-      }
+      let data;
+      if (prefix === 'msm') data = collectMSM();
+      else if (prefix === 'sj') data = collectSJ();
+      else if (prefix === 'death') data = collectDeath();
+      else data = collectMSM();
       const saved = localStorage.getItem('saved_records');
       const records = saved ? JSON.parse(saved) : [];
       records.unshift(data);
       localStorage.setItem('saved_records', JSON.stringify(records));
-      autoDownloadJSON();
-      showToast('💾 ' + (data.horse || '診断書') + ' を保存しました（JSONファイルも保存されました）', 'success');
-    }
-
-    function autoDownloadJSON() {
-      const exportObj = {
-        draft_msm: localStorage.getItem('draft_msm'),
-        draft_sj: localStorage.getItem('draft_sj'),
-        saved_records: localStorage.getItem('saved_records'),
-        history: localStorage.getItem('history')
-      };
-      const now = new Date();
-      const ym = now.getFullYear() + '年' + (now.getMonth()+1) + '月';
-      const fname = '競走馬診断書データ_' + ym + '.json';
-      const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = fname; a.click();
-      URL.revokeObjectURL(url);
+      showToast((data.horse || '診断書') + ' を保存しました', 'success');
     }
 
     function newRecord(prefix) {
@@ -2220,47 +2119,31 @@
         records.forEach((record, idx) => {
           const div = document.createElement('div');
           div.style.cssText = 'border: 1px solid var(--border); border-radius: 9px; padding: 16px; margin-bottom: 12px; cursor: pointer; position: relative;';
-          const badge = record.form === 'msm' ? '🔵 三井住友' : '🟢 損保ジャパン';
+          const badge = record.form === 'msm' ? '🔵 三井住友' : record.form === 'sj' ? '🟢 損保ジャパン' : '⚫ 死亡診断書';
+          const agentDisp = record.agent ? '　代理店: ' + record.agent : '';
           div.innerHTML = `
             <div style="font-weight:700;margin-bottom:5px;padding-right:56px;">${record.horse || '（未指定）'}</div>
-            <div style="font-size:13px;color:#666;">${badge} ／ ${new Date(record.saved_at).toLocaleString('ja-JP')}</div>
+            <div style="font-size:13px;color:#666;">${badge}${agentDisp} ／ ${new Date(record.saved_at).toLocaleString('ja-JP')}</div>
             <button onclick="event.stopPropagation();deleteRecord(${idx})" style="position:absolute;top:12px;right:12px;background:none;border:1px solid #ddd;border-radius:6px;padding:3px 10px;color:#aaa;font-size:12px;cursor:pointer;">削除</button>
           `;
           div.onclick = () => {
-            if (record.form === 'msm') { switchTab(0); loadMSM(record); } else { switchTab(1); loadSJ(record); }
+            if (record.form === 'msm') { switchTab(0); loadMSM(record); }
+            else if (record.form === 'sj') { switchTab(1); loadSJ(record); }
+            else if (record.form === 'death') { switchTab(4); loadDeath(record); }
           };
           container.appendChild(div);
         });
       } catch (e) {}
     }
 
-    function importData(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = JSON.parse(e.target.result);
-          if (data.draft_msm) localStorage.setItem('draft_msm', data.draft_msm);
-          if (data.draft_sj) localStorage.setItem('draft_sj', data.draft_sj);
-          if (data.saved_records) localStorage.setItem('saved_records', data.saved_records);
-          if (data.history) localStorage.setItem('history', data.history);
-          showToast('✅ データを読み込みました。画面を更新します...', 'success');
-          setTimeout(() => location.reload(), 1500);
-        } catch(err) {
-          showToast('❌ 読み込みに失敗しました。正しいJSONファイルを選択してください', 'error');
-        }
-      };
-      reader.readAsText(file);
-      event.target.value = '';
-    }
-
     function exportData() {
       const data = {
         draft_msm: localStorage.getItem('draft_msm'),
         draft_sj: localStorage.getItem('draft_sj'),
+        draft_death: localStorage.getItem('draft_death'),
         saved_records: localStorage.getItem('saved_records'),
-        history: localStorage.getItem('history')
+        history: localStorage.getItem('history'),
+        agents_master: localStorage.getItem('agents_master')
       };
       const json = JSON.stringify(data, null, 2);
       const blob = new Blob([json], { type: 'application/json' });
@@ -2280,27 +2163,341 @@
       setTimeout(() => toast.remove(), 3000);
     }
 
-    // ============ PWA Setup ============
-    (function() {
-      const manifest = {
-        name: "競走馬保険審査報告書",
-        short_name: "競走馬診断書",
-        description: "競走馬保険審査報告書作成アプリ",
-        start_url: location.href,
-        display: "standalone",
-        background_color: "#f5f5f5",
-        theme_color: "#254ba8",
-        orientation: "portrait",
-        icons: [{ src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%23254ba8'/%3E%3Ctext x='50%25' y='55%25' font-size='110' text-anchor='middle' dominant-baseline='middle'%3E🐴%3C/text%3E%3C/svg%3E", sizes: "192x192", type: "image/svg+xml" }]
+    // ============ Agent Management ============
+    let AGENTS_MASTER = [];
+
+    function loadAgentsMaster() {
+      const a = localStorage.getItem('agents_master');
+      if (a) { try { AGENTS_MASTER = JSON.parse(a); } catch(e) { AGENTS_MASTER = []; } }
+    }
+
+    function saveAgentsMaster() {
+      localStorage.setItem('agents_master', JSON.stringify(AGENTS_MASTER));
+    }
+
+    function renderAgentDropdowns() {
+      ['msm_agent', 'sj_agent', 'death_agent'].forEach(id => {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        const currentVal = sel.value;
+        sel.innerHTML = '<option value="">選択してください</option>';
+        AGENTS_MASTER.forEach(agent => {
+          const opt = document.createElement('option');
+          opt.value = agent;
+          opt.textContent = agent;
+          sel.appendChild(opt);
+        });
+        if (currentVal) sel.value = currentVal;
+      });
+    }
+
+    function addAgentPrompt(prefix) {
+      const name = prompt('依頼元（代理店）名を入力してください:');
+      if (!name || !name.trim()) return;
+      const trimmed = name.trim();
+      if (!AGENTS_MASTER.includes(trimmed)) {
+        AGENTS_MASTER.push(trimmed);
+        saveAgentsMaster();
+      }
+      renderAgentDropdowns();
+      const sel = document.getElementById(prefix + '_agent');
+      if (sel) sel.value = trimmed;
+      if (prefix === 'death') autoSaveDeath(); else autoSave();
+    }
+
+    // ============ Death Certificate ============
+    const DEATH_CAUSE_OPTIONS = ['疝痛', '骨折', '心不全', '出血', '感染症', '事故', '不明', 'その他'];
+    const DEATH_FEE_OPTIONS = ['死亡診断書作成料（14,300円）'];
+
+    function collectDeath() {
+      return {
+        form: 'death',
+        horse: getField('death_horse'),
+        birth: getField('death_birth'),
+        sex: getChip('death', 'sex'),
+        color: selVal('death_color'),
+        farm_loc: getField('death_farm_loc'),
+        farm_mgr: getField('death_farm_mgr'),
+        agent: selVal('death_agent'),
+        death_date: getField('death_date'),
+        death_time: getField('death_time'),
+        death_location: getField('death_location'),
+        cause: getChip('death', 'cause'),
+        cause_detail: getField('death_cause_detail'),
+        findings: getField('death_findings'),
+        photo_notes: getField('death_photo_notes'),
+        fee_items: getMultiChips('death_fee_items'),
+        vet: getChip('death', 'vet'),
+        saved_at: new Date().toISOString()
       };
-      const blob = new Blob([JSON.stringify(manifest)], {type: "application/manifest+json"});
-      document.getElementById("pwa-manifest").setAttribute("href", URL.createObjectURL(blob));
-    })();
+    }
+
+    function loadDeath(d) {
+      if (!d) return;
+      setField('death_horse', d.horse);
+      setField('death_birth', d.birth);
+      setField('death_color', d.color);
+      setField('death_farm_loc', d.farm_loc);
+      setField('death_farm_mgr', d.farm_mgr);
+      if (d.agent) setField('death_agent', d.agent);
+      setField('death_date', d.death_date);
+      setField('death_time', d.death_time);
+      setField('death_location', d.death_location);
+      setField('death_cause_detail', d.cause_detail);
+      setField('death_findings', d.findings);
+      setField('death_photo_notes', d.photo_notes);
+      setChip('death', 'vet', d.vet);
+      setChip('death', 'sex', d.sex);
+      setChip('death', 'cause', d.cause);
+      if (d.fee_items) {
+        const container = document.getElementById('death_fee_items_chips');
+        if (container) container.querySelectorAll('.chip').forEach(c => {
+          if (d.fee_items.includes(c.textContent)) c.classList.add('selected');
+        });
+      }
+    }
+
+    function newRecordDeath() {
+      if (!confirm('現在の入力内容をクリアして新規死亡診断書を作成しますか？')) return;
+      document.querySelectorAll('#death-tab .chip').forEach(c => c.classList.remove('selected'));
+      ['death_horse','death_birth','death_color','death_farm_loc','death_farm_mgr','death_agent',
+       'death_date','death_time','death_location','death_cause_detail','death_findings','death_photo_notes'].forEach(id => {
+        setField(id, '');
+      });
+      showToast('新規死亡診断書を作成しました', 'info');
+    }
+
+    // ============ Voice Input ============
+    let voiceRecognition = null;
+    let isRecording = false;
+
+    function toggleVoiceInput() {
+      if (isRecording) {
+        stopVoice();
+      } else {
+        startVoice();
+      }
+    }
+
+    function startVoice() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        showToast('このブラウザは音声入力に対応していません', 'error');
+        return;
+      }
+      voiceRecognition = new SpeechRecognition();
+      voiceRecognition.lang = 'ja-JP';
+      voiceRecognition.continuous = true;
+      voiceRecognition.interimResults = false;
+
+      voiceRecognition.onresult = (event) => {
+        const textarea = document.getElementById('death_findings');
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            const text = event.results[i][0].transcript;
+            textarea.value += (textarea.value ? '' : '') + text;
+          }
+        }
+        autoSaveDeath();
+      };
+
+      voiceRecognition.onerror = (event) => {
+        if (event.error === 'no-speech') return; // ignore silence
+        showToast('音声認識エラー: ' + event.error, 'error');
+        stopVoice();
+      };
+
+      voiceRecognition.onend = () => {
+        // Restart if still recording (continuous mode may stop)
+        if (isRecording) {
+          try { voiceRecognition.start(); } catch(e) {}
+        }
+      };
+
+      try {
+        voiceRecognition.start();
+        isRecording = true;
+        const btn = document.getElementById('voice_btn');
+        btn.innerHTML = '<span class="rec-dot"></span>⏹ 停止';
+        btn.classList.add('recording');
+      } catch(e) {
+        showToast('音声入力を開始できませんでした', 'error');
+      }
+    }
+
+    function stopVoice() {
+      isRecording = false;
+      if (voiceRecognition) {
+        try { voiceRecognition.stop(); } catch(e) {}
+        voiceRecognition = null;
+      }
+      const btn = document.getElementById('voice_btn');
+      if (btn) {
+        btn.innerHTML = '🎤 音声入力';
+        btn.classList.remove('recording');
+      }
+    }
+
+    // ============ Death Certificate Print ============
+    function generateDeathPrintHTML(data) {
+      const vetInfo = getVetInfo(data.vet);
+      const birthJa = dateToJaEra(data.birth);
+      const deathJa = dateToJaEra(data.death_date);
+      const birthStr = birthJa ? birthJa.full : '　　年　月　日';
+      const deathDateStr = deathJa ? deathJa.full : '　　年　月　日';
+      const deathTimeStr = data.death_time || '　　時　　分';
+      const S = 'border:1px solid #000;padding:6px 8px;vertical-align:middle;font-size:10pt;';
+      const SH = S + 'font-weight:bold;text-align:center;background:#f0f0f0;width:20%;';
+      const findings = (data.findings || '').replace(/\n/g, '<br>');
+
+      return '<div style="font-family:\'MS Mincho\',\'游明朝\',\'ヒラギノ明朝 ProN\',serif;font-size:10pt;color:#000;line-height:1.5;">'
+        + '<div style="text-align:center;font-size:18pt;font-weight:bold;letter-spacing:6px;margin-bottom:16px;border-bottom:3px double #000;padding-bottom:8px;">死 亡 診 断 書</div>'
+        + '<div style="text-align:right;margin-bottom:16px;font-size:10pt;">作成日：' + (dateToJaEra(new Date().toISOString().split('T')[0])?.full || '') + '</div>'
+        + '<table style="border-collapse:collapse;width:100%;margin-bottom:20px;">'
+        + '<tr><td style="' + SH + '">馬　名</td><td colspan="3" style="' + S + 'font-size:13pt;font-weight:bold;letter-spacing:2px;">' + (data.horse || '') + '</td></tr>'
+        + '<tr><td style="' + SH + '">生年月日</td><td style="' + S + '">' + birthStr + '</td>'
+        + '<td style="' + SH + '">性　別</td><td style="' + S + '">' + (data.sex || '') + '</td></tr>'
+        + '<tr><td style="' + SH + '">毛　色</td><td style="' + S + '">' + (data.color || '') + '</td>'
+        + '<td style="' + SH + '">管理人</td><td style="' + S + '">' + (data.farm_mgr || '') + '</td></tr>'
+        + '<tr><td style="' + SH + '">飼養場所</td><td colspan="3" style="' + S + '">' + (data.farm_loc || '') + '</td></tr>'
+        + '</table>'
+        + '<table style="border-collapse:collapse;width:100%;margin-bottom:20px;">'
+        + '<tr><td style="' + SH + '">死亡日時</td><td style="' + S + '">' + deathDateStr + '　　' + deathTimeStr + '</td></tr>'
+        + '<tr><td style="' + SH + '">死亡場所</td><td style="' + S + '">' + (data.death_location || '') + '</td></tr>'
+        + '<tr><td style="' + SH + '">死　因</td><td style="' + S + '">' + (data.cause || '') + (data.cause_detail ? '（' + data.cause_detail + '）' : '') + '</td></tr>'
+        + '</table>'
+        + '<div style="font-size:11pt;font-weight:bold;margin:16px 0 8px;border-bottom:2px solid #000;padding-bottom:4px;">経緯・所見</div>'
+        + '<div style="border:1px solid #000;padding:12px;min-height:120px;line-height:1.8;font-size:10pt;">' + findings + '</div>'
+        + (data.photo_notes ? '<div style="margin-top:12px;font-size:9pt;color:#666;">写真メモ：' + data.photo_notes.replace(/\n/g, '<br>') + '</div>' : '')
+        + '<div style="margin-top:40px;">'
+        + '<div style="text-align:right;padding-right:40px;">'
+        + '<div style="font-size:10pt;margin-bottom:4px;">〒056-0144　北海道日高郡新ひだか町静内田原569</div>'
+        + '<div style="font-size:10pt;margin-bottom:4px;">北洋ホースクリニック</div>'
+        + '<div style="font-size:12pt;letter-spacing:2px;">' + vetInfo.fullname + '　　<span style="font-size:14pt;">㊞</span></div>'
+        + '</div></div></div>';
+    }
+
+    // ============ Revenue Summary ============
+    function parseFeeAmount(feeStr) {
+      // Extract yen amount from strings like '競走馬審査料（14,300円）'
+      const m = feeStr.match(/（([\d,]+)円）/);
+      if (m) return parseInt(m[1].replace(/,/g, ''), 10);
+      // Fallback for death certificate fee
+      if (feeStr.includes('14,300')) return 14300;
+      if (feeStr.includes('5,000')) return 5000;
+      return 0;
+    }
+
+    function renderRevenue() {
+      const saved = localStorage.getItem('saved_records');
+      const records = saved ? JSON.parse(saved) : [];
+      const monthSel = document.getElementById('revenue_month');
+      const content = document.getElementById('revenue_content');
+
+      // Collect all months from records
+      const months = new Set();
+      records.forEach(r => {
+        if (r.saved_at) {
+          const d = new Date(r.saved_at);
+          const ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+          months.add(ym);
+        }
+      });
+
+      // Current month
+      const now = new Date();
+      const currentYM = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+      months.add(currentYM);
+
+      // Sort months descending
+      const sortedMonths = Array.from(months).sort().reverse();
+
+      // Populate month selector preserving current selection
+      const prevSel = monthSel.value;
+      monthSel.innerHTML = '';
+      sortedMonths.forEach(ym => {
+        const opt = document.createElement('option');
+        opt.value = ym;
+        const [y, m] = ym.split('-');
+        opt.textContent = y + '年' + parseInt(m) + '月';
+        monthSel.appendChild(opt);
+      });
+      if (prevSel && sortedMonths.includes(prevSel)) monthSel.value = prevSel;
+      else monthSel.value = sortedMonths[0] || currentYM;
+
+      const selectedMonth = monthSel.value;
+
+      // Filter records for selected month
+      const filtered = records.filter(r => {
+        if (!r.saved_at) return false;
+        const d = new Date(r.saved_at);
+        const ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+        return ym === selectedMonth;
+      });
+
+      if (!filtered.length) {
+        content.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">この月のレコードはありません</p>';
+        return;
+      }
+
+      // Build summary table
+      let html = '<table class="revenue-table"><thead><tr>'
+        + '<th>日付</th><th>馬名</th><th>牧場</th><th>保険会社</th><th>代理店</th><th>請求項目</th><th>合計</th>'
+        + '</tr></thead><tbody>';
+
+      let grandTotal = 0;
+      const farmTotals = {};
+
+      filtered.forEach(r => {
+        const d = new Date(r.saved_at);
+        const dateStr = (d.getMonth() + 1) + '/' + d.getDate();
+        const formLabel = r.form === 'msm' ? '三井住友' : r.form === 'sj' ? '損保ジャパン' : '死亡診断書';
+        const feeItems = r.fee_items || [];
+        let rowTotal = 0;
+        feeItems.forEach(fi => { rowTotal += parseFeeAmount(fi); });
+        grandTotal += rowTotal;
+        const mgr = r.farm_mgr || '';
+        if (mgr) {
+          farmTotals[mgr] = (farmTotals[mgr] || 0) + rowTotal;
+        }
+
+        html += '<tr>'
+          + '<td>' + dateStr + '</td>'
+          + '<td>' + (r.horse || '') + '</td>'
+          + '<td>' + mgr + '</td>'
+          + '<td>' + formLabel + '</td>'
+          + '<td>' + (r.agent || '') + '</td>'
+          + '<td>' + feeItems.join(', ') + '</td>'
+          + '<td style="text-align:right;white-space:nowrap;">' + (rowTotal > 0 ? rowTotal.toLocaleString() + '円' : '-') + '</td>'
+          + '</tr>';
+      });
+
+      html += '<tr class="total-row">'
+        + '<td colspan="6" style="text-align:right;font-weight:700;">月合計</td>'
+        + '<td style="text-align:right;white-space:nowrap;font-weight:700;">' + grandTotal.toLocaleString() + '円</td>'
+        + '</tr></tbody></table>';
+
+      // Farm summary
+      const farmEntries = Object.entries(farmTotals).sort((a, b) => b[1] - a[1]);
+      if (farmEntries.length) {
+        html += '<div class="farm-summary"><div class="section-heading">牧場別集計</div>';
+        farmEntries.forEach(([farm, total]) => {
+          html += '<div class="farm-summary-card">'
+            + '<div class="farm-name">' + farm + '</div>'
+            + '<div class="farm-total">' + total.toLocaleString() + '円</div>'
+            + '</div>';
+        });
+        html += '</div>';
+      }
+
+      content.innerHTML = html;
+    }
 
     // ============ Init ============
     window.addEventListener('load', () => {
       loadAllHistory();
       loadFarmMaster();
+      loadAgentsMaster();
       const today = new Date().toISOString().split('T')[0];
       ['msm_date_in', 'msm_diag_in', 'msm_fee1_in', 'sj_date_in', 'sj_diag_in'].forEach(id => {
         const el = document.getElementById(id);
@@ -2313,48 +2510,35 @@
       updateBanner('sj_diag_in', 'banner_sj_diag');
       setField('msm_type', 'サラブレッド');
       setField('sj_type', 'サラブレッド');
+      // Render chips for MSM and SJ
       Object.keys(CHIPS_DATA).forEach(key => {
         ['msm', 'sj'].forEach(prefix => {
           const containerId = prefix + '_' + key + '_chips';
           if (document.getElementById(containerId)) renderChips(containerId, CHIPS_DATA[key], prefix, key, autoSave);
         });
       });
+      // Render chips for Death Certificate
+      renderChips('death_vet_chips', CHIPS_DATA.vet, 'death', 'vet', autoSaveDeath);
+      renderChips('death_sex_chips', CHIPS_DATA.sex, 'death', 'sex', autoSaveDeath);
+      renderChips('death_cause_chips', DEATH_CAUSE_OPTIONS, 'death', 'cause', autoSaveDeath);
+      renderChips('death_fee_items_chips', DEATH_FEE_OPTIONS, 'death', 'fee_items', autoSaveDeath);
+      // Render agent dropdowns
+      renderAgentDropdowns();
+      // Default death date to today
+      const deathDateEl = document.getElementById('death_date');
+      if (deathDateEl && !deathDateEl.value) deathDateEl.value = today;
+      // Load drafts
       try {
         const dm = localStorage.getItem('draft_msm');
         if (dm) loadMSM(JSON.parse(dm));
         const ds = localStorage.getItem('draft_sj');
         if (ds) loadSJ(JSON.parse(ds));
+        const dd = localStorage.getItem('draft_death');
+        if (dd) loadDeath(JSON.parse(dd));
       } catch (e) {}
       calcAgeFromInputs('msm');
       calcAgeFromInputs('sj');
-      // 父登録リストのチップを描画
-      ['msm', 'sj'].forEach(p => renderSireChips(p));
-      // 自動復元バナー表示
-      showRestoreBanner();
     });
-
-    function showRestoreBanner() {
-      const saved = localStorage.getItem('saved_records');
-      const records = saved ? JSON.parse(saved) : [];
-      if (records.length === 0) {
-        // LocalStorageにデータなし → JSONファイルから復元を促す
-        const banner = document.createElement('div');
-        banner.id = 'restore-banner';
-        banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#1a3f6b;color:#fff;padding:14px 16px;z-index:3000;display:flex;align-items:center;justify-content:space-between;gap:10px;';
-        banner.innerHTML = `
-          <div style="font-size:14px;font-weight:600;">📂 前回のデータを復元しますか？</div>
-          <div style="display:flex;gap:8px;">
-            <button onclick="document.getElementById('restore-file-input').click()" style="background:#fff;color:#1a3f6b;border:none;border-radius:8px;padding:8px 14px;font-size:14px;font-weight:700;cursor:pointer;">📂 JSONから復元</button>
-            <button onclick="document.getElementById('restore-banner').remove()" style="background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer;">✕</button>
-          </div>
-          <input type="file" id="restore-file-input" accept=".json" style="display:none" onchange="importData(event);document.getElementById('restore-banner').remove();">
-        `;
-        document.body.appendChild(banner);
-      } else {
-        // LocalStorageにデータあり → 自動復元済みのトースト表示
-        showToast('✅ 前回のデータを自動復元しました（' + records.length + '件）', 'success');
-      }
-    }
   </script>
 </body>
 </html>
