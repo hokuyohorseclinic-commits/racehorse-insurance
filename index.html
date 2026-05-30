@@ -2500,10 +2500,10 @@
             const sentBtn = st.sent
               ? '<span onclick="toggleRecordStatus('+idx+',\'sent\')" style="background:#2196F3;color:#fff;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;margin-right:4px;">✔ 発送済</span>'
               : '<span onclick="toggleRecordStatus('+idx+',\'sent\')" style="background:#eee;color:#999;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;margin-right:4px;">発送</span>';
-            const feeDisp = (record.fee_items && record.fee_items.length) ? '　¥' + record.fee_items.reduce((s,fi) => s + parseFeeAmount(fi), 0).toLocaleString() : '';
             const dateDisp = record.saved_at ? new Date(record.saved_at).toLocaleDateString('ja-JP', {month:'numeric',day:'numeric'}) : '';
+            const farmDisp = record.farm_mgr ? '　🏠 ' + record.farm_mgr : '';
             div.innerHTML = `
-              <div style="font-weight:700;margin-bottom:4px;padding-right:56px;">${dateDisp} ${record.horse || '（未指定）'}${feeDisp}</div>
+              <div style="font-weight:700;margin-bottom:4px;padding-right:56px;">${dateDisp} ${record.horse || '（未指定）'}${farmDisp}</div>
               <div style="font-size:12px;color:#666;margin-bottom:5px;">${badge}${agentDisp}${record.vet ? '　獣医: '+record.vet : ''}</div>
               <div style="display:flex;gap:4px;align-items:center;">${printBtn}${sentBtn}</div>
               <button onclick="event.stopPropagation();deleteRecord(${idx})" style="position:absolute;top:10px;right:10px;background:none;border:1px solid #ddd;border-radius:6px;padding:2px 8px;color:#aaa;font-size:11px;cursor:pointer;">削除</button>
