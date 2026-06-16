@@ -539,10 +539,26 @@
       .print-table td { font-size: 12px; padding: 6px; }
     }
   </style>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 </head>
 <body>
-  <div class="container">
-    <div class="header">競走馬保険審査報告書作成</div>
+  <!-- ═══ ログイン画面 ═══ -->
+  <div id="loginOverlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#1e293b,#0f172a);display:flex;align-items:center;justify-content:center;z-index:99999">
+    <div style="background:#fff;border-radius:20px;padding:36px;width:340px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center">
+      <div style="font-size:28px;margin-bottom:8px">🐴</div>
+      <h2 style="font-size:18px;font-weight:700;color:#1e293b;margin-bottom:4px">北洋ホースクリニック</h2>
+      <p style="font-size:12px;color:#94a3b8;margin-bottom:24px">競走馬保険システム</p>
+      <input type="email" id="loginEmail" placeholder="メールアドレス" style="width:100%;padding:12px 16px;border:1px solid #d1d5db;border-radius:10px;font-size:15px;margin-bottom:10px;box-sizing:border-box" />
+      <input type="password" id="loginPassword" placeholder="パスワード" style="width:100%;padding:12px 16px;border:1px solid #d1d5db;border-radius:10px;font-size:15px;margin-bottom:16px;box-sizing:border-box" onkeydown="if(event.key==='Enter')doLogin()" />
+      <button onclick="doLogin()" style="width:100%;padding:14px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer">ログイン</button>
+      <div id="loginError" style="color:#dc2626;font-size:13px;margin-top:10px;min-height:20px"></div>
+    </div>
+  </div>
+
+  <div class="container" id="appContainer" style="display:none">
+    <div class="header">競走馬保険審査報告書作成 <button onclick="doLogout()" style="float:right;background:none;border:1px solid #999;color:#666;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer">🔒 ログアウト</button></div>
 
     <div class="tabs">
       <div class="tab msm active" onclick="switchTab(0)">🔵 三井住友</div>
@@ -554,6 +570,12 @@
 
     <!-- MSM Tab -->
     <div class="tab-content active" id="msm-tab">
+      <div class="btn-group" style="margin-bottom:12px;">
+        <button class="btn btn-primary" onclick="saveRecord('msm')">💾 保存</button>
+        <button class="btn btn-secondary" onclick="newRecord('msm')">🆕 新規</button>
+        <button class="btn btn-secondary" onclick="previewPrint('msm')">📄 プレビュー</button>
+        <button class="btn btn-secondary" onclick="printForm('msm')">🖨️ 印刷</button>
+      </div>
       <div class="section-heading">獣医師</div>
       <div class="fgroup">
         <div class="flabel">診断獣医師</div>
@@ -580,60 +602,64 @@
       <div class="fgroup">
         <div class="flabel">馬名</div>
         <input type="text" id="msm_horse" placeholder="例：ダイワスカーレット" onchange="autoSave()" onblur="addHistory('msm_horse')">
-        <div class="chips" id="msm_horse_history"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">種類</div>
-        <select id="msm_type" onchange="autoSave()">
-          <option value="">選択してください</option>
-          <option value="サラブレッド">サラブレッド</option>
-          <option value="日本馬">日本馬</option>
-          <option value="その他">その他</option>
-        </select>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">生年月日</div>
-        <input type="date" class="date-input" id="msm_birth_in" onchange="onDateChangeMSM('birth'); autoSave()">
-        <div class="date-banner" id="banner_msm_birth">（未選択）</div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">年齢（才）※生年月日から自動計算</div>
-        <div class="age-disp" id="msm_age_disp">（生年月日を選択してください）</div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">産地</div>
-        <div class="chips" style="margin-bottom:6px;">
-          <button type="button" class="chip" onclick="setOrigin('msm','新ひだか町')">新ひだか町</button>
-          <button type="button" class="chip" onclick="setOrigin('msm','新冠町')">新冠町</button>
-          <button type="button" class="chip" onclick="setOrigin('msm','日高町')">日高町</button>
-          <button type="button" class="chip" onclick="setOrigin('msm','平取町')">平取町</button>
-          <button type="button" class="chip" onclick="setOrigin('msm','浦河町')">浦河町</button>
+        <select id="msm_horse_history" onchange="selectFromHistory('msm_horse')" style="margin-top:4px;"><option value="">履歴から選択</option></select>
+        <div class="chips" style="margin-top:4px;">
+          <button type="button" class="chip" onclick="setBirthYear('msm',2025)">2025</button>
+          <button type="button" class="chip" onclick="setBirthYear('msm',2026)">2026</button>
         </div>
-        <input type="text" id="msm_origin" placeholder="例：新ひだか町" onchange="autoSave()">
       </div>
 
-      <div class="fgroup">
-        <div class="flabel">性別</div>
-        <div class="chips" id="msm_sex_chips"></div>
+      <div class="fgroup row">
+        <div class="fgroup">
+          <div class="flabel">種類</div>
+          <select id="msm_type" onchange="autoSave()">
+            <option value="">選択</option>
+            <option value="サラブレッド">サラブレッド</option>
+            <option value="日本馬">日本馬</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+        <div class="fgroup">
+          <div class="flabel">性別</div>
+          <div class="chips" id="msm_sex_chips"></div>
+        </div>
+        <div class="fgroup">
+          <div class="flabel">毛色</div>
+          <select id="msm_color" onchange="autoSave()">
+            <option value="">選択</option>
+            <option value="栗毛">栗毛</option>
+            <option value="黒鹿毛">黒鹿毛</option>
+            <option value="鹿毛">鹿毛</option>
+            <option value="青毛">青毛</option>
+            <option value="白毛">白毛</option>
+            <option value="芦毛">芦毛</option>
+            <option value="小栗毛">小栗毛</option>
+            <option value="栃栗毛">栃栗毛</option>
+          </select>
+        </div>
       </div>
 
-      <div class="fgroup">
-        <div class="flabel">毛色</div>
-        <select id="msm_color" onchange="autoSave()">
-          <option value="">選択してください</option>
-          <option value="栗毛">栗毛</option>
-          <option value="黒鹿毛">黒鹿毛</option>
-          <option value="鹿毛">鹿毛</option>
-          <option value="青毛">青毛</option>
-          <option value="白毛">白毛</option>
-          <option value="芦毛">芦毛</option>
-          <option value="小栗毛">小栗毛</option>
-          <option value="栃栗毛">栃栗毛</option>
-        </select>
+      <div class="fgroup row">
+        <div class="fgroup">
+          <div class="flabel">生年月日</div>
+          <input type="date" class="date-input" id="msm_birth_in" onchange="onDateChangeMSM('birth'); autoSave()">
+          <div class="date-banner" id="banner_msm_birth">（未選択）</div>
+        </div>
+        <div class="fgroup">
+          <div class="flabel">年齢</div>
+          <div class="age-disp" id="msm_age_disp" style="padding-top:13px;">（自動計算）</div>
+        </div>
+        <div class="fgroup">
+          <div class="flabel">産地</div>
+          <input type="text" id="msm_origin" placeholder="新ひだか町" onchange="autoSave()">
+        </div>
+      </div>
+      <div class="chips" style="margin-bottom:8px;">
+        <button type="button" class="chip" onclick="setOrigin('msm','新ひだか町')">新ひだか町</button>
+        <button type="button" class="chip" onclick="setOrigin('msm','新冠町')">新冠町</button>
+        <button type="button" class="chip" onclick="setOrigin('msm','日高町')">日高町</button>
+        <button type="button" class="chip" onclick="setOrigin('msm','平取町')">平取町</button>
+        <button type="button" class="chip" onclick="setOrigin('msm','浦河町')">浦河町</button>
       </div>
 
       <div class="fgroup">
@@ -642,12 +668,12 @@
           <div class="fgroup">
             <div class="flabel">父</div>
             <input type="text" id="msm_sire" placeholder="父の名前" onchange="autoSave()" onblur="addHistory('msm_sire')">
-            <div class="chips" id="msm_sire_history"></div>
+            <select id="msm_sire_history" onchange="selectFromHistory('msm_sire')" style="margin-top:4px;"><option value="">履歴から選択</option></select>
           </div>
           <div class="fgroup">
             <div class="flabel">母</div>
             <input type="text" id="msm_dam" placeholder="母の名前" onchange="autoSave()" onblur="addHistory('msm_dam')">
-            <div class="chips" id="msm_dam_history"></div>
+            <select id="msm_dam_history" onchange="selectFromHistory('msm_dam')" style="margin-top:4px;"><option value="">履歴から選択</option></select>
           </div>
         </div>
       </div>
@@ -663,16 +689,17 @@
         <input type="text" id="msm_microchip" placeholder="例：900000000000000" onchange="autoSave()">
       </div>
 
-      <div class="fgroup">
-        <div class="flabel">飼養場所</div>
-        <input type="text" id="msm_farm_loc" placeholder="例：〒056-0144 北海道日高郡..." onchange="autoSave()" onblur="addHistory('msm_farm_loc')">
-        <div class="chips" id="msm_farm_loc_history"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">管理人</div>
-        <input type="text" id="msm_farm_mgr" placeholder="例：佐藤　和茂" onchange="autoSave()" onblur="addHistory('msm_farm_mgr'); saveFarmPair('msm')">
-        <div class="chips" id="msm_farm_mgr_history"></div>
+      <div class="fgroup row">
+        <div class="fgroup">
+          <div class="flabel">飼養場所</div>
+          <input type="text" id="msm_farm_loc" placeholder="住所" onchange="autoSave()" onblur="addHistory('msm_farm_loc')">
+          <select id="msm_farm_loc_history" onchange="selectFromHistory('msm_farm_loc')" style="margin-top:4px;"><option value="">履歴から選択</option></select>
+        </div>
+        <div class="fgroup">
+          <div class="flabel">管理人</div>
+          <input type="text" id="msm_farm_mgr" placeholder="管理人名" onchange="autoSave()" onblur="addHistory('msm_farm_mgr'); saveFarmPair('msm')">
+          <select id="msm_farm_mgr_history" onchange="selectFromHistory('msm_farm_mgr')" style="margin-top:4px;"><option value="">履歴から選択</option></select>
+        </div>
       </div>
 
       <div class="section-heading">診断情報</div>
@@ -690,36 +717,18 @@
         <div class="date-banner" id="banner_msm_diag">（未選択）</div>
       </div>
 
-      <div class="fgroup">
-        <div class="flabel">体格</div>
-        <div class="chips" id="msm_build_chips"></div>
+      <div class="fgroup row">
+        <div class="fgroup"><div class="flabel">体格</div><div class="chips" id="msm_build_chips"></div></div>
+        <div class="fgroup"><div class="flabel">栄養</div><div class="chips" id="msm_nutr_chips"></div></div>
+        <div class="fgroup"><div class="flabel">歩様</div><div class="chips" id="msm_gait_chips"></div></div>
       </div>
 
-      <div class="fgroup">
-        <div class="flabel">体温</div>
-        <div class="chips" id="msm_temp_chips"></div>
-        <input type="text" id="msm_temp_detail" placeholder="異常の場合、詳細を記入" onchange="autoSave()">
+      <div class="fgroup row">
+        <div class="fgroup"><div class="flabel">体温</div><div class="chips" id="msm_temp_chips"></div></div>
+        <div class="fgroup"><div class="flabel">脈拍</div><div class="chips" id="msm_pulse_chips"></div></div>
+        <div class="fgroup"><div class="flabel">睾丸</div><div class="chips" id="msm_test_chips"></div></div>
       </div>
-
-      <div class="fgroup">
-        <div class="flabel">栄養</div>
-        <div class="chips" id="msm_nutr_chips"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">脈拍</div>
-        <div class="chips" id="msm_pulse_chips"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">歩様</div>
-        <div class="chips" id="msm_gait_chips"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">睾丸</div>
-        <div class="chips" id="msm_test_chips"></div>
-      </div>
+      <input type="text" id="msm_temp_detail" placeholder="体温異常の場合、詳細を記入" onchange="autoSave()" style="margin-bottom:8px;">
 
       <div class="fgroup">
         <div class="flabel">現在の健康状態</div>
@@ -751,16 +760,16 @@
       </div>
 
 
-      <div class="btn-group">
-        <button class="btn btn-secondary" onclick="saveRecord('msm')">💾 保存</button>
-        <button class="btn btn-secondary" onclick="newRecord('msm')">🆕 新規</button>
-        <button class="btn btn-primary" onclick="previewPrint('msm')">📄 プレビュー</button>
-        <button class="btn btn-primary" onclick="printForm('msm')">🖨️ 印刷</button>
-      </div>
     </div>
 
     <!-- SJ Tab -->
     <div class="tab-content" id="sj-tab">
+      <div class="btn-group" style="margin-bottom:12px;">
+        <button class="btn btn-primary sj" onclick="saveRecord('sj')">💾 保存</button>
+        <button class="btn btn-secondary" onclick="newRecord('sj')">🆕 新規</button>
+        <button class="btn btn-secondary" onclick="previewPrint('sj')">📄 プレビュー</button>
+        <button class="btn btn-secondary" onclick="printForm('sj')">🖨️ 印刷</button>
+      </div>
       <div class="section-heading">獣医師</div>
       <div class="fgroup">
         <div class="flabel">診断獣医師</div>
@@ -787,60 +796,64 @@
       <div class="fgroup">
         <div class="flabel">馬名</div>
         <input type="text" id="sj_horse" placeholder="例：ダイワスカーレット" onchange="autoSave()" onblur="addHistory('sj_horse')">
-        <div class="chips" id="sj_horse_history"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">種類</div>
-        <select id="sj_type" onchange="autoSave()">
-          <option value="">選択してください</option>
-          <option value="サラブレッド">サラブレッド</option>
-          <option value="日本馬">日本馬</option>
-          <option value="その他">その他</option>
-        </select>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">生年月日</div>
-        <input type="date" class="date-input" id="sj_birth_in" onchange="onDateChangeSJ('birth'); autoSave()">
-        <div class="date-banner sj-banner" id="banner_sj_birth">（未選択）</div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">年齢（才）※生年月日から自動計算</div>
-        <div class="age-disp" id="sj_age_disp">（生年月日を選択してください）</div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">産地</div>
-        <div class="chips" style="margin-bottom:6px;">
-          <button type="button" class="chip" onclick="setOrigin('sj','新ひだか町')">新ひだか町</button>
-          <button type="button" class="chip" onclick="setOrigin('sj','新冠町')">新冠町</button>
-          <button type="button" class="chip" onclick="setOrigin('sj','日高町')">日高町</button>
-          <button type="button" class="chip" onclick="setOrigin('sj','平取町')">平取町</button>
-          <button type="button" class="chip" onclick="setOrigin('sj','浦河町')">浦河町</button>
+        <select id="sj_horse_history" onchange="selectFromHistory('sj_horse')" style="margin-top:4px;"><option value="">履歴から選択</option></select>
+        <div class="chips" style="margin-top:4px;">
+          <button type="button" class="chip" onclick="setBirthYear('sj',2025)">2025</button>
+          <button type="button" class="chip" onclick="setBirthYear('sj',2026)">2026</button>
         </div>
-        <input type="text" id="sj_origin" placeholder="例：新ひだか町" onchange="autoSave()">
       </div>
 
-      <div class="fgroup">
-        <div class="flabel">性別</div>
-        <div class="chips" id="sj_sex_chips"></div>
+      <div class="fgroup row">
+        <div class="fgroup">
+          <div class="flabel">種類</div>
+          <select id="sj_type" onchange="autoSave()">
+            <option value="">選択</option>
+            <option value="サラブレッド">サラブレッド</option>
+            <option value="日本馬">日本馬</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+        <div class="fgroup">
+          <div class="flabel">性別</div>
+          <div class="chips" id="sj_sex_chips"></div>
+        </div>
+        <div class="fgroup">
+          <div class="flabel">毛色</div>
+          <select id="sj_color" onchange="autoSave()">
+            <option value="">選択</option>
+            <option value="栗毛">栗毛</option>
+            <option value="黒鹿毛">黒鹿毛</option>
+            <option value="鹿毛">鹿毛</option>
+            <option value="青毛">青毛</option>
+            <option value="白毛">白毛</option>
+            <option value="芦毛">芦毛</option>
+            <option value="小栗毛">小栗毛</option>
+            <option value="栃栗毛">栃栗毛</option>
+          </select>
+        </div>
       </div>
 
-      <div class="fgroup">
-        <div class="flabel">毛色</div>
-        <select id="sj_color" onchange="autoSave()">
-          <option value="">選択してください</option>
-          <option value="栗毛">栗毛</option>
-          <option value="黒鹿毛">黒鹿毛</option>
-          <option value="鹿毛">鹿毛</option>
-          <option value="青毛">青毛</option>
-          <option value="白毛">白毛</option>
-          <option value="芦毛">芦毛</option>
-          <option value="小栗毛">小栗毛</option>
-          <option value="栃栗毛">栃栗毛</option>
-        </select>
+      <div class="fgroup row">
+        <div class="fgroup">
+          <div class="flabel">生年月日</div>
+          <input type="date" class="date-input" id="sj_birth_in" onchange="onDateChangeSJ('birth'); autoSave()">
+          <div class="date-banner sj-banner" id="banner_sj_birth">（未選択）</div>
+        </div>
+        <div class="fgroup">
+          <div class="flabel">年齢</div>
+          <div class="age-disp" id="sj_age_disp" style="padding-top:13px;">（自動計算）</div>
+        </div>
+        <div class="fgroup">
+          <div class="flabel">産地</div>
+          <input type="text" id="sj_origin" placeholder="新ひだか町" onchange="autoSave()">
+        </div>
+      </div>
+      <div class="chips" style="margin-bottom:8px;">
+        <button type="button" class="chip" onclick="setOrigin('sj','新ひだか町')">新ひだか町</button>
+        <button type="button" class="chip" onclick="setOrigin('sj','新冠町')">新冠町</button>
+        <button type="button" class="chip" onclick="setOrigin('sj','日高町')">日高町</button>
+        <button type="button" class="chip" onclick="setOrigin('sj','平取町')">平取町</button>
+        <button type="button" class="chip" onclick="setOrigin('sj','浦河町')">浦河町</button>
       </div>
 
       <div class="fgroup">
@@ -849,12 +862,12 @@
           <div class="fgroup">
             <div class="flabel">父</div>
             <input type="text" id="sj_sire" placeholder="父の名前" onchange="autoSave()" onblur="addHistory('sj_sire')">
-            <div class="chips" id="sj_sire_history"></div>
+            <select id="sj_sire_history" onchange="selectFromHistory('sj_sire')" style="margin-top:4px;"><option value="">履歴から選択</option></select>
           </div>
           <div class="fgroup">
             <div class="flabel">母</div>
             <input type="text" id="sj_dam" placeholder="母の名前" onchange="autoSave()" onblur="addHistory('sj_dam')">
-            <div class="chips" id="sj_dam_history"></div>
+            <select id="sj_dam_history" onchange="selectFromHistory('sj_dam')" style="margin-top:4px;"><option value="">履歴から選択</option></select>
           </div>
         </div>
       </div>
@@ -870,48 +883,31 @@
         <button class="btn btn-secondary" style="margin-top: 8px;" onclick="openFeatureModal('sj')">毛並み選択器を開く</button>
       </div>
 
-      <div class="fgroup">
-        <div class="flabel">飼養場所</div>
-        <input type="text" id="sj_farm_loc" placeholder="例：北海道日高郡..." onchange="autoSave()" onblur="addHistory('sj_farm_loc')">
-        <div class="chips" id="sj_farm_loc_history"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">管理人</div>
-        <input type="text" id="sj_farm_mgr" placeholder="例：佐藤　和茂" onchange="autoSave()" onblur="addHistory('sj_farm_mgr'); saveFarmPair('sj')">
-        <div class="chips" id="sj_farm_mgr_history"></div>
+      <div class="fgroup row">
+        <div class="fgroup">
+          <div class="flabel">飼養場所</div>
+          <input type="text" id="sj_farm_loc" placeholder="住所" onchange="autoSave()" onblur="addHistory('sj_farm_loc')">
+          <select id="sj_farm_loc_history" onchange="selectFromHistory('sj_farm_loc')" style="margin-top:4px;"><option value="">履歴から選択</option></select>
+        </div>
+        <div class="fgroup">
+          <div class="flabel">管理人</div>
+          <input type="text" id="sj_farm_mgr" placeholder="管理人名" onchange="autoSave()" onblur="addHistory('sj_farm_mgr'); saveFarmPair('sj')">
+          <select id="sj_farm_mgr_history" onchange="selectFromHistory('sj_farm_mgr')" style="margin-top:4px;"><option value="">履歴から選択</option></select>
+        </div>
       </div>
 
       <div class="section-heading">診断情報</div>
 
-      <div class="fgroup">
-        <div class="flabel">体格</div>
-        <div class="chips" id="sj_build_chips"></div>
+      <div class="fgroup row">
+        <div class="fgroup"><div class="flabel">体格</div><div class="chips" id="sj_build_chips"></div></div>
+        <div class="fgroup"><div class="flabel">栄養</div><div class="chips" id="sj_nutr_chips"></div></div>
+        <div class="fgroup"><div class="flabel">歩様</div><div class="chips" id="sj_gait_chips"></div></div>
       </div>
 
-      <div class="fgroup">
-        <div class="flabel">栄養</div>
-        <div class="chips" id="sj_nutr_chips"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">歩様</div>
-        <div class="chips" id="sj_gait_chips"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">可視粘膜</div>
-        <div class="chips" id="sj_mucosa_chips"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">触診</div>
-        <div class="chips" id="sj_palp_chips"></div>
-      </div>
-
-      <div class="fgroup">
-        <div class="flabel">聴診</div>
-        <div class="chips" id="sj_ausc_chips"></div>
+      <div class="fgroup row">
+        <div class="fgroup"><div class="flabel">可視粘膜</div><div class="chips" id="sj_mucosa_chips"></div></div>
+        <div class="fgroup"><div class="flabel">触診</div><div class="chips" id="sj_palp_chips"></div></div>
+        <div class="fgroup"><div class="flabel">聴診</div><div class="chips" id="sj_ausc_chips"></div></div>
       </div>
 
       <div class="fgroup">
@@ -946,33 +942,70 @@
         <textarea id="sj_note" placeholder="特記事項があればご記入ください" onchange="autoSave()"></textarea>
       </div>
 
-      <div class="btn-group">
-        <button class="btn btn-secondary" onclick="saveRecord('sj')">💾 保存</button>
-        <button class="btn btn-secondary" onclick="newRecord('sj')">🆕 新規</button>
-        <button class="btn btn-primary sj" onclick="previewPrint('sj')">📄 プレビュー</button>
-        <button class="btn btn-primary sj" onclick="printForm('sj')">🖨️ 印刷</button>
+      <div class="section-heading">請求額 / 内訳</div>
+      <div class="fgroup">
+        <div class="flabel">請求項目</div>
+        <div class="chips" id="sj_fee_items_chips"></div>
       </div>
+
     </div>
 
     <!-- History Tab -->
     <div class="tab-content" id="history-tab">
       <div class="section-heading">保存済みレコード</div>
+      <div style="margin-bottom:10px;">
+        <input type="text" id="record_search" placeholder="馬名・牧場・代理店で検索..." oninput="renderSavedRecords()" style="width:100%;margin-bottom:8px;">
+      </div>
+      <div class="fgroup row" style="margin-bottom:10px;">
+        <div class="fgroup">
+          <div class="flabel">月</div>
+          <select id="record_month" onchange="renderSavedRecords()"></select>
+        </div>
+        <div class="fgroup">
+          <div class="flabel">種別</div>
+          <select id="record_form" onchange="renderSavedRecords()">
+            <option value="">すべて</option>
+            <option value="msm">三井住友</option>
+            <option value="sj">損保ジャパン</option>
+            <option value="death">死亡診断書</option>
+          </select>
+        </div>
+      </div>
+      <div id="record_count" style="font-size:12px;color:#888;margin-bottom:8px;"></div>
       <div id="saved_records"></div>
       <button class="btn btn-secondary" style="width: 100%; margin-top: 16px;" onclick="exportData()">📥 全データをエクスポート</button>
+      <button class="btn btn-secondary" style="width: 100%; margin-top: 8px;" onclick="document.getElementById('import_file').click()">📤 JSONデータをインポート</button>
+      <input type="file" id="import_file" accept=".json" style="display:none" onchange="importData(event)">
     </div>
 
     <!-- Revenue Tab -->
     <div class="tab-content" id="revenue-tab">
       <div class="section-heading">売上集計</div>
-      <div class="fgroup">
-        <div class="flabel">対象月</div>
-        <select id="revenue_month" onchange="renderRevenue()"></select>
+      <div class="fgroup row">
+        <div class="fgroup">
+          <div class="flabel">対象月</div>
+          <select id="revenue_month" onchange="renderRevenue()"></select>
+        </div>
+        <div class="fgroup">
+          <div class="flabel">獣医師</div>
+          <select id="revenue_vet" onchange="renderRevenue()">
+            <option value="">全員</option>
+            <option value="佐藤和茂">佐藤和茂</option>
+            <option value="関奏絵">関奏絵</option>
+          </select>
+        </div>
       </div>
       <div id="revenue_content"></div>
     </div>
 
     <!-- Death Certificate Tab -->
     <div class="tab-content" id="death-tab">
+      <div class="btn-group" style="margin-bottom:12px;">
+        <button class="btn btn-secondary" style="background:var(--death);color:#fff;" onclick="saveRecord('death')">💾 保存</button>
+        <button class="btn btn-secondary" onclick="newRecordDeath()">🆕 新規</button>
+        <button class="btn btn-secondary" onclick="previewPrint('death')">📄 プレビュー</button>
+        <button class="btn btn-secondary" onclick="printForm('death')">🖨️ 印刷</button>
+      </div>
       <div class="section-heading">死亡診断書</div>
       <div class="fgroup">
         <div class="flabel">診断獣医師</div>
@@ -992,7 +1025,7 @@
       <div class="fgroup">
         <div class="flabel">馬名</div>
         <input type="text" id="death_horse" placeholder="例：ダイワスカーレット" onchange="autoSaveDeath()" onblur="addHistory('death_horse')">
-        <div class="chips" id="death_horse_history"></div>
+        <select id="death_horse_history" onchange="selectFromHistory('death_horse')" style="margin-top:4px;"><option value="">履歴から選択</option></select>
       </div>
       <div class="fgroup">
         <div class="flabel">生年月日</div>
@@ -1020,12 +1053,12 @@
       <div class="fgroup">
         <div class="flabel">飼養場所</div>
         <input type="text" id="death_farm_loc" placeholder="例：北海道日高郡..." onchange="autoSaveDeath()" onblur="addHistory('death_farm_loc')">
-        <div class="chips" id="death_farm_loc_history"></div>
+        <select id="death_farm_loc_history" onchange="selectFromHistory('death_farm_loc')" style="margin-top:4px;"><option value="">履歴から選択</option></select>
       </div>
       <div class="fgroup">
         <div class="flabel">管理人</div>
         <input type="text" id="death_farm_mgr" placeholder="例：佐藤　和茂" onchange="autoSaveDeath()" onblur="addHistory('death_farm_mgr'); saveFarmPair('death')">
-        <div class="chips" id="death_farm_mgr_history"></div>
+        <select id="death_farm_mgr_history" onchange="selectFromHistory('death_farm_mgr')" style="margin-top:4px;"><option value="">履歴から選択</option></select>
       </div>
 
       <div class="section-heading">死亡情報</div>
@@ -1066,12 +1099,6 @@
         <div class="chips" id="death_fee_items_chips"></div>
       </div>
 
-      <div class="btn-group">
-        <button class="btn btn-secondary" onclick="saveRecord('death')">💾 保存</button>
-        <button class="btn btn-secondary" onclick="newRecordDeath()">🆕 新規</button>
-        <button class="btn btn-secondary" onclick="previewPrint('death')">📄 プレビュー</button>
-        <button class="btn btn-secondary" onclick="printForm('death')" style="background:var(--death);color:#fff;">🖨️ 印刷</button>
-      </div>
     </div>
   </div>
 
@@ -1103,6 +1130,9 @@
           <button type="button" class="chip" data-rosette-ud="正" onclick="selectRosetteUD(this)">正</button>
           <button type="button" class="chip" data-rosette-ud="下" onclick="selectRosetteUD(this)">下</button>
           <button type="button" class="chip" data-rosette-ud="２" onclick="selectRosetteUD(this)">２</button>
+          <button type="button" class="chip" data-rosette-ud="長" onclick="selectRosetteUD(this)">長</button>
+          <button type="button" class="chip" data-rosette-ud="短" onclick="selectRosetteUD(this)">短</button>
+          <button type="button" class="chip" data-rosette-ud="断" onclick="selectRosetteUD(this)">断</button>
         </div>
         <button type="button" class="btn btn-secondary" style="width:100%;" onclick="addRosetteEntry()">＋ この旋毛を追加</button>
       </div>
@@ -1140,6 +1170,227 @@
   </div>
 
   <script>
+    // ============ Auth Functions ============
+    function doLogin() {
+      var email = document.getElementById("loginEmail").value.trim();
+      var pwd = document.getElementById("loginPassword").value;
+      var errEl = document.getElementById("loginError");
+      errEl.textContent = "";
+      if (!email || !pwd) { errEl.textContent = "メールアドレスとパスワードを入力してください"; return; }
+      // Use default app for auth
+      var authApp;
+      try { authApp = firebase.app(); } catch(e) { authApp = firebase.initializeApp(_fbConfig); }
+      firebase.auth(authApp).signInWithEmailAndPassword(email, pwd)
+        .then(function() { errEl.textContent = ""; })
+        .catch(function(err) {
+          if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
+            errEl.textContent = "メールアドレスまたはパスワードが違います";
+          } else if (err.code === "auth/invalid-email") {
+            errEl.textContent = "メールアドレスの形式が正しくありません";
+          } else {
+            errEl.textContent = "ログインに失敗しました (" + err.code + ")";
+          }
+        });
+    }
+    function doLogout() {
+      if (confirm("ログアウトしますか？")) {
+        try { firebase.auth().signOut(); } catch(e) {}
+      }
+    }
+
+    // ============ Firebase Setup ============
+    const _fbConfig = {
+      apiKey: "AIzaSyCpBn2haBU1zEIepTpCwF8KeL5v_2_Lnzc",
+      authDomain: "hokuyo-emr.firebaseapp.com",
+      projectId: "hokuyo-emr",
+      storageBucket: "hokuyo-emr.firebasestorage.app",
+      messagingSenderId: "687686923750",
+      appId: "1:687686923750:web:34853b887e5873f7fe9227"
+    };
+    let _fbApp, _fbDb;
+    let _skipNextWrite = {};  // prevent ping-pong writes
+    let _fbReady = false;
+
+    try {
+      try { _fbApp = firebase.app("ins"); } catch(e) { _fbApp = firebase.initializeApp(_fbConfig, "ins"); }
+      _fbDb = firebase.firestore(_fbApp);
+      _fbDb.enablePersistence({ synchronizeTabs: true }).catch(function(e) { console.log("Persistence:", e.code); });
+      _fbReady = true;
+      console.log("Firebase初期化完了（保険アプリ）");
+    } catch(e) {
+      console.error("Firebase初期化エラー:", e);
+    }
+
+    // Auth state listener
+    var _fbListenersReady = false;
+    (function() {
+      var authApp;
+      try { authApp = firebase.app(); } catch(e) { authApp = firebase.initializeApp(_fbConfig); }
+      firebase.auth(authApp).onAuthStateChanged(function(user) {
+        if (user) {
+          console.log("[Auth] ログイン:", user.email);
+          document.getElementById("loginOverlay").style.display = "none";
+          document.getElementById("appContainer").style.display = "block";
+          if (_fbReady && !_fbListenersReady) {
+            _fbListenersReady = true;
+            _fbSetupListeners();
+            setTimeout(function() { _fbSyncAllToFirebase(); }, 1000);
+          }
+        } else {
+          console.log("[Auth] 未認証");
+          document.getElementById("loginOverlay").style.display = "flex";
+          document.getElementById("appContainer").style.display = "none";
+        }
+      });
+    })();
+
+    // Firebase collection name for insurance data
+    const _FB_COL = "insuranceData";
+
+    // Write to Firebase
+    function _fbWrite(docName, data) {
+      if (!_fbReady || !_fbDb) return;
+      try { if (!firebase.auth().currentUser) return; } catch(e) {}
+      _skipNextWrite[docName] = true;
+      _fbDb.collection(_FB_COL).doc(docName).set({
+        data: data,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedBy: navigator.userAgent.substring(0, 60)
+      }).then(function() {
+        console.log("Firebase書き込み:", docName);
+      }).catch(function(e) {
+        console.error("Firebase書き込みエラー:", docName, e);
+      });
+    }
+
+    // Debounced write (for auto-save which fires frequently)
+    let _fbWriteTimers = {};
+    function _fbWriteDebounced(docName, data, delay) {
+      if (_fbWriteTimers[docName]) clearTimeout(_fbWriteTimers[docName]);
+      _fbWriteTimers[docName] = setTimeout(function() { _fbWrite(docName, data); }, delay || 2000);
+    }
+
+    // Setup real-time listeners
+    function _fbSetupListeners() {
+      if (!_fbReady || !_fbDb) return;
+
+      // saved_records listener
+      _fbDb.collection(_FB_COL).doc("saved_records").onSnapshot(function(doc) {
+        if (_skipNextWrite["saved_records"]) { _skipNextWrite["saved_records"] = false; return; }
+        if (doc.exists && doc.data().data) {
+          var fbRecords = doc.data().data;
+          var localRaw = localStorage.getItem("saved_records");
+          var localRecords = localRaw ? JSON.parse(localRaw) : [];
+          // Merge: combine unique records by saved_at
+          var merged = _mergeRecords(localRecords, fbRecords);
+          localStorage.setItem("saved_records", JSON.stringify(merged));
+          renderSavedRecords();
+          console.log("Firebase→ローカル同期: saved_records", merged.length, "件");
+        }
+      });
+
+      // agents_master listener
+      _fbDb.collection(_FB_COL).doc("agents_master").onSnapshot(function(doc) {
+        if (_skipNextWrite["agents_master"]) { _skipNextWrite["agents_master"] = false; return; }
+        if (doc.exists && doc.data().data) {
+          var fbAgents = doc.data().data;
+          // Merge with local
+          fbAgents.forEach(function(a) { if (!AGENTS_MASTER.includes(a)) AGENTS_MASTER.push(a); });
+          localStorage.setItem("agents_master", JSON.stringify(AGENTS_MASTER));
+          renderAgentDropdowns();
+          console.log("Firebase→ローカル同期: agents_master", AGENTS_MASTER.length, "件");
+        }
+      });
+
+      // history listener
+      _fbDb.collection(_FB_COL).doc("history").onSnapshot(function(doc) {
+        if (_skipNextWrite["history"]) { _skipNextWrite["history"] = false; return; }
+        if (doc.exists && doc.data().data) {
+          var fbHist = doc.data().data;
+          // Merge: keep higher counts
+          Object.keys(fbHist).forEach(function(fieldId) {
+            if (!HISTORY[fieldId]) HISTORY[fieldId] = {};
+            Object.keys(fbHist[fieldId]).forEach(function(val) {
+              HISTORY[fieldId][val] = Math.max(HISTORY[fieldId][val] || 0, fbHist[fieldId][val]);
+            });
+          });
+          localStorage.setItem("history", JSON.stringify(HISTORY));
+          Object.keys(HISTORY).forEach(function(fid) { renderHistoryChips(fid); });
+          console.log("Firebase→ローカル同期: history");
+        }
+      });
+
+      // farm_master listener
+      _fbDb.collection(_FB_COL).doc("farm_master").onSnapshot(function(doc) {
+        if (_skipNextWrite["farm_master"]) { _skipNextWrite["farm_master"] = false; return; }
+        if (doc.exists && doc.data().data) {
+          var fbFarm = doc.data().data;
+          Object.assign(FARM_MASTER, fbFarm);
+          localStorage.setItem("farm_master", JSON.stringify(FARM_MASTER));
+          console.log("Firebase→ローカル同期: farm_master");
+        }
+      });
+
+      // draft listeners (msm, sj, death)
+      ["draft_msm", "draft_sj", "draft_death"].forEach(function(key) {
+        _fbDb.collection(_FB_COL).doc(key).onSnapshot(function(doc) {
+          if (_skipNextWrite[key]) { _skipNextWrite[key] = false; return; }
+          if (doc.exists && doc.data().data) {
+            var fbDraft = doc.data().data;
+            var localRaw = localStorage.getItem(key);
+            var localDraft = localRaw ? JSON.parse(localRaw) : null;
+            // Only update if Firebase is newer
+            if (!localDraft || !localDraft.saved_at || (fbDraft.saved_at && fbDraft.saved_at > localDraft.saved_at)) {
+              localStorage.setItem(key, JSON.stringify(fbDraft));
+              // Reload form if on the corresponding tab
+              if (key === "draft_msm" && CURRENT_TAB === 0) loadMSM(fbDraft);
+              else if (key === "draft_sj" && CURRENT_TAB === 1) loadSJ(fbDraft);
+              else if (key === "draft_death" && CURRENT_TAB === 4) loadDeath(fbDraft);
+              console.log("Firebase→ローカル同期:", key);
+            }
+          }
+        });
+      });
+    }
+
+    // Merge records: combine by saved_at timestamp (unique key)
+    function _mergeRecords(localRecs, fbRecs) {
+      var seen = {};
+      var merged = [];
+      // Add local first
+      localRecs.forEach(function(r) {
+        var key = r.saved_at || JSON.stringify(r).substring(0, 100);
+        if (!seen[key]) { seen[key] = true; merged.push(r); }
+      });
+      // Add Firebase records not in local
+      fbRecs.forEach(function(r) {
+        var key = r.saved_at || JSON.stringify(r).substring(0, 100);
+        if (!seen[key]) { seen[key] = true; merged.push(r); }
+      });
+      // Sort by saved_at descending
+      merged.sort(function(a, b) { return (b.saved_at || "").localeCompare(a.saved_at || ""); });
+      return merged;
+    }
+
+    // Sync all local data to Firebase (called on init)
+    function _fbSyncAllToFirebase() {
+      if (!_fbReady) return;
+      var sr = localStorage.getItem("saved_records");
+      if (sr) _fbWrite("saved_records", JSON.parse(sr));
+      var am = localStorage.getItem("agents_master");
+      if (am) _fbWrite("agents_master", JSON.parse(am));
+      var h = localStorage.getItem("history");
+      if (h) _fbWrite("history", JSON.parse(h));
+      var fm = localStorage.getItem("farm_master");
+      if (fm) _fbWrite("farm_master", JSON.parse(fm));
+      var dm = localStorage.getItem("draft_msm");
+      if (dm) _fbWrite("draft_msm", JSON.parse(dm));
+      var ds = localStorage.getItem("draft_sj");
+      if (ds) _fbWrite("draft_sj", JSON.parse(ds));
+      var dd = localStorage.getItem("draft_death");
+      if (dd) _fbWrite("draft_death", JSON.parse(dd));
+    }
+
     // ============ Data Structure ============
     let DATA = { msm_age: 0, sj_age: 0 };
     let HISTORY = {};
@@ -1278,15 +1529,34 @@
     function renderHistoryChips(fieldId) {
       const container = document.getElementById(fieldId + '_history');
       if (!container) return;
-      container.innerHTML = '';
       const hist = HISTORY[fieldId];
-      if (!hist) return;
       const isFarmMgr = fieldId === 'msm_farm_mgr' || fieldId === 'sj_farm_mgr' || fieldId === 'death_farm_mgr';
+
+      // SELECT (プルダウン) モード
+      if (container.tagName === 'SELECT') {
+        container.innerHTML = '<option value="">履歴から選択</option>';
+        if (!hist) return;
+        Object.entries(hist).sort((a, b) => b[1] - a[1]).forEach(([val]) => {
+          const opt = document.createElement('option');
+          opt.value = val;
+          if (isFarmMgr && FARM_MASTER[val]) {
+            const locShort = FARM_MASTER[val].length > 12 ? FARM_MASTER[val].slice(0, 12) + '…' : FARM_MASTER[val];
+            opt.textContent = val + '　' + locShort;
+          } else {
+            opt.textContent = val;
+          }
+          container.appendChild(opt);
+        });
+        return;
+      }
+
+      // CHIPS モード（従来）
+      container.innerHTML = '';
+      if (!hist) return;
       Object.entries(hist).sort((a, b) => b[1] - a[1]).slice(0, 5).forEach(([val]) => {
         const chip = document.createElement('button');
         chip.className = 'chip';
         chip.type = 'button';
-        // 管理人チップ：連動住所があれば「管理人名 / 住所（短縮）」を表示
         if (isFarmMgr && FARM_MASTER[val]) {
           const locShort = FARM_MASTER[val].length > 12 ? FARM_MASTER[val].slice(0, 12) + '…' : FARM_MASTER[val];
           chip.textContent = val + '　' + locShort;
@@ -1296,7 +1566,6 @@
         chip.onclick = (e) => {
           e.preventDefault();
           document.getElementById(fieldId).value = val;
-          // farm_mgr チップは対応する farm_loc も自動入力
           if (isFarmMgr) {
             const prefix = fieldId.split('_')[0];
             const savedLoc = FARM_MASTER[val];
@@ -1311,6 +1580,24 @@
       });
     }
 
+    function selectFromHistory(fieldId) {
+      const sel = document.getElementById(fieldId + '_history');
+      if (!sel || !sel.value) return;
+      const val = sel.value;
+      document.getElementById(fieldId).value = val;
+      sel.value = '';
+      const isFarmMgr = fieldId.endsWith('_farm_mgr');
+      if (isFarmMgr) {
+        const prefix = fieldId.split('_')[0];
+        const savedLoc = FARM_MASTER[val];
+        if (savedLoc) {
+          document.getElementById(prefix + '_farm_loc').value = savedLoc;
+          renderHistoryChips(prefix + '_farm_loc');
+        }
+      }
+      if (fieldId.startsWith('death_')) { autoSaveDeath(); } else { autoSave(); }
+    }
+
     function loadAllHistory() {
       const h = localStorage.getItem('history');
       if (h) {
@@ -1321,7 +1608,40 @@
       }
     }
 
-    function saveHistory() { localStorage.setItem('history', JSON.stringify(HISTORY)); }
+    function saveHistory() {
+      localStorage.setItem('history', JSON.stringify(HISTORY));
+      _fbWriteDebounced("history", HISTORY, 5000);
+    }
+
+    function setBirthYear(prefix, year) {
+      // 馬名の後に年を追加、元の名前を母に反映
+      const horseEl = document.getElementById(prefix + '_horse');
+      if (horseEl) {
+        const baseName = horseEl.value.replace(/\d{4}$/, '').trim();
+        if (baseName) {
+          horseEl.value = baseName + year;
+          document.getElementById(prefix + '_dam').value = baseName;
+        }
+      }
+      // 生年月日も設定
+      const inp = document.getElementById(prefix + '_birth_in');
+      if (inp) {
+        inp.value = year + '-01-01';
+        if (prefix === 'msm') onDateChangeMSM('birth');
+        else if (prefix === 'sj') onDateChangeSJ('birth');
+      }
+      autoSave();
+    }
+
+    function autoSelectDefaultFee(prefix) {
+      const container = document.getElementById(prefix + '_fee_items_chips');
+      if (!container) return;
+      const chips = container.querySelectorAll('.chip');
+      const hasSelected = container.querySelector('.chip.selected');
+      if (!hasSelected && chips.length > 0) {
+        chips[0].classList.add('selected'); // 競走馬審査料（14,300円）
+      }
+    }
 
     function setOrigin(prefix, val) {
       document.getElementById(prefix + '_origin').value = val;
@@ -1334,6 +1654,7 @@
       if (mgr && loc) {
         FARM_MASTER[mgr] = loc;
         localStorage.setItem('farm_master', JSON.stringify(FARM_MASTER));
+        _fbWrite("farm_master", FARM_MASTER);
         // 管理人の履歴チップを再描画（住所付きで表示するため）
         renderHistoryChips(prefix + '_farm_mgr');
       }
@@ -1392,6 +1713,7 @@
         mucosa: getChip('sj', 'mucosa'), palp: getChip('sj', 'palp'), ausc: getChip('sj', 'ausc'),
         hist_flag: getChip('sj', 'hist_flag'), histname: getField('sj_histname'), histtime: getField('sj_histtime'),
         note: getField('sj_note'), diagloc_sj: getField('sj_diagloc_sj'), microchip: getField('sj_microchip'),
+        fee_items: getMultiChips('sj_fee_items'),
         vet: getChip('sj', 'vet'), agent: selVal('sj_agent'), form: 'sj', saved_at: new Date().toISOString()
       };
     }
@@ -1402,13 +1724,15 @@
       localStorage.setItem('draft_msm', JSON.stringify(msm));
       localStorage.setItem('draft_sj', JSON.stringify(sj));
       saveHistory();
-      showToast('保存しました', 'success');
+      _fbWriteDebounced("draft_msm", msm, 3000);
+      _fbWriteDebounced("draft_sj", sj, 3000);
     }
 
     function autoSaveDeath() {
       const d = collectDeath();
       localStorage.setItem('draft_death', JSON.stringify(d));
       saveHistory();
+      _fbWriteDebounced("draft_death", d, 3000);
     }
 
     function loadMSM(d) {
@@ -1448,6 +1772,10 @@
       setChip('sj', 'vet', d.vet); setChip('sj', 'sex', d.sex); setChip('sj', 'build', d.build); setChip('sj', 'nutr', d.nutr);
       setChip('sj', 'gait', d.gait); setChip('sj', 'mucosa', d.mucosa); setChip('sj', 'palp', d.palp);
       setChip('sj', 'ausc', d.ausc); setChip('sj', 'hist_flag', d.hist_flag);
+      if (d.fee_items) {
+        const container = document.getElementById('sj_fee_items_chips');
+        if (container) container.querySelectorAll('.chip').forEach(c => { if (d.fee_items.includes(c.textContent)) c.classList.add('selected'); });
+      }
       calcAgeFromInputs('sj');
     }
 
@@ -1484,26 +1812,34 @@
       });
       // Render other chips (multi-select)
       renderChips('feature-other-chips', FEATURE_OTHER, 'f', 'other');
-      // Render limb chips (radio per limb)
+      // Render limb chips (radio per limb) - 2x2 grid layout
       const limbsContainer = document.getElementById('feature-limbs');
       limbsContainer.innerHTML = '';
-      ['左前肢', '右前肢', '左後肢', '右後肢'].forEach((limb, idx) => {
-        const LIMB_KEYS = ['左前', '右前', '左後', '右後'];
+      limbsContainer.style.display = 'grid';
+      limbsContainer.style.gridTemplateColumns = '1fr 1fr';
+      limbsContainer.style.gap = '8px';
+      const LIMB_LABELS = ['左前肢', '右前肢', '左後肢', '右後肢'];
+      const LIMB_KEYS = ['左前', '右前', '左後', '右後'];
+      LIMB_LABELS.forEach((limb, idx) => {
         const div = document.createElement('div');
-        div.className = 'fgroup';
-        div.style.marginBottom = '10px';
+        div.style.cssText = 'border:1px solid #e0e0e0;border-radius:8px;padding:8px;';
         const label = document.createElement('div');
         label.className = 'flabel';
+        label.style.fontSize = '13px';
+        label.style.marginBottom = '6px';
         label.textContent = limb;
         div.appendChild(label);
         const chipsDiv = document.createElement('div');
         chipsDiv.className = 'chips';
         chipsDiv.dataset.limb = LIMB_KEYS[idx];
+        chipsDiv.style.gap = '4px';
         // Add "なし" option
         const noneBtn = document.createElement('button');
         noneBtn.className = 'chip selected';
         noneBtn.type = 'button';
         noneBtn.textContent = 'なし';
+        noneBtn.style.fontSize = '11px';
+        noneBtn.style.padding = '5px 8px';
         noneBtn.onclick = () => { chipsDiv.querySelectorAll('.chip').forEach(c => c.classList.remove('selected')); noneBtn.classList.add('selected'); };
         chipsDiv.appendChild(noneBtn);
         FEATURE_LIMB.forEach(chip => {
@@ -1511,6 +1847,8 @@
           btn.className = 'chip';
           btn.type = 'button';
           btn.textContent = chip;
+          btn.style.fontSize = '11px';
+          btn.style.padding = '5px 8px';
           btn.onclick = () => { chipsDiv.querySelectorAll('.chip').forEach(c => c.classList.remove('selected')); btn.classList.add('selected'); };
           chipsDiv.appendChild(btn);
         });
@@ -2065,10 +2403,15 @@
       else if (prefix === 'sj') data = collectSJ();
       else if (prefix === 'death') data = collectDeath();
       else data = collectMSM();
+      // 保険診断書で請求項目が未選択なら競走馬審査料をデフォルト
+      if ((prefix === 'msm' || prefix === 'sj') && (!data.fee_items || data.fee_items.length === 0)) {
+        data.fee_items = ['競走馬審査料（14,300円）'];
+      }
       const saved = localStorage.getItem('saved_records');
       const records = saved ? JSON.parse(saved) : [];
       records.unshift(data);
       localStorage.setItem('saved_records', JSON.stringify(records));
+      _fbWrite("saved_records", records);
       showToast((data.horse || '診断書') + ' を保存しました', 'success');
     }
 
@@ -2096,6 +2439,7 @@
       DATA[prefix + '_age'] = 0;
       const ageEl = document.getElementById(prefix + '_age_disp');
       if (ageEl) ageEl.textContent = '';
+      autoSelectDefaultFee(prefix);
       showToast('新規診断書を作成しました', 'info');
     }
 
@@ -2106,32 +2450,137 @@
       const records = JSON.parse(saved);
       records.splice(idx, 1);
       localStorage.setItem('saved_records', JSON.stringify(records));
+      _fbWrite("saved_records", records);
+      renderSavedRecords();
+    }
+
+    function toggleRecordStatus(idx, key) {
+      event.stopPropagation();
+      const saved = localStorage.getItem('saved_records');
+      const records = saved ? JSON.parse(saved) : [];
+      if (!records[idx]) return;
+      if (!records[idx].status) records[idx].status = {};
+      records[idx].status[key] = !records[idx].status[key];
+      localStorage.setItem('saved_records', JSON.stringify(records));
+      _fbWriteDebounced("saved_records", records, 2000);
       renderSavedRecords();
     }
 
     function renderSavedRecords() {
       const container = document.getElementById('saved_records');
       container.innerHTML = '';
+      const countEl = document.getElementById('record_count');
       const saved = localStorage.getItem('saved_records');
       const records = saved ? JSON.parse(saved) : [];
-      if (!records.length) { container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">保存済みレコードはありません</p>'; return; }
+
+      // 月セレクター更新
+      const monthSel = document.getElementById('record_month');
+      if (monthSel) {
+        const months = new Set();
+        records.forEach(r => {
+          if (r.saved_at) {
+            const d = new Date(r.saved_at);
+            months.add(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'));
+          }
+        });
+        const now = new Date();
+        months.add(now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0'));
+        const sorted = Array.from(months).sort().reverse();
+        const prev = monthSel.value;
+        monthSel.innerHTML = '<option value="">すべての月</option>';
+        sorted.forEach(ym => {
+          const [y, m] = ym.split('-');
+          const opt = document.createElement('option');
+          opt.value = ym;
+          opt.textContent = y + '年' + parseInt(m) + '月';
+          monthSel.appendChild(opt);
+        });
+        if (prev) monthSel.value = prev;
+      }
+
+      if (!records.length) {
+        container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">保存済みレコードはありません</p>';
+        if (countEl) countEl.textContent = '';
+        return;
+      }
+
+      // フィルタリング
+      const searchQ = (document.getElementById('record_search')?.value || '').toLowerCase();
+      const filterMonth = document.getElementById('record_month')?.value || '';
+      const filterForm = document.getElementById('record_form')?.value || '';
+
+      const filtered = [];
+      records.forEach((record, idx) => {
+        // 月フィルター
+        if (filterMonth && record.saved_at) {
+          const d = new Date(record.saved_at);
+          const ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+          if (ym !== filterMonth) return;
+        }
+        // 種別フィルター
+        if (filterForm && record.form !== filterForm) return;
+        // 検索
+        if (searchQ) {
+          const hay = [record.horse, record.farm_mgr, record.farm_loc, record.agent, record.vet, record.sire, record.dam].filter(Boolean).join(' ').toLowerCase();
+          if (!hay.includes(searchQ)) return;
+        }
+        filtered.push({ record, idx });
+      });
+
+      if (countEl) countEl.textContent = filtered.length + ' 件' + (filtered.length !== records.length ? '（全 ' + records.length + ' 件中）' : '');
+
+      if (!filtered.length) {
+        container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">該当するレコードはありません</p>';
+        return;
+      }
+
+      // 月別グループ化
+      const groups = {};
+      filtered.forEach(({ record, idx }) => {
+        let ym = '不明';
+        if (record.saved_at) {
+          const d = new Date(record.saved_at);
+          ym = d.getFullYear() + '年' + (d.getMonth() + 1) + '月';
+        }
+        if (!groups[ym]) groups[ym] = [];
+        groups[ym].push({ record, idx });
+      });
+
       try {
-        records.forEach((record, idx) => {
-          const div = document.createElement('div');
-          div.style.cssText = 'border: 1px solid var(--border); border-radius: 9px; padding: 16px; margin-bottom: 12px; cursor: pointer; position: relative;';
-          const badge = record.form === 'msm' ? '🔵 三井住友' : record.form === 'sj' ? '🟢 損保ジャパン' : '⚫ 死亡診断書';
-          const agentDisp = record.agent ? '　代理店: ' + record.agent : '';
-          div.innerHTML = `
-            <div style="font-weight:700;margin-bottom:5px;padding-right:56px;">${record.horse || '（未指定）'}</div>
-            <div style="font-size:13px;color:#666;">${badge}${agentDisp} ／ ${new Date(record.saved_at).toLocaleString('ja-JP')}</div>
-            <button onclick="event.stopPropagation();deleteRecord(${idx})" style="position:absolute;top:12px;right:12px;background:none;border:1px solid #ddd;border-radius:6px;padding:3px 10px;color:#aaa;font-size:12px;cursor:pointer;">削除</button>
-          `;
-          div.onclick = () => {
-            if (record.form === 'msm') { switchTab(0); loadMSM(record); }
-            else if (record.form === 'sj') { switchTab(1); loadSJ(record); }
-            else if (record.form === 'death') { switchTab(4); loadDeath(record); }
-          };
-          container.appendChild(div);
+        Object.entries(groups).forEach(([monthLabel, items]) => {
+          // 月見出し
+          const header = document.createElement('div');
+          header.style.cssText = 'font-weight:700;font-size:14px;color:#555;padding:8px 0 4px;border-bottom:2px solid var(--border);margin-bottom:8px;';
+          header.textContent = monthLabel + '（' + items.length + '件）';
+          container.appendChild(header);
+
+          items.forEach(({ record, idx }) => {
+            const div = document.createElement('div');
+            div.style.cssText = 'border:1px solid var(--border);border-radius:9px;padding:14px 16px;margin-bottom:8px;cursor:pointer;position:relative;';
+            const badge = record.form === 'msm' ? '🔵 三井住友' : record.form === 'sj' ? '🟢 損保ジャパン' : '⚫ 死亡診断書';
+            const agentDisp = record.agent ? '　代理店: ' + record.agent : '';
+            const st = record.status || {};
+            const printBtn = st.printed
+              ? '<span onclick="toggleRecordStatus('+idx+',\'printed\')" style="background:#4CAF50;color:#fff;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;margin-right:4px;">✔ 印刷済</span>'
+              : '<span onclick="toggleRecordStatus('+idx+',\'printed\')" style="background:#eee;color:#999;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;margin-right:4px;">印刷</span>';
+            const sentBtn = st.sent
+              ? '<span onclick="toggleRecordStatus('+idx+',\'sent\')" style="background:#2196F3;color:#fff;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;margin-right:4px;">✔ 発送済</span>'
+              : '<span onclick="toggleRecordStatus('+idx+',\'sent\')" style="background:#eee;color:#999;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;margin-right:4px;">発送</span>';
+            const dateDisp = record.saved_at ? new Date(record.saved_at).toLocaleDateString('ja-JP', {month:'numeric',day:'numeric'}) : '';
+            const farmDisp = record.farm_mgr ? '　🏠 ' + record.farm_mgr : '';
+            div.innerHTML = `
+              <div style="font-weight:700;margin-bottom:4px;padding-right:56px;">${dateDisp} ${record.horse || '（未指定）'}${farmDisp}</div>
+              <div style="font-size:12px;color:#666;margin-bottom:5px;">${badge}${agentDisp}${record.vet ? '　獣医: '+record.vet : ''}</div>
+              <div style="display:flex;gap:4px;align-items:center;">${printBtn}${sentBtn}</div>
+              <button onclick="event.stopPropagation();deleteRecord(${idx})" style="position:absolute;top:10px;right:10px;background:none;border:1px solid #ddd;border-radius:6px;padding:2px 8px;color:#aaa;font-size:11px;cursor:pointer;">削除</button>
+            `;
+            div.onclick = () => {
+              if (record.form === 'msm') { switchTab(0); loadMSM(record); }
+              else if (record.form === 'sj') { switchTab(1); loadSJ(record); }
+              else if (record.form === 'death') { switchTab(4); loadDeath(record); }
+            };
+            container.appendChild(div);
+          });
         });
       } catch (e) {}
     }
@@ -2155,6 +2604,75 @@
       URL.revokeObjectURL(url);
     }
 
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          let count = 0;
+
+          // Import saved_records (merge)
+          if (imported.saved_records) {
+            const fbRecs = typeof imported.saved_records === 'string' ? JSON.parse(imported.saved_records) : imported.saved_records;
+            const localRaw = localStorage.getItem('saved_records');
+            const localRecs = localRaw ? JSON.parse(localRaw) : [];
+            const merged = _mergeRecords(localRecs, fbRecs);
+            localStorage.setItem('saved_records', JSON.stringify(merged));
+            _fbWrite("saved_records", merged);
+            count = merged.length;
+            renderSavedRecords();
+          }
+
+          // Import history (merge)
+          if (imported.history) {
+            const fbHist = typeof imported.history === 'string' ? JSON.parse(imported.history) : imported.history;
+            Object.keys(fbHist).forEach(function(fieldId) {
+              if (!HISTORY[fieldId]) HISTORY[fieldId] = {};
+              Object.keys(fbHist[fieldId]).forEach(function(val) {
+                HISTORY[fieldId][val] = Math.max(HISTORY[fieldId][val] || 0, fbHist[fieldId][val]);
+              });
+            });
+            localStorage.setItem('history', JSON.stringify(HISTORY));
+            _fbWrite("history", HISTORY);
+            Object.keys(HISTORY).forEach(function(fid) { renderHistoryChips(fid); });
+          }
+
+          // Import agents_master (merge)
+          if (imported.agents_master) {
+            const fbAgents = typeof imported.agents_master === 'string' ? JSON.parse(imported.agents_master) : imported.agents_master;
+            fbAgents.forEach(function(a) { if (!AGENTS_MASTER.includes(a)) AGENTS_MASTER.push(a); });
+            localStorage.setItem('agents_master', JSON.stringify(AGENTS_MASTER));
+            _fbWrite("agents_master", AGENTS_MASTER);
+            renderAgentDropdowns();
+          }
+
+          // Import drafts (overwrite if newer)
+          ['draft_msm', 'draft_sj', 'draft_death'].forEach(function(key) {
+            if (imported[key]) {
+              const draft = typeof imported[key] === 'string' ? JSON.parse(imported[key]) : imported[key];
+              const localRaw = localStorage.getItem(key);
+              const localDraft = localRaw ? JSON.parse(localRaw) : null;
+              if (!localDraft || !localDraft.saved_at || (draft.saved_at && draft.saved_at > (localDraft.saved_at || ''))) {
+                localStorage.setItem(key, JSON.stringify(draft));
+                _fbWrite(key, draft);
+                if (key === 'draft_msm') loadMSM(draft);
+                else if (key === 'draft_sj') loadSJ(draft);
+                else if (key === 'draft_death') loadDeath(draft);
+              }
+            }
+          });
+
+          showToast('インポート完了！レコード ' + count + ' 件', 'success');
+        } catch (err) {
+          showToast('インポートエラー: ' + err.message, 'error');
+        }
+        event.target.value = '';
+      };
+      reader.readAsText(file);
+    }
+
     function showToast(msg, type = 'info') {
       const toast = document.createElement('div');
       toast.className = 'toast ' + type;
@@ -2173,6 +2691,7 @@
 
     function saveAgentsMaster() {
       localStorage.setItem('agents_master', JSON.stringify(AGENTS_MASTER));
+      _fbWrite("agents_master", AGENTS_MASTER);
     }
 
     function renderAgentDropdowns() {
@@ -2207,7 +2726,7 @@
 
     // ============ Death Certificate ============
     const DEATH_CAUSE_OPTIONS = ['疝痛', '骨折', '心不全', '出血', '感染症', '事故', '不明', 'その他'];
-    const DEATH_FEE_OPTIONS = ['死亡診断書作成料（14,300円）'];
+    const DEATH_FEE_OPTIONS = ['死亡診断書作成料（30,000円）'];
 
     function collectDeath() {
       return {
@@ -2382,7 +2901,8 @@
       // Extract yen amount from strings like '競走馬審査料（14,300円）'
       const m = feeStr.match(/（([\d,]+)円）/);
       if (m) return parseInt(m[1].replace(/,/g, ''), 10);
-      // Fallback for death certificate fee
+      // Fallback
+      if (feeStr.includes('30,000')) return 30000;
       if (feeStr.includes('14,300')) return 14300;
       if (feeStr.includes('5,000')) return 5000;
       return 0;
@@ -2426,23 +2946,26 @@
       else monthSel.value = sortedMonths[0] || currentYM;
 
       const selectedMonth = monthSel.value;
+      const selectedVet = document.getElementById('revenue_vet')?.value || '';
 
-      // Filter records for selected month
+      // Filter records for selected month + vet
       const filtered = records.filter(r => {
         if (!r.saved_at) return false;
         const d = new Date(r.saved_at);
         const ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-        return ym === selectedMonth;
+        if (ym !== selectedMonth) return false;
+        if (selectedVet && (r.vet || '') !== selectedVet) return false;
+        return true;
       });
 
       if (!filtered.length) {
-        content.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">この月のレコードはありません</p>';
+        content.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">該当するレコードはありません</p>';
         return;
       }
 
       // Build summary table
       let html = '<table class="revenue-table"><thead><tr>'
-        + '<th>日付</th><th>馬名</th><th>牧場</th><th>保険会社</th><th>代理店</th><th>請求項目</th><th>合計</th>'
+        + '<th>日付</th><th>馬名</th><th>牧場</th><th>獣医師</th><th>保険会社</th><th>代理店</th><th>請求項目</th><th>合計</th><th>状況</th>'
         + '</tr></thead><tbody>';
 
       let grandTotal = 0;
@@ -2451,8 +2974,15 @@
       filtered.forEach(r => {
         const d = new Date(r.saved_at);
         const dateStr = (d.getMonth() + 1) + '/' + d.getDate();
-        const formLabel = r.form === 'msm' ? '三井住友' : r.form === 'sj' ? '損保ジャパン' : '死亡診断書';
-        const feeItems = r.fee_items || [];
+        const formLabel = r.form === 'msm' ? '三井住友' : r.form === 'sj' ? '損保ジャパン' : '';
+        // 既存レコードで fee_items が無い場合のデフォルト
+        let feeItems = r.fee_items || [];
+        if (feeItems.length === 0 && (r.form === 'msm' || r.form === 'sj')) {
+          feeItems = ['競走馬審査料（14,300円）'];
+        }
+        if (feeItems.length === 0 && r.form === 'death') {
+          feeItems = ['死亡診断書作成料（30,000円）'];
+        }
         let rowTotal = 0;
         feeItems.forEach(fi => { rowTotal += parseFeeAmount(fi); });
         grandTotal += rowTotal;
@@ -2461,20 +2991,29 @@
           farmTotals[mgr] = (farmTotals[mgr] || 0) + rowTotal;
         }
 
+        const st = r.status || {};
+        const stLabels = [];
+        if (st.printed) stLabels.push('<span style="color:#4CAF50;font-size:11px;">✔印刷</span>');
+        if (st.sent) stLabels.push('<span style="color:#2196F3;font-size:11px;">✔発送</span>');
+        const stDisp = stLabels.length ? stLabels.join(' ') : '<span style="color:#ccc;font-size:11px;">未処理</span>';
+
         html += '<tr>'
           + '<td>' + dateStr + '</td>'
           + '<td>' + (r.horse || '') + '</td>'
           + '<td>' + mgr + '</td>'
+          + '<td>' + (r.vet || '') + '</td>'
           + '<td>' + formLabel + '</td>'
           + '<td>' + (r.agent || '') + '</td>'
           + '<td>' + feeItems.join(', ') + '</td>'
           + '<td style="text-align:right;white-space:nowrap;">' + (rowTotal > 0 ? rowTotal.toLocaleString() + '円' : '-') + '</td>'
+          + '<td style="text-align:center;white-space:nowrap;">' + stDisp + '</td>'
           + '</tr>';
       });
 
       html += '<tr class="total-row">'
-        + '<td colspan="6" style="text-align:right;font-weight:700;">月合計</td>'
+        + '<td colspan="7" style="text-align:right;font-weight:700;">月合計</td>'
         + '<td style="text-align:right;white-space:nowrap;font-weight:700;">' + grandTotal.toLocaleString() + '円</td>'
+        + '<td></td>'
         + '</tr></tbody></table>';
 
       // Farm summary
@@ -2538,6 +3077,11 @@
       } catch (e) {}
       calcAgeFromInputs('msm');
       calcAgeFromInputs('sj');
+      // 請求項目デフォルト選択（競走馬審査料）
+      autoSelectDefaultFee('msm');
+      autoSelectDefaultFee('sj');
+
+      // Firebase sync is now triggered by auth state listener (after login)
     });
   </script>
 </body>
