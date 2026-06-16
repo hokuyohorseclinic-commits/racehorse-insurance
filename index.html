@@ -1222,6 +1222,7 @@
     }
 
     // Auth state listener
+    var _fbListenersReady = false;
     (function() {
       var authApp;
       try { authApp = firebase.app(); } catch(e) { authApp = firebase.initializeApp(_fbConfig); }
@@ -1230,6 +1231,11 @@
           console.log("[Auth] ログイン:", user.email);
           document.getElementById("loginOverlay").style.display = "none";
           document.getElementById("appContainer").style.display = "block";
+          if (_fbReady && !_fbListenersReady) {
+            _fbListenersReady = true;
+            _fbSetupListeners();
+            setTimeout(function() { _fbSyncAllToFirebase(); }, 1000);
+          }
         } else {
           console.log("[Auth] 未認証");
           document.getElementById("loginOverlay").style.display = "flex";
@@ -1244,6 +1250,7 @@
     // Write to Firebase
     function _fbWrite(docName, data) {
       if (!_fbReady || !_fbDb) return;
+      try { if (!firebase.auth().currentUser) return; } catch(e) {}
       _skipNextWrite[docName] = true;
       _fbDb.collection(_FB_COL).doc(docName).set({
         data: data,
@@ -3074,12 +3081,7 @@
       autoSelectDefaultFee('msm');
       autoSelectDefaultFee('sj');
 
-      // Firebase: setup real-time listeners and initial sync
-      if (_fbReady) {
-        _fbSetupListeners();
-        // Initial sync: push local data to Firebase if exists
-        setTimeout(function() { _fbSyncAllToFirebase(); }, 2000);
-      }
+      // Firebase sync is now triggered by auth state listener (after login)
     });
   </script>
 </body>
