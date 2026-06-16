@@ -541,10 +541,24 @@
   </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 </head>
 <body>
-  <div class="container">
-    <div class="header">競走馬保険審査報告書作成</div>
+  <!-- ═══ ログイン画面 ═══ -->
+  <div id="loginOverlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#1e293b,#0f172a);display:flex;align-items:center;justify-content:center;z-index:99999">
+    <div style="background:#fff;border-radius:20px;padding:36px;width:340px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center">
+      <div style="font-size:28px;margin-bottom:8px">🐴</div>
+      <h2 style="font-size:18px;font-weight:700;color:#1e293b;margin-bottom:4px">北洋ホースクリニック</h2>
+      <p style="font-size:12px;color:#94a3b8;margin-bottom:24px">競走馬保険システム</p>
+      <input type="email" id="loginEmail" placeholder="メールアドレス" style="width:100%;padding:12px 16px;border:1px solid #d1d5db;border-radius:10px;font-size:15px;margin-bottom:10px;box-sizing:border-box" />
+      <input type="password" id="loginPassword" placeholder="パスワード" style="width:100%;padding:12px 16px;border:1px solid #d1d5db;border-radius:10px;font-size:15px;margin-bottom:16px;box-sizing:border-box" onkeydown="if(event.key==='Enter')doLogin()" />
+      <button onclick="doLogin()" style="width:100%;padding:14px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer">ログイン</button>
+      <div id="loginError" style="color:#dc2626;font-size:13px;margin-top:10px;min-height:20px"></div>
+    </div>
+  </div>
+
+  <div class="container" id="appContainer" style="display:none">
+    <div class="header">競走馬保険審査報告書作成 <button onclick="doLogout()" style="float:right;background:none;border:1px solid #999;color:#666;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer">🔒 ログアウト</button></div>
 
     <div class="tabs">
       <div class="tab msm active" onclick="switchTab(0)">🔵 三井住友</div>
@@ -1156,6 +1170,34 @@
   </div>
 
   <script>
+    // ============ Auth Functions ============
+    function doLogin() {
+      var email = document.getElementById("loginEmail").value.trim();
+      var pwd = document.getElementById("loginPassword").value;
+      var errEl = document.getElementById("loginError");
+      errEl.textContent = "";
+      if (!email || !pwd) { errEl.textContent = "メールアドレスとパスワードを入力してください"; return; }
+      // Use default app for auth
+      var authApp;
+      try { authApp = firebase.app(); } catch(e) { authApp = firebase.initializeApp(_fbConfig); }
+      firebase.auth(authApp).signInWithEmailAndPassword(email, pwd)
+        .then(function() { errEl.textContent = ""; })
+        .catch(function(err) {
+          if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
+            errEl.textContent = "メールアドレスまたはパスワードが違います";
+          } else if (err.code === "auth/invalid-email") {
+            errEl.textContent = "メールアドレスの形式が正しくありません";
+          } else {
+            errEl.textContent = "ログインに失敗しました (" + err.code + ")";
+          }
+        });
+    }
+    function doLogout() {
+      if (confirm("ログアウトしますか？")) {
+        try { firebase.auth().signOut(); } catch(e) {}
+      }
+    }
+
     // ============ Firebase Setup ============
     const _fbConfig = {
       apiKey: "AIzaSyCpBn2haBU1zEIepTpCwF8KeL5v_2_Lnzc",
@@ -1178,6 +1220,23 @@
     } catch(e) {
       console.error("Firebase初期化エラー:", e);
     }
+
+    // Auth state listener
+    (function() {
+      var authApp;
+      try { authApp = firebase.app(); } catch(e) { authApp = firebase.initializeApp(_fbConfig); }
+      firebase.auth(authApp).onAuthStateChanged(function(user) {
+        if (user) {
+          console.log("[Auth] ログイン:", user.email);
+          document.getElementById("loginOverlay").style.display = "none";
+          document.getElementById("appContainer").style.display = "block";
+        } else {
+          console.log("[Auth] 未認証");
+          document.getElementById("loginOverlay").style.display = "flex";
+          document.getElementById("appContainer").style.display = "none";
+        }
+      });
+    })();
 
     // Firebase collection name for insurance data
     const _FB_COL = "insuranceData";
