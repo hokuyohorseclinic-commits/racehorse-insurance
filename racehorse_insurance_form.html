@@ -1215,7 +1215,8 @@
     let _fbReady = false;
 
     try {
-      try { _fbApp = firebase.app("ins"); } catch(e) { _fbApp = firebase.initializeApp(_fbConfig, "ins"); }
+      // ログイン（認証）と同じデフォルトアプリで Firestore を使う（別アプリだと未認証扱いで書き込み拒否される）
+      try { _fbApp = firebase.app(); } catch(e) { _fbApp = firebase.initializeApp(_fbConfig); }
       _fbDb = firebase.firestore(_fbApp);
       _fbDb.enablePersistence({ synchronizeTabs: true }).catch(function(e) { console.log("Persistence:", e.code); });
       _fbReady = true;
@@ -1378,8 +1379,17 @@
     // Sync all local data to Firebase (called on init)
     function _fbSyncAllToFirebase() {
       if (!_fbReady) return;
+      // 保存済みレコードはサーバー側と結合してから書き込む（他端末の記録を上書きで消さない）
       var sr = localStorage.getItem("saved_records");
-      if (sr) _fbWrite("saved_records", JSON.parse(sr));
+      if (sr) {
+        _fbDb.collection(_FB_COL).doc("saved_records").get({ source: "server" }).then(function(doc) {
+          var fbRecs = (doc.exists && doc.data().data) ? doc.data().data : [];
+          var merged = _mergeRecords(JSON.parse(localStorage.getItem("saved_records") || "[]"), fbRecs);
+          localStorage.setItem("saved_records", JSON.stringify(merged));
+          renderSavedRecords();
+          _fbWrite("saved_records", merged);
+        }).catch(function(e) { console.error("saved_records 同期エラー:", e); });
+      }
       var am = localStorage.getItem("agents_master");
       if (am) _fbWrite("agents_master", JSON.parse(am));
       var h = localStorage.getItem("history");
