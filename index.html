@@ -629,6 +629,7 @@
             <option value="">選択</option>
             <option value="栗毛">栗毛</option>
             <option value="黒鹿毛">黒鹿毛</option>
+            <option value="青鹿毛">青鹿毛</option>
             <option value="鹿毛">鹿毛</option>
             <option value="青毛">青毛</option>
             <option value="白毛">白毛</option>
@@ -823,6 +824,7 @@
             <option value="">選択</option>
             <option value="栗毛">栗毛</option>
             <option value="黒鹿毛">黒鹿毛</option>
+            <option value="青鹿毛">青鹿毛</option>
             <option value="鹿毛">鹿毛</option>
             <option value="青毛">青毛</option>
             <option value="白毛">白毛</option>
@@ -1041,6 +1043,7 @@
           <option value="">選択してください</option>
           <option value="栗毛">栗毛</option>
           <option value="黒鹿毛">黒鹿毛</option>
+            <option value="青鹿毛">青鹿毛</option>
           <option value="鹿毛">鹿毛</option>
           <option value="青毛">青毛</option>
           <option value="白毛">白毛</option>
@@ -1735,7 +1738,17 @@
       _fbWriteDebounced("draft_death", d, 3000);
     }
 
+    // 別レコードを開く前に前回の選択・日付を消す（選択が重なるのを防ぐ）
+    function clearFormState(prefix, dateKeys) {
+      document.querySelectorAll('#' + prefix + '-tab .chip.selected').forEach(c => c.classList.remove('selected'));
+      dateKeys.forEach(k => {
+        const el = document.getElementById(prefix + '_' + k + '_in');
+        if (el) { el.value = ''; updateBanner(prefix + '_' + k + '_in', 'banner_' + prefix + '_' + k); }
+      });
+    }
+
     function loadMSM(d) {
+      clearFormState('msm', ['date', 'birth', 'diag', 'fee1', 'fee2']);
       if (d.dateIn) { document.getElementById('msm_date_in').value = d.dateIn; updateBanner('msm_date_in', 'banner_msm_date'); }
       if (d.birthIn) { document.getElementById('msm_birth_in').value = d.birthIn; updateBanner('msm_birth_in', 'banner_msm_birth'); }
       if (d.diagIn) { document.getElementById('msm_diag_in').value = d.diagIn; updateBanner('msm_diag_in', 'banner_msm_diag'); }
@@ -1760,6 +1773,7 @@
     }
 
     function loadSJ(d) {
+      clearFormState('sj', ['date', 'birth', 'diag']);
       if (d.dateIn) { document.getElementById('sj_date_in').value = d.dateIn; updateBanner('sj_date_in', 'banner_sj_date'); }
       if (d.birthIn) { document.getElementById('sj_birth_in').value = d.birthIn; updateBanner('sj_birth_in', 'banner_sj_birth'); }
       if (d.diagIn) { document.getElementById('sj_diag_in').value = d.diagIn; updateBanner('sj_diag_in', 'banner_sj_diag'); }
