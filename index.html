@@ -2047,6 +2047,8 @@
       '関奏絵':   { display: '関　奏絵',   fullname: '北洋ホースクリニック　関　奏絵',   kana: 'ホクヨウホースクリニック　セキカナエ' }
     };
     function getVetInfo(vet) { return VET_INFO[vet] || VET_INFO['佐藤和茂']; }
+    // 審査料の振込先（口座名義）は診断獣医師に関係なく常に会社口座（佐藤和茂名義）
+    const PAYEE_INFO = VET_INFO['佐藤和茂'];
 
     function generateMSMPrintHTML(data) {
       const dateStr = data.dateJa ? data.dateJa.full : '　　年　月　日';
@@ -2221,11 +2223,11 @@
         +'<colgroup><col style="width:10%"><col style="width:43%"><col style="width:12%"><col style="width:22%"><col style="width:13%"></colgroup>'
         // 口座名義人 Row1: フリガナ + 口座番号
         +'<tr><td rowspan="2" style="'+SH+'vertical-align:middle;font-size:7.5pt;">口座<br>名義人</td>'
-        +'<td style="'+S+'font-size:7.5pt;">フリガナ　'+getVetInfo(data.vet).kana+'</td>'
+        +'<td style="'+S+'font-size:7.5pt;">フリガナ　'+PAYEE_INFO.kana+'</td>'
         +'<td style="'+SH+'">口座番号</td>'
         +'<td colspan="2" style="'+S+'font-weight:bold;letter-spacing:4px;text-align:center;">3　1　7　1　4　3　0</td></tr>'
         // 口座名義人 Row2: 名前 + 口座種別
-        +'<tr><td style="'+S+'font-size:9.5pt;white-space:nowrap;">'+getVetInfo(data.vet).fullname+'</td>'
+        +'<tr><td style="'+S+'font-size:9.5pt;white-space:nowrap;">'+PAYEE_INFO.fullname+'</td>'
         +'<td colspan="2" style="'+S+'font-size:7.5pt;"><span style="display:inline-block;border:1.5px solid #000;border-radius:50%;padding:0 3px;line-height:1.6;">1</span>．普通預金（総合口座）　2．当座預金</td></tr>'
         // 金融機関名 Row3: フリガナ + 銀行種別(rowspan=2) + 支店フリガナ + 本支店(rowspan=2)
         +'<tr><td rowspan="2" style="'+SH+'vertical-align:middle;font-size:7.5pt;">金融<br>機関名</td>'
